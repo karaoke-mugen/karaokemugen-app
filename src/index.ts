@@ -17,8 +17,6 @@ import { version } from './version';
 import { getPortPromise } from 'portfinder';
 import { app, BrowserWindow, Menu, MenuItem } from 'electron';
 
-console.log(app);
-
 process.on('uncaughtException', exception => {
 	console.log('Uncaught exception:', exception);
 });
@@ -59,7 +57,7 @@ let dataPath = resolve(appPath, 'app');
 // Testing if we're in portable mode or not
 if (!existsSync(resolve(appPath, 'portable'))) {
 	// Rewriting dataPath to point to user home directory
-	dataPath = resolve(process.env.HOME, 'KaraokeMugen');
+	dataPath = resolve(process.env.HOME || process.env.HOMEPATH, 'KaraokeMugen');
 }
 
 if (!existsSync(dataPath)) mkdirSync(dataPath);
@@ -236,6 +234,7 @@ async function checkPaths(config: Config) {
 	let checks = [];
 	const paths = config.System.Path;
 	for (const item of Object.keys(paths)) {
+		console.log(item);
 		Array.isArray(paths[item])
 			? paths[item].forEach((dir: string) => checks.push(asyncCheckOrMkdir(resolve(dataPath, dir))))
 			: checks.push(asyncCheckOrMkdir(resolve(dataPath, paths[item])));
