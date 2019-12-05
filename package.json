@@ -7,7 +7,7 @@
   },
   "main": "js/index.js",
   "scripts": {
-    "start": "ts-node src/index.ts --files tsconfig.json",
+	"start": "ts-node src/index.ts --files tsconfig.json",
     "frontend-dev": "cd frontend && yarn dev",
     "frontend-prod": "cd frontend && yarn build",
     "debug": "ts-node $NODE_DEBUG_OPTION src/index.ts -- --debug",
@@ -26,7 +26,8 @@
     "migrateUp": "node node_modules/db-migrate/bin/db-migrate up",
     "dropDatabase": "ts-node util/dropDatabase.ts",
     "packer": "electron-builder --dir",
-    "dist": "electron-builder"
+	"dist": "electron-builder",
+	"electron": "electron ."
   },
   "homepage": "https://karaokes.moe",
   "repository": {

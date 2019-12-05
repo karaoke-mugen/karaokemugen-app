@@ -74,44 +74,52 @@ setState({appPath: appPath, dataPath: dataPath});
 
 process.env['NODE_ENV'] = 'production'; // Default
 
-let win: any;
+let win: Electron.BrowserWindow;
 
-// Cette méthode sera appelée quand Electron aura fini
-// de s'initialiser et sera prêt à créer des fenêtres de navigation.
-// Certaines APIs peuvent être utilisées uniquement quand cet événement est émit.
-app.on('ready', () => {
-	createWindow();
-	main()
-		.catch(err => {
-			logger.error(`[Launcher] Error during launch : ${err}`);
-			console.log(err);
-			exit(1);
+if(app) {
+	// Cette méthode sera appelée quand Electron aura fini
+	// de s'initialiser et sera prêt à créer des fenêtres de navigation.
+	// Certaines APIs peuvent être utilisées uniquement quand cet événement est émit.
+	app.on('ready', () => {
+		createWindow();
+		main()
+			.catch(err => {
+				logger.error(`[Launcher] Error during launch : ${err}`);
+				console.log(err);
+				exit(1);
+		});
 	});
-});
 
-// Quitte l'application quand toutes les fenêtres sont fermées.
-app.on('window-all-closed', () => {
-	// Sur macOS, il est commun pour une application et leur barre de menu
-	// de rester active tant que l'utilisateur ne quitte pas explicitement avec Cmd + Q
-	if (process.platform !== 'darwin') {
-	  app.quit();
-	}
-})
+	// Quitte l'application quand toutes les fenêtres sont fermées.
+	app.on('window-all-closed', () => {
+		// Sur macOS, il est commun pour une application et leur barre de menu
+		// de rester active tant que l'utilisateur ne quitte pas explicitement avec Cmd + Q
+		if (process.platform !== 'darwin') {
+		app.quit();
+		}
+	})
 
-
-app.on('activate', () => {
-	// Sur macOS, il est commun de re-créer une fenêtre de l'application quand
-	// l'icône du dock est cliquée et qu'il n'y a pas d'autres fenêtres d'ouvertes.
-	if (win === null) {
-	  createWindow();
-	}
-});
-
-const menu = new Menu();
-menu.append(new MenuItem({ label: "Update", click() {updateKM(); }}));
-menu.append(new MenuItem({ type: "separator" }));
-menu.append(new MenuItem({ label: "Launch MPV", click() { relaunchMPV(); } }));
-Menu.setApplicationMenu(menu);
+	app.on('activate', () => {
+		// Sur macOS, il est commun de re-créer une fenêtre de l'application quand
+		// l'icône du dock est cliquée et qu'il n'y a pas d'autres fenêtres d'ouvertes.
+		if (win === null) {
+		createWindow();
+		}
+	});
+		
+	const menu = new Menu();
+	menu.append(new MenuItem({ label: "Update", click() {updateKM(); }}));
+	menu.append(new MenuItem({ type: "separator" }));
+	menu.append(new MenuItem({ label: "Launch MPV", click() { relaunchMPV(); } }));
+	Menu.setApplicationMenu(menu);
+} else {
+	main()
+	.catch(err => {
+		logger.error(`[Launcher] Error during launch : ${err}`);
+		console.log(err);
+		exit(1);
+	})
+}
 
 function updateKM() {
     console.log("item 1 clicked");
@@ -234,7 +242,6 @@ async function checkPaths(config: Config) {
 	let checks = [];
 	const paths = config.System.Path;
 	for (const item of Object.keys(paths)) {
-		console.log(item);
 		Array.isArray(paths[item])
 			? paths[item].forEach((dir: string) => checks.push(asyncCheckOrMkdir(resolve(dataPath, dir))))
 			: checks.push(asyncCheckOrMkdir(resolve(dataPath, paths[item])));
