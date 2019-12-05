@@ -212,11 +212,12 @@
       "systempanel/build/**"
 	],
 	"directories": {
-		"output": "dist2",
+		"output": "dist",
 		"buildResources": "assets"
 	},
 	"files": [
 	 "js/**/*"
-	]
+	],
+	"afterPack": "./afterPack.js"
   }
 }
