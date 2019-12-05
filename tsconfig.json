@@ -19,7 +19,7 @@
 		// Import constants from JSON (locales).
 		"resolveJsonModule": true,
 		"sourceMap": true,
-		"outDir": "dist/",
+		"outDir": "js/",
 		"pretty": true,
 		"removeComments": true,
 		"downlevelIteration": true,
