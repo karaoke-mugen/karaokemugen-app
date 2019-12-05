@@ -15,7 +15,7 @@ import {createInterface} from 'readline';
 import { setState, getState } from './utils/state';
 import { version } from './version';
 import { getPortPromise } from 'portfinder';
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu, MenuItem } from 'electron';
 
 console.log(app);
 
@@ -109,13 +109,26 @@ app.on('activate', () => {
 	}
 });
 
+const menu = new Menu();
+menu.append(new MenuItem({ label: "Update", click() {updateKM(); }}));
+menu.append(new MenuItem({ type: "separator" }));
+menu.append(new MenuItem({ label: "Launch MPV", click() { relaunchMPV(); } }));
+Menu.setApplicationMenu(menu);
+
+function updateKM() {
+    console.log("item 1 clicked");
+}
+
+function relaunchMPV() {
+    console.log("item 2 clicked");
+}
 
 
 function createWindow () {
 	// Cree la fenetre du navigateur.
 	win = new BrowserWindow({
-		width: 800,
-		height: 600,
+		backgroundColor: "#36393f",
+		icon: join(__dirname, '../assets/logo_km.png'),
 		webPreferences: {
 			nodeIntegration: true
 		}
