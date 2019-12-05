@@ -215,8 +215,7 @@
 		"output": "dist2"
 	},
 	"files": [
-	 "js/**/*",
-	 "node_modules"
+	 "js/**/*"
 	]
   }
 }
