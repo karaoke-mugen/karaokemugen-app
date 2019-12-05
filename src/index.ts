@@ -48,8 +48,8 @@ if (process.platform === 'win32' ) {
 
 // Main app begins here.
 // Testing if we're in a packaged version of KM or not.
-const appPath = ('pkg' in process)
-	? join(process['execPath'], '../')
+const appPath = process.versions.electron
+	? join(__dirname, '../../../')
 	: join(__dirname, '../');
 
 let dataPath = resolve(appPath, 'app');
