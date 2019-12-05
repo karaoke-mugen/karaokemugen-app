@@ -128,7 +128,7 @@ function createWindow () {
 	// Cree la fenetre du navigateur.
 	win = new BrowserWindow({
 		backgroundColor: "#36393f",
-		icon: join(__dirname, '../assets/logo_km.png'),
+		icon: join(__dirname, '../assets/icon.png'),
 		webPreferences: {
 			nodeIntegration: true
 		}

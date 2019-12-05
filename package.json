@@ -212,7 +212,8 @@
       "systempanel/build/**"
 	],
 	"directories": {
-		"output": "dist2"
+		"output": "dist2",
+		"buildResources": "assets"
 	},
 	"files": [
 	 "js/**/*"

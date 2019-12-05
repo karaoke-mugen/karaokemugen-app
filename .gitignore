@@ -46,3 +46,5 @@ frontend/build/
 *.playedCount.csv
 *.requested.csv
 *.requestedCount.csv
+dist2
+js
