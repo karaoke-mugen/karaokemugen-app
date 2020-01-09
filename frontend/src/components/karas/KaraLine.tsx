@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import i18next from 'i18next';
-import { is_touch_device } from '../tools';
+import { is_touch_device, secondsTimeSpanToHMS } from '../tools';
 import KaraDetail from './KaraDetail';
 import axios from 'axios';
 import ActionsButtons from './ActionsButtons';
@@ -13,6 +13,7 @@ import { Config } from '../../../../src/types/config';
 import { DBKaraTag } from '../../../../src/lib/types/database/kara';
 import { KaraElement } from '../../types/kara';
 import { Token } from '../../../../src/lib/types/user';
+import { DBBlacklist } from '../../../../src/types/database/blacklist';
 
 const DragHandle = SortableHandle(() => <span className="dragHandle"><i className="fas fa-ellipsis-v"></i></span>);
 
@@ -23,21 +24,20 @@ interface IProps {
 	idPlaylist: number;
 	idPlaylistTo: number;
 	playlistInfo: DBPL | undefined;
-	playlistToAddId?: number;
 	navigatorLanguage: string;
 	scope: string;
 	playlistCommands?: boolean;
 	i18nTag: {[key: string]: {[key: string]: string}};
 	avatar_file:string;
+	index: number;
 	showVideo: (file:string) => void;
 	checkKara: (id:number|string) => void;
+	deleteCriteria: (kara:DBBlacklist) => void;
 }
 
 interface IState {
 	displayedKaraDetail: boolean;
 	isLike: boolean;
-	startSwipeX: number;
-	addKaraInProgress: boolean;
 }
 
 const pathAvatar = '/avatars/';
@@ -47,23 +47,8 @@ class KaraLine extends Component<IProps,IState> {
 		this.state = {
 			displayedKaraDetail: false,
 			isLike: this.props.kara.flag_upvoted,
-			startSwipeX: 0,
-			addKaraInProgress: false
 		};
 	}
-
-  handleSwipe = (e:any) => {
-  	if (this.props.side === 1 && this.props.config.Frontend.Mode === 2
-      && e.changedTouches[0].clientX > this.state.startSwipeX + 100) {
-  		this.setState({ addKaraInProgress: true });
-  		this.addKara();
-  		setTimeout(() => this.setState({ addKaraInProgress: false }), 800);
-  	}
-  };
-
-  handleStart = (e:any) => {
-  	this.setState({ startSwipeX: e.changedTouches[0].clientX });
-  };
 
   toggleKaraDetail = () => {
   	if (this.state.displayedKaraDetail) {
@@ -91,8 +76,8 @@ class KaraLine extends Component<IProps,IState> {
   };
 
   likeKara = () => {
-  	var data = this.props.kara.flag_upvoted ? {} : { 'downvote': 'true' };
-  	axios.post('/api/public/playlists/public/karas/' + this.props.idPlaylist + '/vote', data);
+  	var data = this.props.kara.flag_upvoted ? { 'downvote': 'true' } : {};
+  	axios.post(`/api/playlists/${this.props.idPlaylist}/karas/${this.props.kara.playlistcontent_id}/vote`, data);
   	this.setState({ isLike: !this.state.isLike });
   };
 
@@ -100,21 +85,21 @@ class KaraLine extends Component<IProps,IState> {
   	var response;
   	try {
   		if (this.props.idPlaylist == -5) {
-  			response = await axios.delete('/api/public/favorites', { data: { kid: [this.props.kara.kid] }});
-  		} else if (this.props.scope === 'admin') {
-  			response = await axios.delete('/api/' + this.props.scope + '/playlists/' + this.props.idPlaylist + '/karas/', { data: { plc_id: String(this.props.kara.playlistcontent_id) } });
+			response = await axios.delete('/api/favorites', { data: { kid: [this.props.kara.kid] }});
+		} else if (this.props.idPlaylist == -2) {
+			this.props.deleteCriteria(this.props.kara as unknown as DBBlacklist);
+			return;
   		} else {
-  			var currentOrPublic = (this.props.playlistInfo as DBPL).flag_current ? 'current' : 'public';
-  			response = await axios.delete('/api/' + this.props.scope + '/playlists/' + currentOrPublic + '/karas/' + this.props.kara.playlistcontent_id);
+  			response = await axios.delete('/api/playlists/' + this.props.idPlaylist + '/karas/', { data: { plc_id: String(this.props.kara.playlistcontent_id) } });
   		}
-  		displayMessage('success', i18next.t(response.data.code));
+  		displayMessage('success', i18next.t(response.data));
   	} catch (error) {
-  		displayMessage('error', error.response.data.code);
+  		displayMessage('error', error.response.data);
   	}
   };
 
   playKara = () => {
-  	axios.put('/api/' + this.props.scope + '/playlists/' + this.props.idPlaylist + '/karas/' + this.props.kara.playlistcontent_id, { flag_playing: true });
+  	axios.put('/api/playlists/' + this.props.idPlaylist + '/karas/' + this.props.kara.playlistcontent_id, { flag_playing: true });
   };
 
   addKara = async (event?:any, pos?:number) => {
@@ -123,17 +108,13 @@ class KaraLine extends Component<IProps,IState> {
   	var data;
   	var type;
   	if (this.props.idPlaylistTo == -5) {
-  		url = '/api/public/favorites';
+  		url = '/api/favorites';
   		data = { kid: [this.props.kara.kid] };
   	} else if (this.props.scope === 'admin') {
   		if (this.props.idPlaylistTo > 0) {
-  			url = '/api/' + this.props.scope + '/playlists/' + this.props.idPlaylistTo + '/karas';
-  			if (this.props.idPlaylist > 0) {
-  				if (pos) {
-  					data = { plc_id: String(this.props.kara.playlistcontent_id) , pos: pos+1};
-  				} else {
-  					data = { plc_id: String(this.props.kara.playlistcontent_id) };
-  				}
+  			url = '/api/playlists/' + this.props.idPlaylistTo + '/karas';
+  			if (this.props.idPlaylist > 0 && !pos) {
+  				data = { plc_id: String(this.props.kara.playlistcontent_id) };
   				type = 'PATCH';
   			} else {
   				if (pos) {
@@ -143,14 +124,14 @@ class KaraLine extends Component<IProps,IState> {
   				}
   			}
   		} else if (this.props.idPlaylistTo == -2 || this.props.idPlaylistTo == -4) {
-  			url = '/api/' + this.props.scope + '/blacklist/criterias';
+  			url = '/api/blacklist/criterias';
   			data = { blcriteria_type: 1001, blcriteria_value: this.props.kara.kid };
   		} else if (this.props.idPlaylistTo == -3) {
-  			url = '/api/' + this.props.scope + '/whitelist';
+  			url = '/api/whitelist';
   			data = { kid: this.props.kara.kid };
   		}
   	} else {
-  		url = `/api/public/karas/${this.props.kara.kid}`;
+  		url = `/api/karas/${this.props.kara.kid}`;
   		data = { requestedby: (logInfos as Token).username, kid: this.props.kara.kid };
   	}
   	try {
@@ -159,21 +140,35 @@ class KaraLine extends Component<IProps,IState> {
   			response = await axios.patch(url, data);
   		} else {
   			response = await axios.post(url, data);
-  		}
-  		displayMessage('success', i18next.t(response.data.code));
+		  }
+		  if (response.data && response.data.plc && response.data.plc.time_before_play) {
+			var playTime = new Date(Date.now() + response.data.plc.time_before_play * 1000);
+			var playTimeDate = playTime.getHours() + 'h' + ('0' + playTime.getMinutes()).slice(-2);
+			var beforePlayTime = secondsTimeSpanToHMS(response.data.plc.time_before_play, 'hm');
+			displayMessage('success', <div>
+					{i18next.t(response.data.code)}
+					<br/>
+					{i18next.t('TIME_BEFORE_PLAY', {
+  					time: beforePlayTime,
+  					date: playTimeDate
+  					})}
+				</div>);
+		  } else {
+			displayMessage('success', i18next.t(response.data.code));
+		  }
   	} catch (error) {
-  		displayMessage('warning', i18next.t(error.response.data.code));
+  		displayMessage('warning', i18next.t(error.response.data));
   	}
   };
 
-  transferKara = () => {
-	  this.addKara();
+  transferKara = async (event:any, pos?:number) => {
+	  await this.addKara(event, pos);
 	  this.deleteKara();
   };
 
   freeKara = () => {
   	if (this.props.scope === 'admin') {
-  		axios.put('/api/' + this.props.scope + '/playlists/' + this.props.idPlaylist + '/karas/' + this.props.kara.playlistcontent_id, { flag_free: true });
+  		axios.put('/api/playlists/' + this.props.idPlaylist + '/karas/' + this.props.kara.playlistcontent_id, { flag_free: true });
   	}
   };
 
@@ -184,6 +179,11 @@ class KaraLine extends Component<IProps,IState> {
   		this.props.checkKara(this.props.kara.kid);
   	}
   };
+
+  changeVisibilityKara = () => {
+		axios.put('/api/playlists/' + this.props.idPlaylist + '/karas/' + this.props.kara.playlistcontent_id, 
+			{ flag_visible: true });
+};
 
   karaFamilies = this.props.kara.families ? this.props.kara.families.map(tag => {
   	return <div key={tag.name} className="tag" title={this.getTagInLocale(tag)}>{tag.short ? tag.short : '?'}</div>;
@@ -233,9 +233,8 @@ class KaraLine extends Component<IProps,IState> {
   	var scope = this.props.scope;
   	var idPlaylist = this.props.idPlaylist;
   	return (
-  		<div className={'list-group-item ' + (kara.flag_playing ? 'currentlyplaying ' : ' ') + (kara.flag_dejavu ? 'dejavu' : '')}
-  			style={this.state.addKaraInProgress ? { transform: 'translate(100%)' } : {}}
-  			onTouchEnd={this.handleSwipe} onTouchStart={this.handleStart}>
+		  <div className={'list-group-item ' + (kara.flag_playing ? 'currentlyplaying ' : ' ') + (kara.flag_dejavu ? 'dejavu ' : ' ')
+			+(this.props.index % 2 === 0 ? 'list-group-item-binaire': '')}>
   			{scope === 'public' && logInfos && kara.username !== logInfos.username && kara.flag_visible === false ?
   				<div className="contentDiv">
   					<div style={{height:'33px'}}>
@@ -245,17 +244,16 @@ class KaraLine extends Component<IProps,IState> {
 					</div>
   				</div> :
   				<React.Fragment>
-  					{is_touch_device() && scope !== 'admin' ? null :
-  						<div className="actionDiv"> 
-							{this.props.config.Frontend.ShowAvatarsOnPlaylist && this.props.avatar_file ? 
-								<img className="img-circle" src={pathAvatar + this.props.avatar_file} alt="User Pic" /> : null}
-							{this.props.idPlaylistTo !== this.props.idPlaylist ?
-								<ActionsButtons idPlaylistTo={this.props.idPlaylistTo} idPlaylist={this.props.idPlaylist}
-									scope={this.props.scope} playlistToAddId={this.props.playlistToAddId}
-									addKara={this.addKara} deleteKara={this.deleteKara} transferKara={this.transferKara} /> : null}
-  							{!is_touch_device() && scope === 'admin' && idPlaylist > 0 ? <DragHandle /> : null}
-  						</div>
-  					}
+					<div className="actionDiv"> 
+						{this.props.config.Frontend.ShowAvatarsOnPlaylist && this.props.avatar_file ? 
+							<img className="img-circle" src={pathAvatar + this.props.avatar_file} alt="User Pic" 
+								title={kara.nickname} /> : null}
+						{this.props.idPlaylistTo !== this.props.idPlaylist ?
+							<ActionsButtons idPlaylistTo={this.props.idPlaylistTo} idPlaylist={this.props.idPlaylist}
+								scope={this.props.scope}
+								addKara={this.addKara} deleteKara={this.deleteKara} transferKara={this.transferKara} /> : null}
+						{!is_touch_device() && scope === 'admin' && idPlaylist > 0 ? <DragHandle /> : null}
+					</div>
   					{scope === 'admin' && this.props.idPlaylist !== -2 && this.props.idPlaylist != -4 && this.props.playlistCommands ?
   						<span className="checkboxKara" onClick={this.checkKara}>
   							{kara.checked ? <i className="far fa-check-square"></i>
@@ -271,11 +269,15 @@ class KaraLine extends Component<IProps,IState> {
   							onClick={this.playKara}><i className="fas fa-play"></i></button> : null}
   						{scope === 'admin' &&  this.props.playlistInfo && idPlaylist > 0 && !kara.flag_visible
                 			&& (this.props.playlistInfo.flag_current || this.props.playlistInfo.flag_public) ? 
-  								<button type="button" className={'btn btn-sm btn-action btn-primary'}><i className="fas fa-eye-slash"></i></button> : null
+  								<button type="button" className={'btn btn-sm btn-action btn-primary'} onClick={this.changeVisibilityKara}>
+									<i className="fas fa-eye-slash"></i>
+								</button> : null
 						}
-  						{scope !== 'admin' && this.props.playlistInfo && this.props.playlistInfo.flag_public ? <button className={'likeKara btn btn-sm btn-action ' + this.state.isLike ? 'currentLike' : ''}
+  						{scope !== 'admin' && this.props.playlistInfo && this.props.playlistInfo.flag_public ? 
+						  <button className={'likeKara btn btn-sm btn-action ' + (this.state.isLike ? 'currentLike' : '')}
   							onClick={this.likeKara}><i className="fas fa-thumbs-up"></i></button> : null}
-  						{scope !== 'admin' && !kara.flag_dejavu && !kara.flag_playing && logInfos && kara.username == logInfos.username && (idPlaylist == this.props.playlistToAddId) ?
+						{scope !== 'admin' && !kara.flag_dejavu && !kara.flag_playing && logInfos && kara.username == logInfos.username 
+						  	&& (idPlaylist == store.getModePlaylistID()) ?
   							<button title={i18next.t('TOOLTIP_DELETEKARA')} className="btn btn-sm btn-action deleteKara"
   								onClick={this.deleteKara}><i className="fas fa-minus"></i></button> : null}
   					</div>

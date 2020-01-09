@@ -3,8 +3,6 @@ import WelcomePage from './components/WelcomePage';
 import AdminPage from './components/AdminPage';
 import PublicPage from './components/PublicPage';
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
 import i18n from './components/i18n';
 import NotFoundPage from './components/NotfoundPage';
 import langs from 'langs';
@@ -15,7 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import store from './store';
 import { Config } from '../../src/types/config';
 import { KaraTag } from '../../src/lib/types/kara'; 
-import { DBSeries } from '../../src/types/database/series';
+import { DBSeries } from '../../src/lib/types/database/series';
 import { DBYear } from '../../src/lib/types/database/kara';
 import { Tag }  from '../../src/lib/types/tag'; 
 import { Tag as FrontendTag }  from './types/tag'; 
@@ -41,23 +39,27 @@ class App extends Component<{}, IState> {
 		axios.defaults.headers.common['onlineAuthorization'] = document.cookie.replace(/(?:(?:^|.*;\s*)mugenTokenOnline\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 	}
 
-	async parseTags() {
+	async checkAuth() {
 		try {
-			const response = await axios.get('/api/public/tags');
-			return response.data.data.content.filter((val:Tag) => val.karacount !== null)
-				.map((val:{i18n:{[key: string]: string}, tid:string, name:string, types:Array<number|string>, karacount:string}) => {
-				var trad = val.i18n![this.state.navigatorLanguage];
-				return { value: val.tid, label: trad ? trad : val.name, type: val.types, karacount: val.karacount };
-			});
+			await axios.get('/api/auth/checkauth')
 		} catch (error) {
 			// if error the authorization must be broken so we delete it
 			store.logOut();
 		}
 	}
 
+	async parseTags() {
+		const response = await axios.get('/api/tags');
+		return response.data.content.filter((val:Tag) => val.karacount !== null)
+			.map((val:{i18n:{[key: string]: string}, tid:string, name:string, types:Array<number|string>, karacount:string}) => {
+			var trad = val.i18n![this.state.navigatorLanguage];
+			return { value: val.tid, label: trad ? trad : val.name, type: val.types, karacount: val.karacount };
+		});
+	}
+
 	async parseSeries() {
-		const response = await axios.get('/api/public/series');
-		return response.data.data.content.map((val:DBSeries) => {
+		const response = await axios.get('/api/series');
+		return response.data.content.map((val:DBSeries) => {
 			return {
 				value: val.sid, label: val.i18n_name, type: ['serie'],
 				aliases: val.aliases, karacount: val.karacount
@@ -66,13 +68,16 @@ class App extends Component<{}, IState> {
 	}
 
 	async parseYears() {
-		const response = await axios.get('/api/public/years');
-		return response.data.data.content.map((val:DBYear) => {
+		const response = await axios.get('/api/years');
+		return response.data.content.map((val:DBYear) => {
 			return { value: val.year, label: val.year, type: ['year'], karacount: val.karacount };
 		});
 	}
 
 	async componentDidMount() {
+		if (axios.defaults.headers.common['authorization']) {
+			await this.checkAuth();
+		}
 		await this.getSettings();
 		getSocket().on('settingsUpdated', this.getSettings);
 		getSocket().on('connect', () => this.setState({ shutdownPopup: false }));
@@ -96,10 +101,11 @@ class App extends Component<{}, IState> {
     }
 
     getSettings = async () => {
-    	const res = await axios.get('/api/public/settings');
-		store.setConfig(res.data.data.config);
-		store.setVersion(res.data.data.version);
-    	this.setState({ config: res.data.data.config});
+    	const res = await axios.get('/api/settings');
+		store.setConfig(res.data.config);
+		store.setVersion(res.data.version);
+		store.setModePlaylistID(res.data.state.modePlaylistID);
+    	this.setState({ config: res.data.config});
     };
 
     getNavigatorLanguage() {
@@ -116,7 +122,7 @@ class App extends Component<{}, IState> {
     }
 
     powerOff = () => {
-    	axios.post('/api/admin/shutdown');
+    	axios.post('/api/shutdown');
     	this.setState({ shutdownPopup: true });
     };
 
@@ -146,7 +152,8 @@ class App extends Component<{}, IState> {
     						<Route path="/admin" render={(props) => <AdminPage {...props}
     							navigatorLanguage={this.state.navigatorLanguage}
     							powerOff={this.powerOff} tags={this.state.tags as FrontendTag[]}
-    							showVideo={this.showVideo} config={this.state.config as Config} />} />
+    							showVideo={this.showVideo} config={this.state.config as Config} 
+								getSettings={this.getSettings} />} />
     						<Route exact path="/" render={(props) => <PublicPage {...props}
     							navigatorLanguage={this.state.navigatorLanguage}
 								tags={this.state.tags as FrontendTag[]} showVideo={this.showVideo}
@@ -166,4 +173,3 @@ class App extends Component<{}, IState> {
 }
 
 export default App;
-ReactDOM.render(<BrowserRouter><App /></BrowserRouter>, document.getElementById('root'));

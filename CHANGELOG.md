@@ -1,5 +1,126 @@
 # Versions
 
+## v3.1.0 "Mitsuha Mélodramatique" -
+
+This is a major release.
+
+### New Features
+
+- The config page in the System Panel is improved, allowing you to change all settings, even some internal ones, paths, etc. (#533)
+- Sessions can now be flagged as private if you want to avoid sending them over to Karaoke Mugen Server (#543)
+- Added a `--noPlayer` option to avoid starting the player along with KM when you only want to manage your karaoke database. (#541)
+- Added a QuickStart setting which equals `--noBaseCheck`. This allows you to bypass the karaoke base verification to save some time on startup when you're absolutely certain nothing has changed. (#541)
+- When the current song nears its end, a message appears on users' devices to tell them what the next song is (#537)
+- When adding a song, the message also gives you how long before it should be playing (#536)
+- This version of Karaoke Mugen does not generate Kara V3 files anymore when creating new karaokes (yes this is a new feature) (#534)
+- Download page now has a filter to only show missing or updated songs (#532)
+- Playlists now have two new medias in addition of intros and jingles : (#531)
+  - Outros are played at the very end of the playlist
+  - Encores are played before the last song plays.
+  - We offer a few of those in our git repos, they will be downloaded automagically by Karaoke Mugen.
+- KM is now bundled with a `portable` file. If this file exists, KM will store everything in the `app` folder, just like before. If not, KM will store all its data files in the user's home folder : `$HOME/KaraokeMugen` (#525)
+- User avatars are now displayed next to the songs they added in playlist (#423)
+- System panel is now translated in french and english (#263)
+
+### Improvements
+
+- The swipe movement to switch from the song list to the playlists in mobile view has been deprecated in favor of a button, as it was causing too many misuses (#547)
+- Player (mpv) is now restarted if it's been closed by mistake or voluntarily by the user whenever an action requiring it is made (#540)
+- The frontend's and system's APIs have been merged into one, just so we could create more bugs (#539)
+- Upgraded all dependencies, notably Got (HTTP client) to version 10 (#535)
+- Frontend is now written in typescript, yay. (#528)
+- Downloader has been rewritten with async functions and a queue system (#511)
+- Logged in users now is a scrollable list in frontend (#476)
+
+## v3.0.2 "Leafa Langoureuse" - 07/01/2020
+
+This is a bugfix release
+
+### Improvements
+
+- Security code can't be used anymore to reset your local password. If you lost your password, use the security code to create a new admin account (c7dad84b)
+- Poll winner is sent to Twitch chat when available (df5d27f1)
+- Config settings are correctly updated when displaying the settings page (d7acf199)
+- When in restricted mode, the frontend will display a modal only on mobile (fad65274)
+- Quotes are not being removed anymore during searches. So "May'n" won't search for "May" and "n" anymore. (49cbc80d)
+- Add a message to check if the song is not available for download before make a suggestion (95db6039)
+- Now use checkAuth route to verify authorization in frontend (824f8b7d)
+- Remove use of swipe in mobile for add Kara and change view (#547 - 735b3851, c8cdf0ba, 6756e3c2, b3e2c9b9)
+- Icon to tell the difference between mystery karas and others is now clickable (925374eb)
+- Add search aliases or locales in serie field on kara page (429458e1, d0ea6b3f)
+
+### Fixes
+
+- Fix autoplay setting not working as intended (f0f2f18c)
+- When downloading a song, tags or series could have needed to be removed if their filename were different, but it throwed an error if the file didn't exist anymore, which could happen inbetween database refreshes. Now the error won't throw anymore, just display in debug logs (77af237b)
+- Fix samples' TV Series tag. (3bbf5eb2)
+- Fix nickname can't be empty error when modifying password (1a4ae993)
+- Fix admin tutorial (030c3069)
+- Fix issues when playlists are set to invisible (6c2bf0b5)
+- When downloading songs, tags/series are now correctly deleted when their name has changed (0751bcf1)
+- Toyunda2ASS has been updated to 1.0.8 - correctly detects CRLF line breaks now (0eec58af)
+- Percentages in poll votes are now rounded to two decimal digits (e8e3f6c7)
+- Polls should work pollfectly now. (84bf4818)
+- When going from the kara list to a filtered list (applying a filter) the scroll placement is reset (af79e412)
+- Remaining time of a playlist is now correctly updated (32698f3c)
+- Update FR locales (c9948e11, 9e47e80a)
+- No more flickering when scroll in a playlist (ee38366a)
+- Fix scroll on user list in profile modal (#476)
+- Fix add an ip for Host in system panel config page (f2f01947)
+- Fix modals on small screen (9cbe227e, 2eed7ef4, 5fdb1997)
+- Fix initial render for playlist (8b1ece19, 92c73fa5)
+- Fix favorites display in public page (12b67a1b)
+- Fix alignement ro playing karaoke in start of a playlist (08b17f43)
+- Fix open the login modal when logout (013a421f)
+- Fix spam of toast when page was hidden (e6ac7ca7)
+- Fix restricted mode (d738745b, 158d7ff2)
+- Fix songtype display in mobile when title is multiline (631daded)
+- Fix wrong color display for buttons in karaDetail (daddc90f)
+- Fix help modal display (a1975f83)
+
+
+## v3.0.1 "Leafa Loyale" - 13/12/2019
+
+This is a bugfix release.
+
+### Improvements
+
+- Described where is the security code in the admin intro d71a5889
+- Bumped taskCounter from 5 to 100 during batch downloads so KM doesn't stop downloading every now and then db989b9e
+- Added proper error messages for login in operator panel c7fbb20f
+- Added proper error messages when using wrong security code in login window 46c9f81a
+- Ensures mpv is running before issuing any command, restarts it if it's not present 473dc256
+- Added close button for automix modal 0ea139aa
+- Added i18n for playlists names af4565b5
+- Added modal for delete criteria from blacklist 2dae9632, 3c636e7c, f5dd39de
+- Changed songs display order 4aa306fa
+
+### Fixes
+
+- Fixed avatar fetching for online users d68c8748
+- Fixed API documentation 48ccf953
+- Fixed moving songs from one playlist to the other e1f6bd89
+- Fixed playlist buttons not refreshed when you change the other side in operator window 7ae4e647
+- Fixed adding blacklist criterias with enter 8c7a7228
+- Fixed like button on karas 653fe77d, 512901b5
+- Fixed free button 91b855f3
+- Fixed convert and delete online profile 80ac08f9
+- Fixed import playlist 3a829eda, daf52009, 6407261d
+- Fixed right click transfer button 4fdf9c0f, 80ac390e
+- Fixed right click add button from public playlist to current playlist de2a88a8
+- Fixed blue color display change for playing kara b629c8a0
+- Fixed mute button bfb64a44
+- Fixed open login modal after log out a9349c54
+- Fixed error display for patch kara a263013f
+- Fixed right click add button for multiple karas in admin page 7ff87aa2, 9c45a866
+- Fixed export playlist button d2a3e85f
+- Fixed change visibility of a kara twice without close details da546927
+- Fixed buttons display in playlist header 26c9af11
+- Fixed nickname is now mandatory 871fb6b4, 101befe3
+- Fixed switch to another playlist when delete one f4e895fa
+- Fixed input display in rename playlist modal 17ee2a0c
+- Fixed blacklist criterias tags display 88a338ae
+
 ## v3.0.0 "Leafa Lumineuse" - 29/11/2019
 
 This is a VERY MAJOR release.

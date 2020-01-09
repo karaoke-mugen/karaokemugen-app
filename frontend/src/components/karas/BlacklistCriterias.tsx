@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import i18next from 'i18next';
 import axios from 'axios';
 import Autocomplete from '../generic/Autocomplete';
-import { buildKaraTitle } from '../tools';
-import { DBBLC } from '../../../../src/types/database/blacklist';
+import { buildKaraTitle, displayMessage } from '../tools';
+import { BLC } from '../../../../src/types/blacklist';
 import { Tag } from '../../types/tag';
 require('./BlacklistCriterias.scss');
 
@@ -28,7 +28,7 @@ var listTypeBlc = [
 
 interface IProps {
 	scope: string;
-	data: Array<DBBLC>;
+	data: Array<BLC>;
 	tags: Array<Tag> | undefined;
 }
 
@@ -48,12 +48,20 @@ class BlacklistCriterias extends Component<IProps, IState> {
 	}
 
     addBlacklistCriteria = () => {
-    	axios.post('/api/' + this.props.scope + '/blacklist/criterias',
-    		{ blcriteria_type: this.state.bcType, blcriteria_value: this.state.bcVal });
+		try {
+			axios.post('/api/blacklist/criterias',
+				{ blcriteria_type: this.state.bcType, blcriteria_value: this.state.bcVal });
+		} catch (error) {
+			displayMessage('error', `ERROR_CODES.${error.response.code}`);
+		}
     };
 
     deleteCriteria = (bcId:number) => {
-    	axios.delete('/api/' + this.props.scope + '/blacklist/criterias/' + bcId);
+		try {
+			axios.delete('/api/blacklist/criterias/' + bcId);
+		} catch (error) {
+			displayMessage('error', `ERROR_CODES.${error.response.code}`);
+		}
     };
 
     render() {
@@ -65,8 +73,8 @@ class BlacklistCriterias extends Component<IProps, IState> {
     	return (
     		<React.Fragment>
     			{this.props.scope === 'admin' ?
-    				<span id="blacklistCriteriasInputs" className="blacklist-criterias-input" style={{ padding: '10px' }}>
-    					<select id="bcType" className="input-sm form-control" onChange={e => this.setState({ bcType: Number(e.target.value) })}>
+    				<span id="blacklistCriteriasInputs" className="blacklist-criterias-input">
+    					<select onChange={e => this.setState({ bcType: Number(e.target.value), bcVal: '' })}>
     						{listTypeBlc.map((value) => {
     							return <option key={value} value={value.replace('BLCTYPE_', '')}>{i18next.t(value)}</option>;
     						})
@@ -94,12 +102,23 @@ class BlacklistCriterias extends Component<IProps, IState> {
     							<li key={criteria.blcriteria_id} className="list-group-item liTag">
     								<div className="actionDiv">
     									<button title={i18next.t('TOOLTIP_DELETECRITERIA')} name="deleteCriteria"
-    										className="btn btn-action deleteCriteria" onClick={() => this.deleteCriteria(criteria.blcriteria_id)}>
+    										className="btn btn-action deleteCriteria" onClick={() => this.deleteCriteria(criteria.blcriteria_id as number)}>
     										<i className="fas fa-minus"></i>
     									</button>
     								</div>
     								<div className="typeDiv">{i18next.t('BLCTYPE_' + criteria.type)}</div>
-    								<div className="contentDiv">{criteria.type == 1001 ? buildKaraTitle(Array.isArray(criteria.value) ? criteria.value[0] : criteria.value) : criteria.value}</div>
+									<div className="contentDiv">
+										{criteria.type == 1001 ? 
+										buildKaraTitle(
+											Array.isArray(criteria.value) ?
+											criteria.value[0] : 
+											criteria.value) :
+										(criteria.value_i18n ?
+											criteria.value_i18n :
+											criteria.value
+										)
+										}
+									</div>
     							</li> : null
     						);
     					})}

@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 import {push} from 'connected-react-router';
 import {errorMessage, infoMessage, loading, warnMessage} from '../../actions/navigation';
 import {ReduxMappedProps} from '../../react-app-env';
+import i18next from 'i18next';
 
 interface UserEditProps extends ReduxMappedProps {
 	push: (string) => any,
@@ -36,9 +37,9 @@ class UserEdit extends Component<UserEditProps, UserEditState> {
 	}
 
 	saveNew = (user) => {
-		axios.post('/api/system/users', user)
+		axios.post('/api/users', user)
 			.then(() => {
-				this.props.infoMessage('User successfully created');
+				this.props.infoMessage(i18next.t('USERS.CREATED'));
 				this.props.push('/system/km/users');
 			})
 			.catch(err => {
@@ -47,9 +48,9 @@ class UserEdit extends Component<UserEditProps, UserEditState> {
 	};
 
 	saveUpdate = (user) => {
-		axios.put(`/api/system/users/${user.login}`, user)
+		axios.put(`/api/users/${user.login}`, user)
 			.then(() => {
-				this.props.infoMessage('User successfully edited');
+				this.props.infoMessage(i18next.t('USERS.EDITED'));
 				this.props.push('/system/km/users');
 			})
 			.catch(err => {
@@ -60,7 +61,7 @@ class UserEdit extends Component<UserEditProps, UserEditState> {
 	loadUser = () => {
 		this.props.loading(true);
 		if (this.props.match && this.props.match.params.userLogin) {
-			axios.get(`/api/system/users/${this.props.match.params.userLogin}`)
+			axios.get(`/api/users/${this.props.match.params.userLogin}`)
 				.then(res => {
 					this.setState({user: res.data, save: this.saveUpdate});
 					this.props.loading(false);

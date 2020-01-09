@@ -4,12 +4,13 @@ import {AutoComplete, Button, Checkbox, Col, Form, Icon, Row, Tag, Tooltip} from
 import axios from 'axios/index';
 import { getTagInLocale } from "../../utils/kara";
 
+import i18next from 'i18next';
 interface EditableTagGroupProps {
 	search: 'tag' | 'serie' | 'aliases',
 	onChange: any,
 	checkboxes?: boolean,
 	tagType?: number,
-	value?: any[],
+	value?: any[]
 }
 
 interface EditableTagGroupState {
@@ -17,6 +18,8 @@ interface EditableTagGroupState {
 	value: any[],
 	inputVisible: boolean,
 }
+
+let timer:any;
 
 export default class EditableTagGroup extends React.Component<EditableTagGroupProps, EditableTagGroupState> {
 
@@ -84,7 +87,7 @@ export default class EditableTagGroup extends React.Component<EditableTagGroupPr
 		if (filter === '') {
 			return ({data: []});
 		}
-		return axios.get('/api/system/tags', {
+		return axios.get('/api/tags', {
 			params: {
 				type: type,
 				filter: filter
@@ -96,7 +99,7 @@ export default class EditableTagGroup extends React.Component<EditableTagGroupPr
 		if (filter === '') {
 			return ({data: []});
 		}
-		return axios.get('/api/system/series', {
+		return axios.get('/api/series', {
 			params: {
 				filter: filter
 			}
@@ -108,17 +111,19 @@ export default class EditableTagGroup extends React.Component<EditableTagGroupPr
 		if (this.props.search === 'serie') this.searchSeries(val);
 	};
 
-	searchSeries = (val) => {
+	searchSeries = (val) => {	
+		if (timer) clearTimeout(timer);
+		timer = setTimeout(() => {
 		this.getSeries(val).then(series => {
-			this.setState({ DS: series.data.content.map(serie => serie.name) || [] });
-		});
+			this.setState({ DS: (series.data.content && series.data.content.map(serie => serie.name)) || [] });
+		})}, 500);
 	};
 
 	searchTags = (val?: any) => {
 		this.getTags(val, this.props.tagType).then(tags => {
-			let result = tags.data.content.map(tag => {
+			let result = (tags.data.content && tags.data.content.map(tag => {
 				return { value: tag.tid, text: getTagInLocale(tag), name:tag.name };
-			}) || [];
+			})) || [];
 			result = this.sortByProp(result, 'text');
 			this.setState({ DS: result });
 		});
@@ -186,15 +191,11 @@ export default class EditableTagGroup extends React.Component<EditableTagGroupPr
 								dataSource={this.state.DS}
 								onSearch={ this.search }
 								onChange={ val => this.currentVal = val }
-								filterOption={(inputValue, option) => {
-									const s: any = option.props.children;
-									return deburr(s.toUpperCase()).indexOf(deburr(inputValue).toUpperCase()) !== -1;
-								}}
 							>
 							</AutoComplete>
 							<Button type='primary' onClick={() => this.handleInputConfirmSerie(this.currentVal)}
 								className='login-form-button'>
-						Add...
+								{i18next.t('ADD')}
 							</Button>
 						</Form.Item>
 					)}
@@ -203,7 +204,7 @@ export default class EditableTagGroup extends React.Component<EditableTagGroupPr
 							onClick={this.showInput}
 							style={{ borderStyle: 'dashed' }}
 						>
-							<Icon type="plus" /> Add
+							<Icon type="plus" />{i18next.t('ADD')}
 						</Tag>
 					)}
 				</div>
@@ -233,14 +234,13 @@ export default class EditableTagGroup extends React.Component<EditableTagGroupPr
 								onChange={ val => this.currentVal = val }
 								filterOption={(inputValue, option) => {
 									const s: any = option.props.children;
-									if (s) return deburr(s.toUpperCase()).indexOf(deburr(inputValue).toUpperCase()) !== -1;
-									return false;
+									return deburr(s.toUpperCase()).indexOf(deburr(inputValue).toUpperCase()) !== -1;
 								}}
 							>
 							</AutoComplete>
 							<Button type='primary' onClick={() => this.handleInputConfirm(this.currentVal)}
 								className='login-form-button'>
-						Add...
+						{i18next.t('ADD')}
 							</Button>
 						</Form.Item>
 					)}
@@ -249,7 +249,7 @@ export default class EditableTagGroup extends React.Component<EditableTagGroupPr
 							onClick={this.showInput}
 							style={{ borderStyle: 'dashed' }}
 						>
-							<Icon type="plus" /> Add
+							<Icon type="plus" /> {i18next.t('ADD')}
 						</Tag>
 					)}
 				</div>

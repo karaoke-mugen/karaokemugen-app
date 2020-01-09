@@ -131,8 +131,14 @@ export async function fetchAndUpdateRemoteUser(username: string, password: strin
 		// Update user with new data
 		let avatar_file = null;
 		if (remoteUser.avatar_file !== 'blank.png') {
+			let avatarPath = '';
+			try {
+				avatarPath = await fetchRemoteAvatar(username.split('@')[1], remoteUser.avatar_file);
+			} catch(err) {
+				throw err;
+			}
 			avatar_file = {
-				path: await fetchRemoteAvatar(username.split('@')[1], remoteUser.avatar_file)
+				path: avatarPath
 			};
 		}
 		// Checking if user has already been fetched during this session or not
@@ -226,10 +232,9 @@ async function editRemoteUser(user: User) {
 	const remoteToken = getRemoteToken(user.login);
 	const [login, instance] = user.login.split('@');
 	const form = new formData();
-	const conf = getConfig();
 
 	// Create the form data sent as payload to edit remote user
-	if (user.avatar_file !== 'blank.png') form.append('avatarfile', createReadStream(resolve(getState().appPath, conf.System.Path.Avatars, user.avatar_file)), user.avatar_file);
+	if (user.avatar_file !== 'blank.png') form.append('avatarfile', createReadStream(resolve(resolvedPathAvatars(), user.avatar_file)), user.avatar_file);
 	form.append('nickname', user.nickname);
 	if (user.bio) form.append('bio', user.bio);
 	if (user.email) form.append('email', user.email);
@@ -265,6 +270,7 @@ export async function editUser(username: string, user: User, avatar: Express.Mul
 		if (!user.bio) user.bio = null;
 		if (!user.url) user.url = null;
 		if (!user.email) user.email = null;
+		if (!user.nickname) user.nickname = currentUser.nickname;
 		if (!user.series_lang_mode) user.series_lang_mode = -1;
 		if (user.series_lang_mode < -1 || user.series_lang_mode > 4) throw 'Invalid series_lang_mode';
 		if (user.main_series_lang && !hasLang('2B', user.main_series_lang)) throw `main_series_lang is not a valid ISO639-2B code (received ${user.main_series_lang})`;
@@ -438,7 +444,8 @@ export async function resetRemotePassword(user: string) {
 	try {
 		await got.post(`https://${instance}/api/users/${username}/resetpassword`);
 	} catch (err) {
-		logger.error(`[RemoteUser] Could not trigger reset password for ${user} : ${err}`);
+
+		logger.error(`[RemoteUser] Could not trigger reset password for ${user} : ${err.response ? err.response.body : err}`);
 		throw err;
 	}
 }
@@ -502,9 +509,12 @@ export async function getRemoteUser(username: string, token: string): Promise<Us
 }
 
 /** Create ADMIN user only if security code matches */
-export async function createAdminUser(user: User) {
-	if (user.securityCode !== getState().securityCode) throw `Wrong security code`;
-	return await createUser(user, { admin: true });
+export async function createAdminUser(user: User, remote: boolean, requester: User) {
+	if (requester.type === 0 || user.securityCode === getState().securityCode) {
+		return await createUser(user, { createRemote: remote, admin: true });
+	} else {
+		throw 'Wrong security code';
+	}
 }
 
 /** Create new user (either local or online. Defaults to online) */
@@ -608,24 +618,24 @@ async function updateGuestAvatar(user: User) {
 		const tempFile = resolve(await resolvedPathTemp(), bundledAvatarFile);
 		let buffer = readFileSync(bundledAvatarPath);
 		writeFile(tempFile, buffer, null, () => {
-				editUser(user.login, user, {
-					fieldname: null,
-					path: tempFile,
-					originalname: null,
-					encoding: null,
-					mimetype: null,
-					destination: null,
-					filename: null,
-					buffer: null,
-					size: null,
-					location: null
-				} , 'admin', {
-					renameUser: false,
-					editRemote: false
-				}).catch((err) => {
-					logger.error(`[User] Unable to change guest avatar for ${user.login} : ${JSON.stringify(err)}`);
-				});
+			editUser(user.login, user, {
+				fieldname: null,
+				path: tempFile,
+				originalname: null,
+				encoding: null,
+				mimetype: null,
+				destination: null,
+				filename: null,
+				buffer: null,
+				size: null,
+				location: null
+			} , 'admin', {
+				renameUser: false,
+				editRemote: false
+			}).catch((err) => {
+				logger.error(`[User] Unable to change guest avatar for ${user.login} : ${JSON.stringify(err)}`);
 			});
+		});
 
 	}
 }

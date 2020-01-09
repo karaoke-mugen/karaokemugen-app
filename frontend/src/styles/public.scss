@@ -79,10 +79,17 @@
     /* mobile */
     @media (max-width: 1025px) {
 
-        .fullLyrics, .showVideo, .makeFav, .deleteKara, .moreInfo {
+        .fullLyrics, .showVideo, .makeFav, .moreInfo {
             width: 46px;
             height: 46px;
-            font-size: 18px;
+			font-size: 18px;
+		}
+		
+		.addKara, .deleteKara {
+			width: 66px;
+            height: 66px;
+			font-size: 18px;
+			margin: 5px
         }
 
         .deleteCriteria {

@@ -14,6 +14,7 @@ import { PollResults, PollItem } from '../types/poll';
 import { on } from '../lib/utils/pubsub';
 import { State } from '../types/state';
 import i18n from 'i18next';
+import { sayTwitch } from '../utils/twitch';
 const sleep = promisify(setTimeout);
 
 let poll: PollItem[] = [];
@@ -39,6 +40,9 @@ async function displayPoll(winner?: number) {
 			boldWinnerClose = '{\\b0}';
 		}
 		if (isNaN(percentage)) percentage = 0;
+		const percentageStr = percentage !== Math.floor(percentage)
+			? percentage.toFixed(2)
+			: +percentage;
 		// If series is empty, pick singer information instead
 
 		let series = kara.serie;
@@ -48,12 +52,16 @@ async function displayPoll(winner?: number) {
 		let songorder: string = `${kara.songorder}`;
 		if (!kara.songorder || kara.songorder === 0) songorder = '';
 
-		return `${boldWinnerOpen}${kara.index}. ${percentage}% : ${kara.langs[0].name.toUpperCase()} - ${series} - ${kara.songtypes[0].name}${songorder} - ${kara.title}${boldWinnerClose}`;
-	})
+		return `${boldWinnerOpen}${kara.index}. ${percentageStr}% : ${kara.langs[0].name.toUpperCase()} - ${series} - ${kara.songtypes[0].name}${songorder} - ${kara.title}${boldWinnerClose}`;
+	});
 	const voteMessage = winner
 		? i18n.t('VOTE_MESSAGE_SCREEN_WINNER')
 		: i18n.t('VOTE_MESSAGE_SCREEN');
-	message('{\\fscx80}{\\fscy80}{\\b1}'+voteMessage+'{\\b0}\\N{\\fscx70}{\\fscy70}'+votes.join('\\N'), 1000000, 4);
+	try {
+		await message('{\\fscx80}{\\fscy80}{\\b1}'+voteMessage+'{\\b0}\\N{\\fscx70}{\\fscy70}'+votes.join('\\N'), 1000000, 4);
+	} catch(err) {
+		throw err;
+	}
 }
 
 /** Create poll timer so it ends after a time */
@@ -70,7 +78,15 @@ export async function timerPoll() {
 export async function endPoll() {
 	if (poll.length > 0) {
 		const winner = await getPollResults();
-		if (getConfig().Karaoke.StreamerMode.Enabled && getState().status !== 'play') displayPoll(winner.index);
+		const streamConfig = getConfig().Karaoke.StreamerMode;
+		if (streamConfig.Enabled) {
+			if (getState().status !== 'play') displayPoll(winner.index);
+			if (streamConfig.Twitch.Channel) try {
+				sayTwitch(`Poll winner : ${winner.kara} (${winner.votes} votes)`);
+			} catch(err) {
+				//Non fatal
+			}
+		}
 		pollEnding = true;
 		logger.debug(`[Poll] Ending poll with ${JSON.stringify(winner)}`);
 		emitWS('songPollResult', winner);
@@ -112,7 +128,7 @@ export async function addPollVoteIndex(index: number, nickname: string) {
 		await addPollVote(index, {
 			username: nickname,
 			role: 'guest',
-		})
+		});
 		return 'POLL_VOTED';
 	} catch(err) {
 		throw err.code;
@@ -152,6 +168,7 @@ export async function addPollVote(index: number, token: Token) {
 /** Start poll system */
 export async function startPoll() {
 	const conf = getConfig();
+	setState({songPoll: true});
 	if (poll.length > 0) {
 		logger.info('[Poll] Unable to start poll, another one is already in progress');
 		return false;

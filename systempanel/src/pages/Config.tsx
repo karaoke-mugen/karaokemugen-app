@@ -1,16 +1,22 @@
 import axios from 'axios';
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {Input, Layout, Button, Table} from 'antd';
+import {Input, Layout, Button, Table, Switch} from 'antd';
 
 import {loading, infoMessage, errorMessage, warnMessage} from '../actions/navigation';
 import {ReduxMappedProps} from '../react-app-env';
+import i18next from 'i18next';
 
 interface ConfigProps extends ReduxMappedProps {}
 
 interface ConfigState {
 	config: any[],
 	error: string,
+}
+
+interface Record {
+	key: string;
+	value: string;
 }
 
 // Transforms object to dot notation
@@ -43,12 +49,7 @@ class Config extends Component<ConfigProps, ConfigState> {
 	};
 
 	saveSetting(record, value) {
-		if (value === 'true') {
-			value = true;
-		} else if (value === 'false') {
-			value = false;
-		}
-		axios.put('/api/system/config', {
+		axios.put('/api/config', {
 			setting: this.expand(record.key, value)
 		})
 			.then(() => this.settingSaved(record.key, value))
@@ -56,27 +57,46 @@ class Config extends Component<ConfigProps, ConfigState> {
 	}
 
 	settingSaved(key, value) {
-		this.props.infoMessage(`Setting '${key}' saved as '${value}'`);
+		this.props.infoMessage(i18next.t('CONFIG.SETTING_SAVED', {key: key, value:value}));
 		this.refresh();
 	}
 
 	columns = [{
-		title: 'Property',
+		title: i18next.t('CONFIG.PROPERTY'),
 		dataIndex: 'key',
 		key: 'key',
 	}, {
-		title: 'Value',
+		title: i18next.t('CONFIG.VALUE'),
 		dataIndex: 'value',
 		key: 'value',
-		render: (text, record) => (<span>
-			<Input
-				onPressEnter={(e) => {
-					const target = e.target as HTMLInputElement;
-					this.saveSetting(record, target.value)
-				}}
-				defaultValue={record.value}
-			/>
-		</span>)
+		render: (text, record:Record) => 
+			typeof record.value === 'boolean' ? 
+				<Switch onChange={(e) => this.saveSetting(record, e)} defaultChecked={record.value} /> : 
+					(typeof record.value === 'number' ? 
+						<Input type='number'
+							onPressEnter={(e) => {
+								const target = e.target as HTMLInputElement;
+								this.saveSetting(record, target.value)
+							}}
+							defaultValue={record.value}
+						/> :
+						(record.key.includes('System.Binaries') || record.key.includes('System.Path') ? 
+							<Input
+								onPressEnter={(e) => {
+									const target = e.target as HTMLInputElement;
+									this.saveSetting(record, target.value)
+								}}
+								defaultValue={record.value}
+							/> :
+							<Input
+								onPressEnter={(e) => {
+									const target = e.target as HTMLInputElement;
+									this.saveSetting(record, target.value)
+								}}
+								defaultValue={record.value}
+							/>
+						)
+				)
 	}];
 
 	constructor(props) {
@@ -92,9 +112,9 @@ class Config extends Component<ConfigProps, ConfigState> {
 	}
 
 	refresh() {
-		axios.get('/api/system/config')
+		axios.get('/api/config')
 			.then(res => this.setState({config: this.configKeyValue(res.data), error: ''}))
-			.catch(err => this.props.errorMessage('Unable to fetch configuration ' + err));
+			.catch(err => this.props.errorMessage(i18next.t('CONFIG.FETCH_ERROR')+ ' ' + err));
 	}
 
 	configKeyValue = data => {
@@ -103,7 +123,7 @@ class Config extends Component<ConfigProps, ConfigState> {
 
 	configBackup() {
 		this.props.loading(true);
-		axios.post('/api/system/config/backup')
+		axios.post('/api/config/backup')
 			.then(res => {
 				this.props.loading(false);
 				this.props.infoMessage(res.data);
@@ -117,9 +137,11 @@ class Config extends Component<ConfigProps, ConfigState> {
 	render() {
 		return (
 			<Layout.Content style={{ padding: '25px 50px', textAlign: 'center' }}>
-				<Button type='primary' onClick={this.refresh.bind(this)}>Refresh</Button>
-				<Button type='primary' onClick={this.configBackup.bind(this)}>Backup config file</Button>
-				<p>To modify a setting, just edit it and press enter. Not all settings are editable and will return an error if you try anywyay.</p>
+				<Button style={{ margin: '10px'}} type='primary' 
+					onClick={this.refresh.bind(this)}>{i18next.t('REFRESH')}</Button>
+				<Button style={{ margin: '10px'}} type='primary' 
+					onClick={this.configBackup.bind(this)}>{i18next.t('CONFIG.BACKUP_CONFIG_FILE')}</Button>
+				<p>{i18next.t('CONFIG.MESSAGE')}</p>
 				<Table
 					columns={this.columns}
 					dataSource={this.state.config}

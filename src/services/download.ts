@@ -8,7 +8,7 @@ import internet from 'internet-available';
 import logger from '../lib/utils/logger';
 import {asyncMove, resolveFileInDirs, asyncStat, asyncUnlink, asyncReadDir} from '../lib/utils/files';
 import {uuidRegexp, getTagTypeName} from '../lib/utils/constants';
-import {integrateKaraFile, getAllKaras} from './kara';
+import {integrateKaraFile, getAllKaras, getKaras} from './kara';
 import {integrateSeriesFile} from './series';
 import { compareKarasChecksum } from '../dao/database';
 import { vacuum } from '../lib/dao/database';
@@ -64,7 +64,7 @@ function initQueue(drainEvent = true) {
 	q.on('task_finish', () => {
 		if (q.length > 0) logger.info(`[Download] ${q.length - 1} items left in queue`);
 		taskCounter++;
-		if (taskCounter >= 5) {
+		if (taskCounter >= 100) {
 			logger.debug('[Download] Triggering database refresh');
 			compareKarasChecksum(true);
 			refreshAll();
@@ -150,7 +150,7 @@ async function processDownload(download: KaraDownload) {
 				filename: tempLyrics,
 				url: download.urls.lyrics.remote,
 				id: download.name
-			})
+			});
 		};
 		list.push({
 			filename: tempKara,
@@ -238,7 +238,7 @@ async function processDownload(download: KaraDownload) {
 			try {
 				await integrateKaraFile(bundle.kara);
 				logger.info(`[Download] Song "${download.name}" added to database`);
-				await setDownloadStatus(download.uuid, 'DL_DONE')
+				await setDownloadStatus(download.uuid, 'DL_DONE');
 			} catch(err) {
 				logger.error(`[Download] Song "${download.name}" not properly added to database`);
 				throw err;
@@ -259,17 +259,17 @@ async function downloadFiles(download: KaraDownload, list: DownloadItem[]) {
 	return new Promise((resolve, reject) => {
 		downloader.download(list)
 			.then(fileErrors => {
-			if (fileErrors.length > 0) {
-				setDownloadStatus(download.uuid, 'DL_FAILED')
-					.then(() => {
-						reject(`Error downloading file : ${fileErrors.toString()}`);
-					}).catch(err => {
-						reject(`Error downloading file : ${fileErrors.toString()} - setting failed status failed too! (${err})`);
-					});
-			} else {
-				resolve();
-			}
-		});
+				if (fileErrors.length > 0) {
+					setDownloadStatus(download.uuid, 'DL_FAILED')
+						.then(() => {
+							reject(`Error downloading file : ${fileErrors.toString()}`);
+						}).catch(err => {
+							reject(`Error downloading file : ${fileErrors.toString()} - setting failed status failed too! (${err})`);
+						});
+				} else {
+					resolve();
+				}
+			});
 	});
 }
 
@@ -290,7 +290,7 @@ export async function addDownloads(repo: string, downloads: KaraDownloadRequest[
 		if (currentDls.find(cdl => dl.name === cdl.name &&
 			(cdl.status === 'DL_RUNNING' ||
 			cdl.status === 'DL_PLANNED')
-			)
+		)
 		) return false;
 		return true;
 	});
@@ -300,13 +300,13 @@ export async function addDownloads(repo: string, downloads: KaraDownloadRequest[
 			return {
 				remote: `https://${repo}/downloads/series/${s}`,
 				local: s
-			}
+			};
 		});
 		const tagfiles = dl.tagfiles.map(t => {
 			return {
 				remote: `https://${repo}/downloads/tags/${t}`,
 				local: t
-			}
+			};
 		});
 		return {
 			uuid: uuidV4(),
@@ -332,13 +332,8 @@ export async function addDownloads(repo: string, downloads: KaraDownloadRequest[
 		};
 	});
 	await insertDownloads(dls);
-	try {
-		await internet();
-		dls.forEach(dl => q.push(dl));
-		return `${dls.length} download(s) queued`;
-	} catch(err) {
-		return `${dls.length} Download(s) queued but no internet connection available`;
-	}
+	dls.forEach(dl => q.push(dl));
+	return `${dls.length} download(s) queued`;
 }
 
 export async function getDownloads() {
@@ -400,16 +395,28 @@ export async function emptyDownloadBLC() {
 	return await truncateDownloadBLC();
 }
 
-export async function getRemoteKaras(repo: string, params: KaraParams): Promise<KaraList> {
-	const URLParams = [];
-	if (params.filter) URLParams.push(['filter', params.filter])
-	if (params.size) URLParams.push(['size', params.size + ''])
-	if (params.from) URLParams.push(['from', params.from + ''])
-	params.q
-		? URLParams.push(['q', params.q])
-		: URLParams.push(['q', '']);
-	const queryParams = new URLSearchParams(URLParams);
-	const res = await got(`https://${repo}/api/karas/search?${queryParams.toString()}`);
+export async function getRemoteKaras(repo: string, params: KaraParams, compare?: 'missing' | 'updated' | null): Promise<KaraList> {
+	//First get all karas we currently own
+	let localKIDs = {};
+	if (compare === 'missing' || compare === 'updated') {
+		const karas = await getKaras({
+			filter: params.filter,
+			token: {username: 'admin', role: 'admin'},
+			mode: params.q ? 'search' : null,
+			modeValue: params.q
+		});
+		karas.content.forEach(k => localKIDs[k.kid] = k.modified_at);
+	}
+	const res = await got.post(`https://${repo}/api/karas/search`, {
+		json: {
+			filter: params.filter,
+			size: params.size,
+			from: params.from,
+			q: params.q || '',
+			localKaras: compare ? localKIDs : null,
+			compare: compare
+		}
+	});
 	return JSON.parse(res.body);
 }
 
@@ -449,15 +456,15 @@ async function waitForUpdateQueueToFinish() {
 	return new Promise((resolve, reject) => {
 		// We'll redefine the drain event of the queue to resolve once the queue is drained.
 		q.on('drain', () => {
-			compareKarasChecksum()
+			compareKarasChecksum();
 			refreshAll()
-			.then(() => {
-				vacuum();
-				resolve();
-			}).catch(err => {
-				logger.error(`[Download] Error while draining queue : ${err}`);
-				reject();
-			});
+				.then(() => {
+					vacuum();
+					resolve();
+				}).catch(err => {
+					logger.error(`[Download] Error while draining queue : ${err}`);
+					reject();
+				});
 		});
 	});
 }
@@ -469,7 +476,7 @@ async function getKaraInventory(repo: string) {
 	return {
 		local,
 		remote
-	}
+	};
 }
 
 export async function downloadAllKaras(repo: string, local?: KaraList, remote?: KaraList): Promise<number> {
@@ -510,7 +517,7 @@ export async function downloadAllKaras(repo: string, local?: KaraList, remote?: 
 			seriefiles: k.seriefiles,
 			tagfiles: k.tagfiles,
 			name: k.karafile.replace('.kara.json','')
-		}
+		};
 	});
 	logger.info(`[Update] Adding ${karasToAdd.length} new songs.`);
 	if (initialKarasToAddCount !== karasToAdd.length) logger.info(`[Update] ${initialKarasToAddCount - karasToAdd.length} songs have been blacklisted`);
@@ -542,7 +549,7 @@ function filterTagID(k: DBKara, value: string, type: number, tags: Tag[]): boole
 		return k[typeName].every((e: Tag) => !e.tid.includes(tag.tid));
 	} else {
 		// Tag isn't found in database, weird but could happen for some obscure reasons. We'll return true.
-		logger.warn(`[Update] Tag ${value} not found in database when trying to blacklist songs to download, will ignore it.`)
+		logger.warn(`[Update] Tag ${value} not found in database when trying to blacklist songs to download, will ignore it.`);
 		return true;
 	}
 }
@@ -586,6 +593,7 @@ export async function cleanAllKaras(repo: string, local?: KaraList, remote?: Kar
 }
 
 export async function updateAllKaras(repo: string, local?: KaraList, remote?: KaraList): Promise<number> {
+	logger.info('[Update] Starting update process...');
 	if (!local || !remote) {
 		const karas = await getKaraInventory(repo);
 		local = karas.local;
@@ -593,7 +601,8 @@ export async function updateAllKaras(repo: string, local?: KaraList, remote?: Ka
 	}
 	const karasToUpdate = local.content.filter(k => {
 		const rk = remote.content.find(rk => rk.kid === k.kid);
-		if (rk && rk.modified_at > k.modified_at) return true;
+		// When grabbed from the remote API we get a string, while the local API returns a date object. So, well... sorrymasen.
+		if (rk && rk.modified_at as unknown > k.modified_at.toISOString()) return true;
 	}).map(k => k.kid);
 	const downloads = remote.content.filter(k => karasToUpdate.includes(k.kid)).map(k => {
 		return {
@@ -604,7 +613,7 @@ export async function updateAllKaras(repo: string, local?: KaraList, remote?: Ka
 			seriefiles: k.seriefiles,
 			tagfiles: k.tagfiles,
 			name: k.karafile.replace('.kara.json','')
-		}
+		};
 	});
 	logger.info(`[Update] Updating ${karasToUpdate.length} songs`);
 	if (karasToUpdate.length > 0) await addDownloads(repo, downloads);
@@ -712,7 +721,7 @@ function downloadMedias(files: File[], mediasPath: string, repo: string): Promis
 			.then((fileErrors) => {
 				fileErrors.length > 0
 					? reject(`Error downloading these medias : ${fileErrors.toString()}`)
-					: resolve()
+					: resolve();
 			});
 	});
 }

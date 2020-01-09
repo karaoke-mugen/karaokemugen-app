@@ -1,7 +1,8 @@
 import {db} from '../lib/dao/database';
 import {pg as yesql} from 'yesql';
 import { User } from '../lib/types/user';
-import { DBUser, DBGuest, RemoteToken } from '../types/database/user';
+import { DBGuest, RemoteToken } from '../types/database/user';
+import { DBUser } from '../lib/types/database/user';
 const sql = require('./sql/user');
 
 export async function getUser(username: string): Promise<DBUser> {
@@ -120,7 +121,7 @@ export async function updateUserPassword(username: string, password: string) {
 export function getRemoteToken(username: string): RemoteToken {
 	const index = findRemoteToken(username);
 	if (index > -1) return remoteTokens[index];
-	return null;
+	return undefined;
 }
 
 function findRemoteToken(username: string): number {

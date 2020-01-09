@@ -1,4 +1,5 @@
 import { PlayerState } from "./player";
+import { CurrentSong } from "./playlist";
 
 export interface State {
 	currentPlaylistID?: number,
@@ -8,8 +9,10 @@ export interface State {
 	playerNeedsRestart?: boolean,
 	currentRequester?: string,
 	currentlyPlayingKara?: string,
+	currentSong: CurrentSong
 	counterToJingle?: number,
 	introPlayed?: boolean,
+	encorePlayed?: boolean,
 	status?: string,
 	private?: boolean,
 	fullscreen?: boolean,
@@ -48,6 +51,7 @@ export interface State {
 		generateDB?: boolean,
 		reset?: boolean,
 		noBaseCheck?: boolean,
+		noPlayer?: boolean,
 		strict?: boolean,
 		noMedia?: boolean,
 		baseUpdate?: boolean,
@@ -57,7 +61,6 @@ export interface State {
 		validate?: boolean,
 		debug?: boolean,
 		forceAdminPassword?: string,
-		validateV3?: boolean,
 		dumpDB?: boolean,
 		restoreDB?: boolean
 	}

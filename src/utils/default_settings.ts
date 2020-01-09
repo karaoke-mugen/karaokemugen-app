@@ -1,5 +1,4 @@
 
-
 // Karaoke Mugen default configuration file
 
 // this file is overwritten during updates, editing is ill-advised .
@@ -11,34 +10,41 @@ import { bools } from '../lib/utils/constants';
 export const defaults: Config = {
 	App: {
 		FirstRun: true,
-		JwtSecret: 'Change me'
+		JwtSecret: 'Change me',
+		QuickStart: false
 	},
 	Database: {
 		'sql-file': true,
 		defaultEnv: 'prod',
 		prod: {
-			driver: 'pg',
-			user: 'karaokemugen_app',
-			password: 'musubi',
-			host: 'localhost',
-			port: 6559,
+			bundledPostgresBinary: true,
 			database: 'karaokemugen_app',
+			driver: 'pg',
+			host: 'localhost',
+			password: 'musubi',
+			port: 6559,
 			schema: 'public',
 			superuser: 'postgres',
 			superuserPassword: null,
-			bundledPostgresBinary: true
+			user: 'karaokemugen_app'
 		}
 	},
 	Online: {
 		Host: 'kara.moe',
+		MediasHost: undefined,
 		Port: undefined,
 		Stats: undefined,
 		URL: true,
 		Users: true,
-		JinglesUpdate: true,
-		IntrosUpdate: true,
-		Updates: true,
-		MediasHost: undefined
+		Updates: {
+			Medias: {
+				Jingles: true,
+				Outros: true,
+				Encores: true,
+				Intros: true
+			},
+			App: true,
+		}
 	},
 	Frontend: {
 		AuthExpireTime: 15,
@@ -55,10 +61,10 @@ export const defaults: Config = {
 	},
 	Gitlab: {
 		Enabled: true,
-		Host: 'lab.shelter.moe',
+		Host: 'https://lab.shelter.moe',
+		ProjectID: 2,
 		// This is a reporter-only access token, nothing of value is here.
 		Token: 'i5WnabG3fvda4oxx-FRb',
-		ProjectID: 2,
 		IssueTemplate: {
 			Suggestion: {
 				Labels: ['à intégrer']
@@ -68,13 +74,6 @@ export const defaults: Config = {
 	Karaoke: {
 		Autoplay: false,
 		ClassicMode: false,
-		StreamerMode: {
-			Enabled: false,
-			PauseDuration: 0,
-			Twitch: {
-				Enabled: false
-			}
-		},
 		JinglesInterval: 20,
 		Private: true,
 		Repeat: false,
@@ -84,8 +83,8 @@ export const defaults: Config = {
 			Nickname: true,
 			ConnectionInfo: {
 				Enabled: true,
-				Message: '',
-				Host: null
+				Host: null,
+				Message: ''
 			}
 		},
 		Poll: {
@@ -100,41 +99,66 @@ export const defaults: Config = {
 			FreeUpVotesRequiredPercent: 33,
 			Songs: 10000,
 			Time: 10000,
-			Type: 0,
+			Type: 0
+		},
+		StreamerMode: {
+			Enabled: false,
+			PauseDuration: 0,
+			Twitch: {
+				Enabled: false
+			}
 		}
 	},
 	Player: {
-		mpvVideoOutput: '',
 		Background: '',
 		FullScreen: false,
 		Monitor: false,
+		mpvVideoOutput: '',
 		NoBar: true,
 		NoHud: true,
 		Screen: 0,
 		StayOnTop: true,
+		VisualizationEffects: false,
 		PIP: {
 			Enabled: true,
 			PositionX: 'Right',
 			PositionY: 'Bottom',
 			Size: 30,
-		},
-		VisualizationEffects: false
+		}
 	},
 	Playlist: {
 		AllowDuplicates: false,
 		AllowDuplicateSeries: true,
 		MaxDejaVuTime: 60,
-		RemovePublicOnPlay: false,
-		IntroVideos: true,
-		IntroVideoFile: null,
+		Medias: {
+			Sponsors: {
+				Enabled: true
+			},
+			Intros: {
+				Enabled: true,
+				File: null,
+				Message: null
+			},
+			Encores: {
+				Enabled: true,
+				File: null,
+				Message: null
+			},
+			Outros: {
+				Enabled: true,
+				File: null,
+				Message: null
+			}
+		},
 		MysterySongs: {
-			Hide: false,
 			AddedSongVisibilityAdmin: true,
 			AddedSongVisibilityPublic: true,
+			Hide: false,
 			Labels: [
 				'???',
 			]
-		}
+		},
+		RemovePublicOnPlay: false
 	},
 	System: {
 		Binaries: {
@@ -149,26 +173,28 @@ export const defaults: Config = {
 				Windows: 'app/bin/ffmpeg.exe'
 			},
 			Postgres: {
-				Windows: 'app/bin/postgres/bin/',
-				OSX: 'app/bin/postgres/bin/',
 				Linux: 'app/bin/postgres/bin/',
+				OSX: 'app/bin/postgres/bin/',
+				Windows: 'app/bin/postgres/bin/'
 			}
 		},
 		Path: {
 			Avatars: 'avatars',
 			Backgrounds: ['backgrounds'],
 			Bin: 'bin',
+			DB: 'db',
+			Encores: ['encores', 'encores/KaraokeMugen'],
 			Import: 'import',
-			Jingles: ['jingles', 'jingles/KaraokeMugen'],
 			Intros: ['intros', 'intros/KaraokeMugen'],
+			Jingles: ['jingles', 'jingles/KaraokeMugen'],
 			Karas: ['data/karaokes'],
 			Lyrics: ['data/lyrics'],
 			Medias: ['data/medias'],
+			Outros: ['outros', 'outros/KaraokeMugen'],
 			Previews: 'previews',
 			Series: ['data/series'],
 			Tags: ['data/tags'],
-			Temp: 'temp',
-			DB: 'db'
+			Temp: 'temp'
 		}
 	}
 };
@@ -183,10 +209,11 @@ export const configConstraints = {
 	'Online.Host': {presence: true},
 	'Online.URL': {inclusion : bools},
 	'Online.Users': {inclusion : bools},
-	'Online.Updates': {inclusion : bools},
-	'Online.JinglesUpdate': {inclusion : bools},
-	'Online.IntrosUpdate': {inclusion : bools},
-	'Online.LatestURL': {type: 'string'},
+	'Online.Updates.Medias.Jingles': {inclusion : bools},
+	'Online.Updates.Medias.Outros': {inclusion : bools},
+	'Online.Updates.Medias.Encores': {inclusion : bools},
+	'Online.Updates.Medias.Intros': {inclusion : bools},
+	'Online.Updates.App': {inclusion : bools},
 	'Frontend.Permissions.AllowNicknameChange': {inclusion : bools},
 	'Frontend.Permissions.AllowViewBlacklist': {inclusion : bools},
 	'Frontend.Permissions.AllowViewBlacklistCriterias': {inclusion : bools},
@@ -216,7 +243,6 @@ export const configConstraints = {
 	'Karaoke.Display.Avatar': {inclusion : bools},
 	'Karaoke.Display.Nickname': {inclusion : bools},
 	'Karaoke.Display.ConnectionInfo.Enabled': {inclusion : bools},
-	'Karaoke.Display.ConnectionInfo.QRCode': {inclusion : bools},
 	'Karaoke.Display.ConnectionInfo.Message': {presence: {allowEmpty: true}},
 	'Player.FullScreen': {inclusion : bools},
 	'Player.Monitor': {inclusion : bools},
@@ -233,7 +259,10 @@ export const configConstraints = {
 	'Playlist.AllowDuplicateSeries': {inclusion : bools},
 	'Playlist.RemovePublicOnPlay': {inclusion : bools},
 	'Playlist.MaxDejaVuTime': {numericality: {onlyInteger: true, greaterThanOrEqualTo: 1}},
-	'Playlist.IntroVideos': {inclusion: bools},
+	'Playlist.Medias.Intros.Enabled': {inclusion: bools},
+	'Playlist.Medias.Outros.Enabled': {inclusion: bools},
+	'Playlist.Medias.Encores.Enabled': {inclusion: bools},
+	'Playlist.Medias.Jingles.Enabled': {inclusion: bools},
 	'Playlist.MysterySongs.Hide': {inclusion: bools},
 	'Playlist.MysterySongs.AddedSongVisibilityAdmin': {inclusion: bools},
 	'Playlist.MysterySongs.AddedSongVisibilityPublic': {inclusion: bools},

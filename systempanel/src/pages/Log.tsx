@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import Axios from 'axios';
 import {loading, infoMessage, errorMessage, warnMessage} from '../actions/navigation';
 import {ReduxMappedProps} from '../react-app-env';
+import i18next from 'i18next';
 
 interface LogProps extends ReduxMappedProps {}
 
@@ -23,12 +24,12 @@ class Log extends Component<LogProps, LogState> {
 
 	refresh() {
 		this.props.loading(true);
-		Axios.get('/api/system/log')
+		Axios.get('/api/log')
 			.then(res => {
 				this.props.loading(false);
 				this.parseLogs(res.data);
 			})
-			.catch(err => this.props.errorMessage('Unable to fetch logs ' + err));
+			.catch(err => this.props.errorMessage(i18next.t('CONFIG.LOG_FAILED') + ' ' + err));
 	}
 
 	parseLogs(data: string) {
@@ -63,7 +64,7 @@ class Log extends Component<LogProps, LogState> {
 
 			<Layout.Content style={{ padding: '25px 50px', textAlign: 'left' }}>
 
-			<p><Button type='primary' onClick={this.refresh.bind(this)}>Refresh</Button></p>
+			<p><Button type='primary' onClick={this.refresh.bind(this)}>{i18next.t('REFRESH')}</Button></p>
 			<Timeline>
 				{
 					this.state.log.map((line,i) => {

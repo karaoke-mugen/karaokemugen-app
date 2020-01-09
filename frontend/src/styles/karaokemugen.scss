@@ -313,6 +313,7 @@ button.closeParent.bottom  {
 	background-color: #212831;
 	text-align: center;
 	font-weight: bold;
+	white-space:nowrap;
 }
 
 .contentDivMobileSerie {
@@ -1184,6 +1185,14 @@ input[type="text"]:focus, input[type="password"]:focus {
     background-position: center;
 }
 
+.side2Button {
+	order: -1 !important;
+}
+
+.side1Button {
+	order: 99 !important;
+}
+
 .accountLabel {
 	margin: 10px;
 }
@@ -1264,9 +1273,15 @@ input[type="text"]:focus, input[type="password"]:focus {
 	box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.3);
 }
 
+.modal-input {
+	background-color: white !important;
+}
+
 .karaTitle {
 	display: flex;
 	flex-grow: 1;
+	align-items: baseline;
+	flex-wrap: wrap;
 
 	.karaTitleSerie {
 		font-weight: bold;
@@ -1277,12 +1292,12 @@ input[type="text"]:focus, input[type="password"]:focus {
 	}
 
 	.tagConteneur {
+		margin-left: auto;
 		display: flex;
 		justify-content: flex-end;
 	}
 }
 
-#nav-userlist {
-	max-height: calc(100vh - 200px);
+#nav-userlist,#nav-login,.modal-message {
+	max-height: calc(100vh - 150px);
 }
-  

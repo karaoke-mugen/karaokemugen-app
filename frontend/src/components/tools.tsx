@@ -123,9 +123,10 @@ export function startIntro(scope:string) {
 /**
 * Build kara title for users depending on the data
 * @param {Object} data - data from the kara
+* @param {boolean} onlyText - if only text and no component
 * @return {String} the title
 */
-export function buildKaraTitle(data:DBPLC) {
+export function buildKaraTitle(data:DBPLC, onlyText?:boolean) {
 	var isMulti = data.langs ? data.langs.find(e => e.name.indexOf('mul') > -1) : false;
 	if (data.langs && isMulti) {
 		data.langs = [isMulti];
@@ -134,21 +135,27 @@ export function buildKaraTitle(data:DBPLC) {
 	var langsText = data.langs.map(e => e.name).join(', ').toUpperCase();
 	var songtypeText = data.songtypes[0].short ? + data.songtypes[0].short : data.songtypes[0].name;
 	var songorderText = data.songorder > 0 ? ' ' + data.songorder : '';
-
-	return (<div className='karaTitle'>
-		<div>{langsText}</div>
-		<div>&nbsp;-&nbsp;</div>
-		<div className="karaTitleSerie">{serieText}</div>
-		<div>&nbsp;-&nbsp;</div>
-		<div>{`${songtypeText} ${songorderText}`}</div>
-		<div>&nbsp;-&nbsp;</div>
-		<div className="karaTitleTitle">{data.title}</div>
-		</div>)
+	
+	if (onlyText) {
+		return `${langsText} - ${serieText} - ${songtypeText} ${songorderText} - ${data.title}`
+	} else {
+		return (<React.Fragment>
+			<div>{langsText}</div>
+			<div>&nbsp;-&nbsp;</div>
+			<div className="karaTitleSerie">{serieText}</div>
+			<div>&nbsp;-&nbsp;</div>
+			<div>{`${songtypeText} ${songorderText}`}</div>
+			<div>&nbsp;-&nbsp;</div>
+			<div className="karaTitleTitle">{data.title}</div>
+			</React.Fragment>)
+	}
 };
 
 export function displayMessage (type:TypeOptions, message:any, time?:number) {
-	if (!time) time = 3500;
-	toast(message, {type: type, autoClose: time, position: 'top-center'});
+	if (!document.hidden) {
+		if (!time) time = 3500;
+		toast(message, {type: type, autoClose: time, position: 'top-center', pauseOnFocusLoss: false});
+	}
 }
 
 export function callModal(type:string, title:any, message:any, callback?:any, placeholder?:string) {

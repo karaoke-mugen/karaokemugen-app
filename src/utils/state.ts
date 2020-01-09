@@ -9,7 +9,8 @@ let state: State = {
 	playerNeedsRestart: false,
 	currentRequester: null,
 	currentlyPlayingKara: null,
-	counterToJingle: 1,
+	currentSong: null,
+	counterToJingle: 0,
 	introPlayed: false,
 	status: 'stop', // [stop,play,pause] // general engine status
 	private: true, // Karaoke Mode
@@ -34,7 +35,7 @@ let state: State = {
 let previousState = {...state};
 
 /** Get public state (to send to webapp users) */
-export function getPublicState(): PublicState {
+export function getPlayerState(): PublicState {
 	return {
 		currentlyPlaying: state.currentlyPlayingKara,
 		currentSessionID: state.currentSessionID,
@@ -55,8 +56,8 @@ export function getPublicState(): PublicState {
 }
 
 /** Emit via websockets the public state */
-export function emitState() {
-	if (state.player.ready) emitWS('playerStatus', getPublicState());
+function emitPlayerState() {
+	if (state.player.ready) emitWS('playerStatus', getPlayerState());
 };
 
 /** Get current app state object */
@@ -64,12 +65,19 @@ export function getState() {
 	return {...state};
 }
 
+/** Get public state */
+export function getPublicState() {
+	return {
+		modePlaylistID: state.modePlaylistID
+	};
+}
+
 /** Set one or more settings in app state */
 export function setState(part: object) {
 	state = merge(state, part);
 	manageMode();
 	emit('stateUpdated', state);
-	emitState();
+	emitPlayerState();
 	previousState = {...state};
 	return getState();
 }
@@ -81,7 +89,7 @@ function manageMode() {
 		: state.modePlaylistID = state.publicPlaylistID;
 	if (state.private !== previousState.private) {
 		state.private
-			? logger.info('[Engine] Karaoke mode switching to private')
-			: logger.info('[Engine] Karaoke mode switching to public');
+			? logger.info('[State] Karaoke mode switching to private')
+			: logger.info('[State] Karaoke mode switching to public');
 	}
 }

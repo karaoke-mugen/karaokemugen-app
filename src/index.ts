@@ -16,6 +16,7 @@ import { setState, getState } from './utils/state';
 import { version } from './version';
 import { getPortPromise } from 'portfinder';
 import { app, BrowserWindow, Menu, MenuItem } from 'electron';
+import cloneDeep from 'lodash.clonedeep';
 
 process.on('uncaughtException', exception => {
 	console.log('Uncaught exception:', exception);
@@ -52,7 +53,7 @@ const appPath = process.versions.electron
 	? join(__dirname, '../../../')
 	: join(__dirname, '../');
 
-let dataPath = resolve(appPath, 'app');
+let dataPath = resolve(appPath, 'app/');
 
 // Testing if we're in portable mode or not
 if (!existsSync(resolve(appPath, 'portable'))) {
@@ -87,7 +88,7 @@ if(app) {
 				logger.error(`[Launcher] Error during launch : ${err}`);
 				console.log(err);
 				exit(1);
-		});
+			});
 	});
 
 	// Quitte l'application quand toutes les fenêtres sont fermées.
@@ -95,45 +96,49 @@ if(app) {
 		// Sur macOS, il est commun pour une application et leur barre de menu
 		// de rester active tant que l'utilisateur ne quitte pas explicitement avec Cmd + Q
 		if (process.platform !== 'darwin') {
-		app.quit();
+			app.quit();
 		}
-	})
+	});
 
 	app.on('activate', () => {
 		// Sur macOS, il est commun de re-créer une fenêtre de l'application quand
 		// l'icône du dock est cliquée et qu'il n'y a pas d'autres fenêtres d'ouvertes.
 		if (win === null) {
-		createWindow();
+			createWindow();
 		}
 	});
-		
+
 	const menu = new Menu();
-	menu.append(new MenuItem({ label: "Update", click() {updateKM(); }}));
-	menu.append(new MenuItem({ type: "separator" }));
-	menu.append(new MenuItem({ label: "Launch MPV", click() { relaunchMPV(); } }));
+	menu.append(new MenuItem({ label: 'Update', click() {
+		updateKM();
+	}}));
+	menu.append(new MenuItem({ type: 'separator' }));
+	menu.append(new MenuItem({ label: 'Launch MPV', click() {
+		relaunchMPV();
+	} }));
 	Menu.setApplicationMenu(menu);
 } else {
 	main()
-	.catch(err => {
-		logger.error(`[Launcher] Error during launch : ${err}`);
-		console.log(err);
-		exit(1);
-	})
+		.catch(err => {
+			logger.error(`[Launcher] Error during launch : ${err}`);
+			console.log(err);
+			exit(1);
+		});
 }
 
 function updateKM() {
-    console.log("item 1 clicked");
+	console.log('item 1 clicked');
 }
 
 function relaunchMPV() {
-    console.log("item 2 clicked");
+	console.log('item 2 clicked');
 }
 
 
 function createWindow () {
 	// Cree la fenetre du navigateur.
 	win = new BrowserWindow({
-		backgroundColor: "#36393f",
+		backgroundColor: '#36393f',
 		icon: join(__dirname, '../assets/icon.png'),
 		webPreferences: {
 			nodeIntegration: true
@@ -144,16 +149,16 @@ function createWindow () {
 	win.loadFile(__dirname + 'index.html');
 
 	// Ouvre les DevTools.
-	win.webContents.openDevTools()
+	win.webContents.openDevTools();
 
 	// Émit lorsque la fenêtre est fermée.
 	win.on('closed', () => {
 	  // Dé-référence l'objet window , normalement, vous stockeriez les fenêtres
 	  // dans un tableau si votre application supporte le multi-fenêtre. C'est le moment
 	  // où vous devez supprimer l'élément correspondant.
-	  win = null
+	  win = null;
 	  exit(0);
-	})
+	});
 }
 
 
@@ -164,16 +169,20 @@ async function main() {
 	console.log(chalk.blue(logo));
 	console.log('Karaoke Player & Manager - http://karaokes.moe');
 	console.log(`Version ${chalk.bold.green(state.version.number)} (${chalk.bold.green(state.version.name)})`);
-	console.log('================================================================');
+	console.log('================================================================================');
 	await configureLogger(dataPath, !!argv.debug, true);
 	await initConfig(argv);
 	let config = getConfig();
+	const publicConfig = cloneDeep(getConfig());
+	publicConfig.Karaoke.StreamerMode.Twitch.OAuth = 'xxxxx';
+	publicConfig.App.JwtSecret = 'xxxxx';
+	publicConfig.App.InstanceID = 'xxxxx';
 	await parseCommandLineArgs(argv);
 	logger.debug(`[Launcher] AppPath : ${appPath}`);
 	logger.debug(`[Launcher] DataPath : ${dataPath}`);
 	logger.debug(`[Launcher] Locale : ${state.EngineDefaultLocale}`);
 	logger.debug(`[Launcher] OS : ${state.os}`);
-	logger.debug(`[Launcher] Loaded configuration : ${JSON.stringify(config, null, 2)}`);
+	logger.debug(`[Launcher] Loaded configuration : ${JSON.stringify(publicConfig, null, 2)}`);
 	logger.debug(`[Launcher] Initial state : ${JSON.stringify(state, null, 2)}`);
 
 	// Checking paths, create them if needed.
@@ -188,7 +197,7 @@ async function main() {
 	// Copy the input.conf file to modify mpv's default behaviour, namely with mouse scroll wheel
 	const tempInput = resolve(resolvedPathTemp(), 'input.conf');
 	logger.debug(`[Launcher] Copying input.conf to ${tempInput}`);
-	await asyncCopyAlt(join(__dirname, '../assets/input.conf'), tempInput)
+	await asyncCopyAlt(join(__dirname, '../assets/input.conf'), tempInput);
 
 	const tempBackground = resolve(resolvedPathTemp(), 'default.jpg');
 	logger.debug(`[Launcher] Copying default background to ${tempBackground}`);

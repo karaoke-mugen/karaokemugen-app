@@ -32,12 +32,12 @@ class Options extends Component<IProps, IState> {
 			value = false;
 		}
 		var data = expand(e.target.id, value);
-		axios.put('/api/admin/settings', {setting: JSON.stringify(data)});
+		axios.put('/api/settings', {setting: JSON.stringify(data)});
 	}
 
 	render() {
 		return (
-			<>
+			<React.Fragment>
 				<div className="col-lg-2 col-xs-0" />
 				<div
 					className="panel col-lg-8 col-xs-12 modalPage"
@@ -70,7 +70,7 @@ class Options extends Component<IProps, IState> {
 						</div>
 					</form>
 				</div>
-			</>
+			</React.Fragment>
 		);
 	};
 }

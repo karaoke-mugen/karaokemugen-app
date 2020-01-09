@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import {connect} from 'react-redux';
-import {Row, Col, Icon, Layout, Table, Input, Button, Cascader} from 'antd';
+import {Row, Col, Icon, Layout, Table, Input, Button, Cascader, Radio} from 'antd';
 import {loading, errorMessage, warnMessage, infoMessage} from '../../actions/navigation';
 import openSocket from 'socket.io-client';
 import {
@@ -17,6 +17,8 @@ import {
 import {ReduxMappedProps} from '../../react-app-env';
 import {getCriterasByValue} from './_blc_criterias_types';
 import getTags from '../../api/getTags';
+import i18next from 'i18next';
+import { tagTypes } from '../../utils/tagTypes';
 
 var blacklist_cache = {}
 var api_get_local_karas_interval = null;
@@ -36,23 +38,9 @@ interface KaraDownloadState {
 	currentPageSize: number,
 	filter: string,
 	tagFilter: string,
-	tags: any[]
+	tags: any[],
+	compare: string
 }
-
-export const tagTypes = Object.freeze({
-	Singers: 2,
-	Songtypes: 3,
-	Creators: 4,
-	Langs: 5,
-	Authors: 6,
-	Misc: 7,
-	Songwriters: 8,
-	Groups: 9,
-	Families: 10,
-	Origins: 11,
-	Genres: 12,
-	Platforms: 13
-});
 
 class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 
@@ -71,6 +59,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 			filter: localStorage.getItem('karaDownloadFilter') || '',
 			tagFilter: '',
 			tags: [],
+			compare: ''
 		};
 
 	}
@@ -159,7 +148,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 		var psz = this.state.currentPageSize;
 		var pfrom = p*psz;
 
-		axios.get(`/api/system/karas?filter=${this.state.filter}&q=${this.state.tagFilter}&from=${pfrom}&size=${psz}&instance=kara.moe`)
+		axios.get(`/api/karas?filter=${this.state.filter}&q=${this.state.tagFilter}&from=${pfrom}&size=${psz}&instance=kara.moe`)
 			.then(res => {
 				let karas = res.data.content;
 				karas.forEach((kara) => {
@@ -185,7 +174,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 
 	async api_get_blacklist_criterias() {
 		try {
-			const res = await axios.get('/api/system/downloads/blacklist/criterias');
+			const res = await axios.get('/api/downloads/blacklist/criterias');
 			if(res.data.length)
 			{
 				let criterias = res.data.map(function(criteria){
@@ -267,7 +256,8 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 		var psz = this.state.currentPageSize;
 		var pfrom = p*psz;
 
-				axios.get(`/api/system/karas?filter=${this.state.filter}&q=${this.state.tagFilter}&from=${pfrom}&size=${psz}&instance=kara.moe`)
+				axios.get(`/api/karas?filter=${this.state.filter}&q=${this.state.tagFilter}&from=${pfrom}&size=${psz}&instance=kara.moe`
+					+ this.state.compare)
 			.then(res => {
 				let karas = res.data.content;
 				karas = karas.map((kara) => {
@@ -288,7 +278,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 
 	async api_read_kara_queue() {
 		try {
-			const res = await axios.get('/api/system/downloads');
+			const res = await axios.get('/api/downloads');
 			this.setState({karas_queue: res.data});
 		} catch (e) {
 			console.log('Error KaraDownload.js in api_read_kara_queue');
@@ -324,7 +314,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 
 			let option = {
 				value:typeID,
-				label:type,
+				label:i18next.t(`TAG_TYPES.${type}`),
 				children: []
 			}
 			this.state.tags.forEach(tag => {
@@ -351,29 +341,49 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 						<Row type="flex" justify="space-between">
 							<Col span={14}>
 								<Input.Search
-									placeholder='Search filter'
+									placeholder={i18next.t('SEARCH_FILTER')}
 									value={this.state.filter}
 									onChange={event => this.changeFilter(event)}
-									enterButton="Search"
+									enterButton={i18next.t('SEARCH')}
 									onSearch={this.api_get_online_karas.bind(this)}
 								/>
 							</Col>
 							<Col span={5}>
-								<Cascader style={{ width: '90%' }} options={this.FilterTagCascaderOption()} showSearch={{filter:this.FilterTagCascaderFilter,matchInputWidth:false}} onChange={this.handleFilterTagSelection.bind(this)} placeholder="Tag filter" />
+								<Cascader style={{ width: '90%' }} options={this.FilterTagCascaderOption()} 
+									showSearch={{filter:this.FilterTagCascaderFilter,matchInputWidth:false}} 
+									onChange={this.handleFilterTagSelection.bind(this)} placeholder={i18next.t('KARA.TAG_FILTER')} />
 							</Col>
 						</Row>
 						<Row type="flex" justify="space-between">
 							<Col style={{ paddingTop: '20px'}}>
-								<Button type="primary" key="queueDownloadAll" onClick={() => postAllToDownloadQueue()}>Download all</Button>
+								<Button type="primary" key="queueDownloadAll" onClick={() => postAllToDownloadQueue()}>{i18next.t('KARA.DOWNLOAD_ALL')}</Button>
 								&nbsp;
-								<Button type="primary" key="queueUpdateAll" onClick={() => postUpdateToDownloadQueue()}>Update all</Button>
+								<Button type="primary" key="queueUpdateAll" onClick={() => postUpdateToDownloadQueue()}>{i18next.t('KARA.UPDATE_ALL')}</Button>
+							</Col>
+							<Col style={{ paddingTop: '25px'}}>
+								<label>{i18next.t('KARA.FILTER_SONGS')}</label>
+								<Radio checked={this.state.compare === ''} 
+									onChange={async () => {
+										await this.setState({compare: ''});
+										this.api_get_online_karas();
+								}}>{i18next.t('KARA.FILTER_ALL')}</Radio>
+								<Radio checked={this.state.compare === '&compare=missing'} 
+									onChange={async () => {
+										await this.setState({compare: '&compare=missing'});
+										this.api_get_online_karas();
+									}}>{i18next.t('KARA.FILTER_UPDATED')}</Radio>
+								<Radio checked={this.state.compare === '&compare=updated'} 
+									onChange={async () => {
+										await this.setState({compare: '&compare=updated'});
+										this.api_get_online_karas();
+								}}>{i18next.t('KARA.FILTER_NOT_DOWNLOADED')}</Radio>
 							</Col>
 							<Col style={{ paddingTop: '20px'}}>
-								<Button type="primary" key="queueDelete" onClick={deleteDownloadQueue}>Wipe download queue</Button>
+								<Button type="primary" key="queueDelete" onClick={deleteDownloadQueue}>{i18next.t('KARA.WIPE_DOWNLOAD_QUEUE')}</Button>
 								&nbsp;
-								<Button type="primary" key="queueStart" onClick={putToDownloadQueueStart}>Start download queue</Button>
+								<Button type="primary" key="queueStart" onClick={putToDownloadQueueStart}>{i18next.t('KARA.START_DOWNLOAD_QUEUE')}</Button>
 								&nbsp;
-								<Button type="primary" key="queuePause" onClick={putToDownloadQueuePause}>Pause download queue</Button>
+								<Button type="primary" key="queuePause" onClick={putToDownloadQueuePause}>{i18next.t('KARA.PAUSE_DOWNLOAD_QUEUE')}</Button>
 							</Col>
 						</Row>
 					</Layout.Header>
@@ -393,7 +403,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 								showTotal: (total, range) => {
 									const to = range[1];
 									const from = range[0];
-									return `Showing ${from}-${to} of ${total} songs`;
+									return i18next.t('KARA.SHOWING', {from:from,to:to,total:total});
 								},
 								total: this.state.karas_online_count,
 								showSizeChanger: true,
@@ -407,7 +417,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 	}
 
 	is_local_kara(kara) {
-		return this.state.karas_local.find(item => item.kid === kara.kid);
+		return this.state.karas_local && this.state.karas_local.find(item => item.kid === kara.kid);
 	}
 	is_queued_kara(kara) {
 		return this.state.karas_queue.find(item => item.name === kara.name);
@@ -415,7 +425,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 
 	columns = [
 	{
-		title: 'Language(s)',
+		title: i18next.t('KARA.LANGUAGES'),
 		dataIndex: 'langs',
 		key: 'langs',
 		render: langs => {
@@ -425,7 +435,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 			return ret.join(', ').toUpperCase();
 		}
 	}, {
-		title: 'Series/Singer',
+		title: `${i18next.t('KARA.SERIES')} / ${i18next.t('KARA.SINGERS')}`,
 		dataIndex: 'serie',
 		key: 'serie',
 		render: (serie, record) => {
@@ -435,7 +445,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 			return serie || singers.join(', ');
 		}
 	}, {
-		title: 'Type',
+		title: i18next.t('KARA.TYPE'),
 		dataIndex: 'songtypes',
 		key: 'songtypes',
 		render: (songtypes, record) => {
@@ -446,7 +456,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 			return types.join(', ').replace('TYPE_','') + ' ' + songorder || '';
 		}
 	}, {
-		title: 'Title',
+		title: i18next.t('KARA.TITLE'),
 		dataIndex: 'title',
 		key: 'title',
 		render: (title, record) => {
@@ -456,7 +466,9 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 
 		}
 	}, {
-		title: <span><Button title="Download all retrieved karas at once" type="default" onClick={this.downloadAll.bind(this)}><Icon type='download'/></Button> Download</span>,
+		title: <span><Button title={i18next.t('KARA.DOWNLOAD_ALL_TOOLTIP')} type="default" 
+			onClick={this.downloadAll.bind(this)}><Icon type='download'/></Button>{i18next.t('KARA.DOWNLOAD')}
+			</span>,
 		key: 'download',
 		render: (text, record) => {
 			var button = null;
@@ -479,7 +491,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 						button = <Button type="default" onClick={this.downloadKara.bind(this,record)}><Icon type='download'/></Button>;
 				}
 			}
-			return <span>{button} {Math.round(record.mediasize/(1024*1024))}Mb {blacklisted ? <small style={{color:'#f5232e'}}>In Blacklist</small>:null}</span>;
+			return <span>{button} {Math.round(record.mediasize/(1024*1024))}Mb {blacklisted ? <small style={{color:'#f5232e'}}>{i18next.t('KARA.IN_BLACKLIST')}</small>:null}</span>;
 		}
 	}];
 }

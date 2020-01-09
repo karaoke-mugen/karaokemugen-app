@@ -18,11 +18,9 @@ import {initStats} from './stats';
 import {welcomeToYoukousoKaraokeMugen} from './welcome';
 import {initPlaylistSystem, testPlaylists} from './playlist';
 import { generateDatabase } from '../lib/services/generation';
-import {validateV3} from '../lib/dao/karafile';
 import { initTwitch, stopTwitch, getTwitchClient } from '../utils/twitch';
 import { initSession } from './session';
-import { updateJingles, buildJinglesList } from './jingles';
-import { updateIntros, buildIntrosList } from './intros';
+import { updatePlaylistMedias } from './medias';
 
 export async function initEngine() {
 	profile('Init');
@@ -33,15 +31,6 @@ export async function initEngine() {
 		ontop: conf.Player.StayOnTop,
 		private: conf.Karaoke.Private,
 	});
-	if (state.opt.validateV3) try {
-		logger.info('[Engine] V3 Validation in progress...');
-		await validateV3();
-		logger.info('[Engine] V3 Validation OK');
-		await exit(0);
-	} catch(err) {
-		logger.error(`[Engine] V3 Validation error : ${err}`);
-		await exit(1);
-	}
 	if (state.opt.validate) try {
 		await generateDatabase(true, true);
 		await exit(0);
@@ -88,7 +77,7 @@ export async function initEngine() {
 	let inits = [];
 	if (conf.Karaoke.StreamerMode.Twitch.Enabled) initTwitch();
 	inits.push(initPlaylistSystem());
-	if (!state.isDemo && !state.isTest) inits.push(initPlayer());
+	if (!state.isDemo && !state.isTest && !state.opt.noPlayer) inits.push(initPlayer());
 	inits.push(initFrontend());
 	inits.push(initSession());
 	testPlaylists();
@@ -108,26 +97,11 @@ export async function initEngine() {
 		profile('Init');
 	}
 	// This is done later because it's not important.
-	if (conf.Online.IntrosUpdate && !state.isTest && !state.isDemo) try {
-		await updateIntros();
-	} catch(err) {
-		// Non-fatal
-	}
-	buildIntrosList();
-	if (conf.Online.JinglesUpdate && !state.isTest && !state.isDemo) try {
-		await updateJingles();
-	} catch(err) {
-		// Non-fatal
-	}
-	buildJinglesList();
+	if (!state.isTest && !state.isDemo) updatePlaylistMedias();
 }
 
 export async function exit(rc: any) {
 	logger.info('[Engine] Shutdown in progress');
-	//Exiting on Windows will require a keypress from the user to avoid the window immediately closing on an error.
-	//On other systems or if terminal is not a TTY we exit immediately.
-	// non-TTY terminals have no stdin support.
-
 	if (getState().player.ready) {
 		try {
 			await quitmpv();
@@ -140,8 +114,8 @@ export async function exit(rc: any) {
 	if (getTwitchClient()) await stopTwitch();
 
 	await closeDB();
+	if (getTwitchClient() || (getConfig() && getConfig().Karaoke.StreamerMode.Twitch.Enabled)) await stopTwitch();
 	//CheckPG returns if postgresql has been started by Karaoke Mugen or not.
-	if (getConfig() && getConfig().Karaoke.StreamerMode.Twitch.Enabled) await stopTwitch();
 	try {
 		if (await checkPG()) {
 			try {
@@ -163,6 +137,9 @@ export async function exit(rc: any) {
 
 function mataNe(rc: any) {
 	console.log('\nMata ne !\n');
+	//Exiting on Windows will require a keypress from the user to avoid the window immediately closing on an error.
+	//On other systems or if terminal is not a TTY we exit immediately.
+	// non-TTY terminals have no stdin support.
 	if (process.platform !== 'win32' || !process.stdout.isTTY) process.exit(rc);
 	if (rc !== 0) readlineSync.question('Press enter to exit', {hideEchoBack: true});
 	process.exit(rc);

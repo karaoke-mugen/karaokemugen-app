@@ -46,7 +46,7 @@ class KaraokeOptions extends Component<IProps, IState> {
 
   saveMysterySongsLabels = async (labels:Array<string>) => {
   	var data = expand('Playlist.MysterySongs.Labels', labels);
-  	axios.put('/api/admin/settings', { setting: JSON.stringify(data) });
+  	axios.put('/api/settings', { setting: JSON.stringify(data) });
   };
 
   onChange = (e:any) => {
@@ -220,8 +220,44 @@ class KaraokeOptions extends Component<IProps, IState> {
   						<i className="far fa-question-circle"></i>
   					</label>
   					<div className="col-xs-6">
-  						<Switch idInput="Playlist.IntroVideos" handleChange={this.onChange}
-  							isChecked={this.state.config['Playlist.IntroVideos']} />
+  						<Switch idInput="Playlist.Medias.Intros.Enabled" handleChange={this.onChange}
+  							isChecked={this.state.config['Playlist.Medias.Intros.Enabled']} />
+  					</div>
+  				</div>
+
+				<div className="form-group">
+  					<label className="col-xs-4 control-label" title={i18next.t('SETTINGS.KARAOKE.PLAYLIST_OUTRO_VIDEOS_TOOLTIP')}>
+  						{i18next.t('SETTINGS.KARAOKE.PLAYLIST_OUTRO_VIDEOS')}
+              &nbsp;
+  						<i className="far fa-question-circle"></i>
+  					</label>
+  					<div className="col-xs-6">
+  						<Switch idInput="Playlist.Medias.Outros.Enabled" handleChange={this.onChange}
+  							isChecked={this.state.config['Playlist.Medias.Outros.Enabled']} />
+  					</div>
+  				</div>
+
+				<div className="form-group">
+  					<label className="col-xs-4 control-label" title={i18next.t('SETTINGS.KARAOKE.PLAYLIST_ENCORES_VIDEOS_TOOLTIP')}>
+  						{i18next.t('SETTINGS.KARAOKE.PLAYLIST_ENCORES_VIDEOS')}
+              &nbsp;
+  						<i className="far fa-question-circle"></i>
+  					</label>
+  					<div className="col-xs-6">
+  						<Switch idInput="Playlist.Medias.Encores.Enabled" handleChange={this.onChange}
+  							isChecked={this.state.config['Playlist.Medias.Encores.Enabled']} />
+  					</div>
+  				</div>
+
+				<div className="form-group">
+  					<label className="col-xs-4 control-label" title={i18next.t('SETTINGS.KARAOKE.QUICKSTART_TOOLTIP')}>
+  						{i18next.t('SETTINGS.KARAOKE.QUICKSTART')}
+              &nbsp;
+  						<i className="far fa-question-circle"></i>
+  					</label>
+  					<div className="col-xs-6">
+  						<Switch idInput="App.QuickStart" handleChange={this.onChange}
+  							isChecked={this.state.config['App.QuickStart']} />
   					</div>
   				</div>
 
@@ -438,8 +474,8 @@ class KaraokeOptions extends Component<IProps, IState> {
   						{i18next.t('CHECK_APP_UPDATES')}
   					</label>
   					<div className="col-xs-6">
-  						<Switch idInput="Online.Updates" handleChange={this.onChange}
-  							isChecked={this.state.config['Online.Updates']} />
+  						<Switch idInput="Online.Updates.App" handleChange={this.onChange}
+  							isChecked={this.state.config['Online.Updates.App']} />
   					</div>
   				</div>
   				<div className="form-group">
@@ -447,8 +483,8 @@ class KaraokeOptions extends Component<IProps, IState> {
   						{i18next.t('SETTINGS.KARAOKE.AUTO_UPDATE_JINGLES')}
   					</label>
   					<div className="col-xs-6">
-  						<Switch idInput="Online.JinglesUpdate" handleChange={this.onChange}
-  							isChecked={this.state.config['Online.JinglesUpdate']} />
+  						<Switch idInput="Online.Updates.Medias.Jingles" handleChange={this.onChange}
+  							isChecked={this.state.config['Online.Updates.Medias.Jingles']} />
   					</div>
   				</div>
   				<div className="form-group">
@@ -456,8 +492,26 @@ class KaraokeOptions extends Component<IProps, IState> {
   						{i18next.t('SETTINGS.KARAOKE.AUTO_UPDATE_INTROS')}
   					</label>
   					<div className="col-xs-6">
-  						<Switch idInput="Online.IntrosUpdate" handleChange={this.onChange}
-  							isChecked={this.state.config['Online.IntrosUpdate']} />
+  						<Switch idInput="Online.Updates.Medias.Intros" handleChange={this.onChange}
+  							isChecked={this.state.config['Online.Updates.Medias.Intros']} />
+  					</div>
+  				</div>
+				<div className="form-group">
+  					<label className="col-xs-4 control-label">
+  						{i18next.t('SETTINGS.KARAOKE.AUTO_UPDATE_OUTROS')}
+  					</label>
+  					<div className="col-xs-6">
+  						<Switch idInput="Online.Updates.Medias.Outros" handleChange={this.onChange}
+  							isChecked={this.state.config['Online.Updates.Medias.Outros']} />
+  					</div>
+  				</div>
+				<div className="form-group">
+  					<label className="col-xs-4 control-label">
+  						{i18next.t('SETTINGS.KARAOKE.AUTO_UPDATE_ENCORES')}
+  					</label>
+  					<div className="col-xs-6">
+  						<Switch idInput="Online.Updates.Medias.Encores" handleChange={this.onChange}
+  							isChecked={this.state.config['Online.Updates.Medias.Encores']} />
   					</div>
   				</div>
   			</div>

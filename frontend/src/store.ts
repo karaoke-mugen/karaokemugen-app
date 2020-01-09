@@ -13,6 +13,7 @@ let tuto:any;
 let config:Config;
 let logInfos:Token|undefined;
 let version:Version;
+let modePlaylistID:number;
 
 if (!logInfos) {
 	var token = readCookie('mugenToken');
@@ -94,6 +95,14 @@ class Store extends EventEmmiter {
 		version = ver;
 	}
 
+	getModePlaylistID() {
+		return modePlaylistID;
+	}
+
+	setModePlaylistID(modePlaylist:number) {
+		modePlaylistID = modePlaylist;;
+	}
+
 	getLogInfos() {
 		return logInfos;
 	}
@@ -120,7 +129,7 @@ class Store extends EventEmmiter {
 		logInfos = undefined;
 		axios.defaults.headers.common['authorization'] = document.cookie.replace(/(?:(?:^|.*;\s*)mugenToken\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 		axios.defaults.headers.common['onlineAuthorization'] = document.cookie.replace(/(?:(?:^|.*;\s*)mugenTokenOnline\s*\=\s*([^;]*).*$)|^.*$/, '$1');
-		store.emitChange('loginUpdated');
+		store.emitChange('loginOut');
 	}
 }
 const store = new Store();

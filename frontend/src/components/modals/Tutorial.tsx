@@ -75,7 +75,7 @@ class Tutorial extends Component<IProps,IState> {
 				},
 				{ 
 					placement:'auto',
-					target:'.header-group.switchs > .radiobutton-ui:first-child',
+					target:'#KaraokePrivate',
 					content: i18nAsDiv('INTRO_ADMIN_MODE'),
 				},
 				{ 
@@ -102,7 +102,7 @@ class Tutorial extends Component<IProps,IState> {
 				},
 				{ 
 					placement:'auto',
-					target:'.header-group.switchs > .radiobutton-ui:last-child',
+					target:'#optionsButton',
 					content: i18nAsDiv('INTRO_ADMIN_SETTINGS'),
 					hideFooter: true,
 				},
@@ -156,18 +156,21 @@ class Tutorial extends Component<IProps,IState> {
 				},
 				{ 
 					placement: 'auto',
-					target: '#panel1',
-					content: i18nAsDiv('INTRO_PUBLIC_KARA')
+					target: '.plFooter',
+					content: i18nAsDiv('INTRO_PUBLIC_KARA'),
+					disableOverlay: true,
+					label: 'karadetails'
 				},
 				{
-					target: '#panel1',
-					label: 'karadetails',
+					target: '.plFooter',
+					disableOverlay: true,
 					placement: 'auto',
 					content: i18nAsDiv('INTRO_PUBLIC_KARADETAILS')
 				},
 				{ 
 					placement: 'auto',
 					target: '.plFooter',
+					label: "publicFooter",
 					content: i18nAsDiv('INTRO_PUBLIC_FOOTER')
 				},
 				{ 
@@ -176,7 +179,7 @@ class Tutorial extends Component<IProps,IState> {
 					content: i18nAsDiv('INTRO_PUBLIC_FAVORITES')
 				},
 				{
-					target: '#playlist',
+					target: '.side1Button',
 					label: 'change_screen',
 					placement: 'auto',
 					content: i18nAsDiv('INTRO_PUBLIC_CHANGE_SCREEN'),
@@ -207,7 +210,7 @@ class Tutorial extends Component<IProps,IState> {
 					disableOverlay: true,
 				},
 				{
-					target: '#playlist',
+					target: '.side2Button',
 					label: 'change_screen2',
 					placement: 'auto',
 					content: i18nAsDiv('INTRO_PUBLIC_CHANGE_SCREEN2'),
@@ -265,7 +268,7 @@ class Tutorial extends Component<IProps,IState> {
 	handleJoyrideCallback = (data:{ action:string, index:number, status: string, type:string }) => {
     	const { joyride }:any = this.props;
     	const { action, index, status, type } = data;
-    	if(index===3) { 
+    	if(index===3 || this.state.steps[index].label === 'publicFooter') { 
 			// if for some reasons the login modal is still open by now, we have to close it
 			var element = document.getElementById('modal');
     		if(element) ReactDOM.unmountComponentAtNode(element);
@@ -276,7 +279,7 @@ class Tutorial extends Component<IProps,IState> {
     	}
     	if (([STATUS.FINISHED, STATUS.SKIPPED] as Array<string>).includes(status)) {
     		if (this.state.scope  === 'admin') {
-    			axios.put('/api/admin/settings', { 'setting': JSON.stringify({ 'App': { 'FirstRun': false } } )});
+    			axios.put('/api/settings', { 'setting': JSON.stringify({ 'App': { 'FirstRun': false } } )});
     		} else {
     			createCookie('publicTuto', 'true');
     		}
@@ -336,7 +339,6 @@ class Tutorial extends Component<IProps,IState> {
     					backgroundColor: 'hsla(133, 15%, 24%, .97)',
     					overlayColor: 'rgba(0, 0, 0, 0.7)',
     					textColor: '#eee',
-    					width: 650,
     					zIndex: 20000
     				},
     				tooltip : {

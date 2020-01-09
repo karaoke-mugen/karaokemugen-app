@@ -13,6 +13,7 @@ import { Config } from '../../../src/types/config';
 import { Token } from '~../../../src/lib/types/user';
 import { Session } from '../../../src/types/session';
 import { News } from '../types/news';
+import Switch from './generic/Switch';
 require ('../styles/welcome/WelcomePage.scss');
 require('../styles/welcome/updateBanner.scss');
 
@@ -26,8 +27,7 @@ interface IState {
 	open: boolean;
 	news: Array<News>;
 	sessions: Array<Session>;
-	activeSession: string;
-	logInfos?: Token;
+	activeSession?: Session;
 	latestVersion?: string;
 	catchphrase?: string
 }
@@ -37,8 +37,7 @@ class WelcomePage extends Component<IProps, IState> {
 		this.state = {
 			news: [],
 			open: false,
-			sessions: [],
-			activeSession: ''
+			sessions: []
 		};
 		if (!store.getLogInfos() || !(store.getLogInfos() as Token).token) {
 			this.openLoginOrProfileModal();
@@ -52,29 +51,24 @@ class WelcomePage extends Component<IProps, IState> {
 		this.getNewsFeed();
 		this.getSessions();
 		this.checkAppUpdates();
-		this.setLogInfos();
-		store.addChangeListener('loginUpdated', this.setLogInfos);
+		store.addChangeListener('loginOut', this.openLoginOrProfileModal);
 	}
-
-	setLogInfos = () => {
-		this.setState({logInfos: store.getLogInfos()});
-	}
-
+  
 	componentWillUnmount() {
-    	store.removeChangeListener('loginUpdated', this.setLogInfos);
+		store.removeChangeListener('loginOut', this.openLoginOrProfileModal);
 	}
 
 	async checkAppUpdates() {
 		if (store.getLogInfos() && (store.getLogInfos() as Token).role === 'admin') {
-			const res = await axios.get('/api/admin/checkUpdates');
-			if (res.data.data) this.setState({ latestVersion: res.data.data });
+			const res = await axios.get('/api/checkUpdates');
+			if (res.data) this.setState({ latestVersion: res.data });
 		}
 	}
 
   stopAppUpdates = () => {
   	this.closeUpdateBanner();
-  	var data = expand('Online.Updates', false);
-  	axios.put('/api/admin/settings', { setting: JSON.stringify(data) });
+  	var data = expand('Online.Updates.App', false);
+  	axios.put('/api/settings', { setting: JSON.stringify(data) });
   };
 
   closeUpdateBanner = () => {
@@ -83,10 +77,10 @@ class WelcomePage extends Component<IProps, IState> {
 
   getSessions = async () => {
   	if (store.getLogInfos() && (store.getLogInfos() as Token).role === 'admin') {
-		  const res = await axios.get('/api/admin/sessions');
+		  const res = await axios.get('/api/sessions');
   		this.setState({
-  			sessions: res.data.data,
-  			activeSession: res.data.data.filter((valueSession:Session) => valueSession.active)[0].name
+  			sessions: res.data,
+  			activeSession: res.data.filter((valueSession:Session) => valueSession.active)[0]
 		  });
   	}
   };
@@ -97,27 +91,34 @@ class WelcomePage extends Component<IProps, IState> {
   	);
   	var sessionId;
   	if (sessions.length === 0) {
-  		const res = await axios.post('/api/admin/sessions', { name: value });
-  		sessionId = res.data.data;
-  		const sessionsList = await axios.get('/api/admin/sessions');
+  		const res = await axios.post('/api/sessions', { name: value });
+  		sessionId = res.data;
+  		const sessionsList = await axios.get('/api/sessions');
   		this.setState({
-  			sessions: sessionsList.data.data,
-  			activeSession: sessionsList.data.data.filter((valueSession:Session) => valueSession.active)[0].name
+  			sessions: sessionsList.data,
+  			activeSession: sessionsList.data.filter((valueSession:Session) => valueSession.active)[0]
   		});
   	} else {
-  		this.setState({ activeSession: sessions[0].name });
+  		this.setState({ activeSession: sessions[0] });
   		sessionId = sessions[0].seid;
-  		axios.post('/api/admin/sessions/' + sessionId);
+  		axios.post('/api/sessions/' + sessionId);
   	}
   };
 
+	majPrivate = async () => {
+		let session = this.state.activeSession as Session;
+		session.private = !(this.state.activeSession as Session).private;
+		await axios.put(`/api/sessions/${session.seid}`, session);
+		this.getSessions();
+	};
+
   getCatchphrase = async () => {
-  	const res = await axios.get('/api/public/catchphrase');
+  	const res = await axios.get('/api/catchphrase');
   	this.setState({ catchphrase: res.data });
   };
 
   getNewsFeed = async () => {
-  	const res = await axios.get('/api/public/newsfeed');
+  	const res = await axios.get('/api/newsfeed');
   	const data = res.data;
   	var base = data[0];
   	var appli = data[1];
@@ -192,11 +193,7 @@ class WelcomePage extends Component<IProps, IState> {
   openLoginOrProfileModal = () => {
   	if (!store.getLogInfos() || !(store.getLogInfos() as Token).token) {
   		ReactDOM.render(<LoginModal
-  			scope={
-  				this.props.admpwd && this.props.config.App.FirstRun
-  					? 'admin'
-  					: 'public'
-  			}
+  			scope='admin'
   			admpwd={this.props.admpwd}
   		/>, document.getElementById('modal'));
   	} else {
@@ -249,11 +246,13 @@ class WelcomePage extends Component<IProps, IState> {
   					<div className="menu-top-left">
   						<label className="menu-top-sessions-label">{i18next.t('ACTIVE_SESSION')}&nbsp;</label>
   						<Autocomplete
-  							value={this.state.activeSession}
+  							value={this.state.activeSession?.name}
   							options={sessions}
   							onChange={this.setActiveSession}
   							acceptNewValues={true}
   						/>
+						<label className="menu-top-sessions-label">{i18next.t('PRIVATE_SESSION')}&nbsp;</label>
+						<Switch handleChange={this.majPrivate} isChecked={this.state.activeSession?.private} />
   					</div>
   				) : null}
   				<div className="menu-top-right">
@@ -281,7 +280,10 @@ class WelcomePage extends Component<IProps, IState> {
   							href="#"
   							title={i18next.t('LOGOUT')}
   							className="logout"
-  							onClick={store.logOut}
+  							onClick={() => {
+								store.logOut();
+								this.openLoginOrProfileModal();
+							  }}
   						>
   							<i className="fas fa-sign-out-alt" />&nbsp;
   							<span>{i18next.t('LOGOUT')}</span>

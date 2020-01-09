@@ -11,11 +11,13 @@ import { PublicState } from '~../../../src/types/state';
 interface IProps {
 	config: Config;
 	options: boolean;
+	currentSide: number;
 	toggleProfileModal: () => void;
 	powerOff: () => void;
 	adminMessage: () => void;
 	putPlayerCommando: (event: any) => void;
 	setOptionMode: () => void;
+	changeCurrentSide: () => void;
 }
 
 interface IState {
@@ -57,13 +59,13 @@ class AdminHeader extends Component<IProps, IState> {
   saveMode = (mode:boolean) => {
   	var data = expand('Karaoke.Private', mode);
   	this.setState({ privateMode: mode });
-  	axios.put('/api/admin/settings', { setting: JSON.stringify(data) });
+  	axios.put('/api/settings', { setting: JSON.stringify(data) });
   };
 
   saveOperatorAdd = (songVisibility: boolean) => {
   	var data = expand('Playlist.MysterySongs.AddedSongVisibilityAdmin', songVisibility);
   	this.setState({ songVisibilityOperator: songVisibility });
-  	axios.put('/api/admin/settings', { setting: JSON.stringify(data) });
+  	axios.put('/api/settings', { setting: JSON.stringify(data) });
   };
 
   render() {
@@ -71,7 +73,12 @@ class AdminHeader extends Component<IProps, IState> {
 
   	return (
   		<KmAppHeaderDecorator mode="admin">
-			  {is_touch_device() ? null :
+			  {is_touch_device() ? 
+				<button
+					className={`btn btn-dark ${this.props.currentSide === 2 ? 'side2Button' : 'side1Button'}`}
+					type="button" onClick={this.props.changeCurrentSide}>
+						<i className="fas fa-tasks"></i>
+				</button> :
 			  <React.Fragment>
   				<div
   					className="btn btn-default btn-dark"
@@ -92,7 +99,10 @@ class AdminHeader extends Component<IProps, IState> {
   								<i className="fas fa-user"></i>
   							</li>
   							<li
-  								title={i18next.t('LOGOUT')} onClick={store.logOut}
+  								title={i18next.t('LOGOUT')} onClick={() => {
+									store.logOut();
+									this.props.toggleProfileModal();
+								  }}
   								className="btn btn-default btn-dark"
   							>
   								<i className="fas fa-sign-out-alt"></i>
@@ -139,8 +149,9 @@ class AdminHeader extends Component<IProps, IState> {
   				type="button"
   				title={i18next.t('MUTE_UNMUTE')}
   				id="mutestatus"
-  				name="mute"
-  				className="btn btn-dark volumeButton"
+  				data-namecommand={(volume === 0 || (this.state.statusPlayer && this.state.statusPlayer.muteStatus))  ? "unmute" : "mute"}
+				className="btn btn-dark volumeButton"
+				onClick={this.props.putPlayerCommando}
   			>
   				{
   					volume === 0 || this.state.statusPlayer && this.state.statusPlayer.muteStatus 
@@ -165,7 +176,7 @@ class AdminHeader extends Component<IProps, IState> {
   				/>
   			</button>
           
-  			<div className="header-group switchs">
+  			<div className="header-group switchs" id="optionsButton">
   				<RadioButton
   					title={i18next.t('SWITCH_OPTIONS')}
   					orientation="vertical"
@@ -183,7 +194,7 @@ class AdminHeader extends Component<IProps, IState> {
   					]}
   				></RadioButton>
   			</div>
-  			<div className="header-group switchs">
+  			<div className="header-group switchs" id="KaraokePrivate">
   				<RadioButton
   					title={i18next.t('SWITCH_PRIVATE')}
   					orientation="vertical"

@@ -21,6 +21,7 @@ import ReactDOM from 'react-dom';
 import { Config } from '../../../src/types/config';
 import { Tag } from '../types/tag';
 import { Token } from '../../../src/lib/types/user';
+import { DBPLC } from '../../../src/types/database/playlist';
 
 interface IProps {
 	config: Config;
@@ -40,7 +41,10 @@ interface IState {
 	searchMenuOpen: boolean;
 	classicModeModal: boolean;
 	kidPlaying?: string;
+	currentSide: number;
 }
+
+let timer:any;
 
 class PublicPage extends Component<IProps,IState> {
 	constructor(props:IProps) {
@@ -54,11 +58,12 @@ class PublicPage extends Component<IProps,IState> {
 			idsPlaylist: {left: 0, right: 0},
 			dropDownMenu: false,
 			searchMenuOpen: false,
-			classicModeModal: false
+			classicModeModal: false,
+			currentSide: 1
 		};
 		if (!store.getLogInfos() || !(store.getLogInfos() as Token).token) {
 			this.openLoginOrProfileModal();
-		} else if (this.props.config.Frontend.Mode === 1) {
+		} else if (this.props.config.Frontend.Mode === 1 && is_touch_device()) {
 			callModal('confirm', i18next.t('WEBAPPMODE_LIMITED_NAME'),
 				(<React.Fragment>
 					<div className="text">
@@ -97,7 +102,24 @@ class PublicPage extends Component<IProps,IState> {
   	});
   	getSocket().on('adminMessage', (data:any) => displayMessage('info', 
   		<div><label>{i18next.t('CL_INFORMATIVE_MESSAGE')}</label> <br/>{data.message}</div>, data.duration));
+	getSocket().on('nextSong', (data:DBPLC) => {
+		if (data && data.flag_visible) {
+			if (timer) clearTimeout(timer);
+			timer = setTimeout(() => {
+				displayMessage('info', 
+					<div>
+						<label>{i18next.t('NEXT_SONG_MESSAGE')}</label>
+						<br/>
+						{buildKaraTitle(data, true)}
+					</div>)}, 500);
+		}
+	});
+	store.addChangeListener('loginOut', this.openLoginOrProfileModal);
   }
+
+	componentWillUnmount() {
+		store.removeChangeListener('loginOut', this.openLoginOrProfileModal);
+	}
 
   displayClassicModeModal = async (data:any) => {
   	if (data.status === 'stop' && data.playerStatus === 'pause' && data.currentRequester === (store.getLogInfos() as Token).username && !this.state.classicModeModal) {
@@ -111,6 +133,7 @@ class PublicPage extends Component<IProps,IState> {
   };
 
   openLoginOrProfileModal = () => {
+	this.closeMobileMenu();
   	if (store.getLogInfos() && (store.getLogInfos() as Token).token) {
   		ReactDOM.render(<ProfilModal
   			config={this.props.config}
@@ -123,23 +146,25 @@ class PublicPage extends Component<IProps,IState> {
   };
 
   setLyrics = () => {
+	this.closeMobileMenu();
   	this.setState({ lyrics: !this.state.lyrics });
   };
 
   // pick a random kara & add it after (not) asking user's confirmation
   getLucky = async () => {
-  	var response = await axios.get('/api/public/karas?filter=' + store.getFilterValue(1)+'&random=1');
-  	if (response.data.data && response.data.data.content && response.data.data.content[0]) {
-  		var chosenOne = response.data.data.content[0].kid;
-  		var response2 = await axios.get('/api/public/karas/' + chosenOne);
-  		callModal('confirm', i18next.t('CL_CONGRATS'), i18next.t('CL_ABOUT_TO_ADD',{title: buildKaraTitle(response2.data.data)}), () => {
-  			axios.post('/api/public/karas/' + chosenOne, { requestedby: (store.getLogInfos() as Token).username });
+	this.closeMobileMenu();
+  	var response = await axios.get('/api/karas?filter=' + store.getFilterValue(1)+'&random=1');
+  	if (response.data && response.data.content && response.data.content[0]) {
+  		var chosenOne = response.data.content[0].kid;
+  		var response2 = await axios.get('/api/karas/' + chosenOne);
+  		callModal('confirm', i18next.t('CL_CONGRATS'), i18next.t('CL_ABOUT_TO_ADD',{title: buildKaraTitle(response2.data, true)}), () => {
+  			axios.post('/api/karas/' + chosenOne, { requestedby: (store.getLogInfos() as Token).username });
   		}, 'lucky');
   	}
   };
 
   changePseudo = async (e:any) => {
-  	var response = await axios.put('/api/public/myaccount', { nickname : e.target.value });
+  	var response = await axios.put('/api/myaccount', { nickname : e.target.value });
   	this.setState({pseudoValue: response.data.nickname});
   };
 
@@ -150,6 +175,24 @@ class PublicPage extends Component<IProps,IState> {
   updateKidPlaying = (kid:string) => {
   	this.setState({kidPlaying: kid});
   };
+
+	changeCurrentSide = () => {
+		if (this.state.currentSide==1) {
+			this.setState({currentSide:2});
+			if(store.getTuto() && store.getTuto().getStepLabel() === 'change_screen') {
+				store.getTuto().move(1);
+			}
+		} else if (this.state.currentSide==2) {
+			this.setState({currentSide:1});
+			if(store.getTuto() && store.getTuto().getStepLabel() === 'change_screen2') {
+				store.getTuto().move(1);
+			}
+		}
+	};
+
+	closeMobileMenu = () => {
+		this.setState({ mobileMenu: false })
+	}
 
   render() {
   	var logInfos = store.getLogInfos();
@@ -243,7 +286,12 @@ class PublicPage extends Component<IProps,IState> {
 
 							{this.props.config.Frontend.Mode === 2 ? (
 								<React.Fragment>
-									{is_touch_device() ? null : (
+									{is_touch_device() ?
+										<button
+											className={`btn btn-dark ${this.state.currentSide === 2 ? 'side2Button' : 'side1Button'}`}
+											type="button" onClick={this.changeCurrentSide}>
+												<i className="fas fa-tasks"></i>
+										</button> : (
 										<div className="dropdown">
 											<button
 												className="btn btn-dark dropdown-toggle klogo"
@@ -283,7 +331,10 @@ class PublicPage extends Component<IProps,IState> {
 														<a
 															href="#"
 															className="logout"
-															onClick={store.logOut}
+															onClick={() => {
+															store.logOut();
+															this.openLoginOrProfileModal();
+														  }}
 														>
 															<i className="fas fa-sign-out-alt" />&nbsp;
 														{i18next.t('LOGOUT')}
@@ -335,7 +386,7 @@ class PublicPage extends Component<IProps,IState> {
   									: ''
   							}
   						>
-  							<PlaylistMainDecorator>
+  							<PlaylistMainDecorator currentSide={this.state.currentSide}>
   								<Playlist
 									scope="public"
 									side={1}
@@ -374,7 +425,10 @@ class PublicPage extends Component<IProps,IState> {
   									>
   										<a
   											className="btn-floating btn-large waves-effect z-depth-3 showPoll"
-  											onClick={() => ReactDOM.render(<PollModal />, document.getElementById('modal'))}
+  											onClick={() => {
+												this.closeMobileMenu();
+												ReactDOM.render(<PollModal />, document.getElementById('modal'))
+											}}
   										>
   											<i className="fas fa-bar-chart" />
   										</a>
@@ -400,7 +454,10 @@ class PublicPage extends Component<IProps,IState> {
   													<a
   														className="z-depth-3 btn-floating btn-large logout"
   														style={{ backgroundColor: '#111' }}
-  														onClick={store.logOut}
+  														onClick={() => {
+															this.closeMobileMenu();
+															store.logOut();
+														}}
   													>
   														<i className="fas fa-sign-out-alt" />
   													</a>
@@ -423,7 +480,10 @@ class PublicPage extends Component<IProps,IState> {
   											<a
   												className="z-depth-3 btn-floating btn-large"
   												style={{ backgroundColor: '#613114' }}
-  												onClick={() => ReactDOM.render(<HelpModal/>, document.getElementById('modal'))}
+  												onClick={() => {
+													this.closeMobileMenu();
+													ReactDOM.render(<HelpModal/>, document.getElementById('modal'))
+													}}
   											>
   												<i className="fas fa-question-circle" />
   											</a>
