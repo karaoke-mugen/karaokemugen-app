@@ -47,21 +47,7 @@ export function eraseCookie(name:string) {
 };
 
 export function is_touch_device() {
-	if (!navigator.userAgent.toLowerCase().includes('mobi')) return false;
-
-	var prefixes = ' -webkit- -moz- -o- -ms- '.split(' ');
-	var mq = function (query:string) {
-		return window.matchMedia(query).matches;
-	};
-
-	if ('ontouchstart' in window) {
-		return true;
-	}
-
-	// include the 'heartz' as a way to have a non matching MQ to help terminate the join
-	// https://git.io/vznFH
-	var query = ['(', prefixes.join('touch-enabled),('), 'heartz', ')'].join('');
-	return mq(query);
+	return window.outerWidth < 1025;
 };
 
 
@@ -74,7 +60,7 @@ export function expand(str:string, val:any) {
 export function dotify(obj:any) {
 	//Code from the package node-dotify
 	let res:any = {};
-	function recurse(obj:any, current:any) {
+	function recurse(obj:any, current?:any) {
 		for (var key in obj) {
 			let value = obj[key];
 			let newKey = (current ? current + '.' + key : key);  // joined key with dot
@@ -85,7 +71,7 @@ export function dotify(obj:any) {
 			}
 		}
 	}
-	recurse(obj, undefined);
+	recurse(obj);
 	return res;
 };
 

@@ -27,21 +27,20 @@ class KaraokeOptions extends Component<IProps, IState> {
   	var mysterySongsLabels = this.state.config['Playlist.MysterySongs.Labels'];
   	mysterySongsLabels.push(this.state.mysterySongLabel);
   	var config = this.state.config;
-  	this.state.config['Playlist.MysterySongs.Labels'] = mysterySongsLabels;
+  	config['Playlist.MysterySongs.Labels'] = mysterySongsLabels;
   	this.setState({ config: config });
   	this.saveMysterySongsLabels(mysterySongsLabels);
   	this.setState({ mysterySongLabel: '' });
   };
 
   deleteMysterySongLabel = (value:string) => {
-  	var config = this.state.config;
-  	this.state.config['Playlist.MysterySongs.Labels'] = this.state.config['Playlist.MysterySongs.Labels'].filter((ele:string) => {
-  		return ele != value; 
-  	});
+	  var config = this.state.config;
+  	config['Playlist.MysterySongs.Labels'].splice(
+		config['Playlist.MysterySongs.Labels'].indexOf(value), 1, null);	
+	this.saveMysterySongsLabels(config['Playlist.MysterySongs.Labels']);
+	config['Playlist.MysterySongs.Labels'].splice(
+		config['Playlist.MysterySongs.Labels'].indexOf(null), 1);
   	this.setState({ config: config });
-  	this.saveMysterySongsLabels(this.state.config['Playlist.MysterySongs.Labels'].filter((ele:string) => {
-  		return ele != value; 
-  	}));
   };
 
   saveMysterySongsLabels = async (labels:Array<string>) => {
@@ -284,7 +283,7 @@ class KaraokeOptions extends Component<IProps, IState> {
   				{this.state.config['Karaoke.StreamerMode.Enabled'] ?
   					<div
   						id="streamSettings"
-  						className="well well-sm settingsGroupPanel"
+  						className="settingsGroupPanel"
   					>
   						<div className="form-group">
   							<label className="col-xs-4 control-label">
@@ -313,7 +312,7 @@ class KaraokeOptions extends Component<IProps, IState> {
   						{this.state.config['Karaoke.StreamerMode.Twitch.Enabled'] ?
   							<div
   								id="twitchSettings"
-  								className="well well-sm settingsGroupPanel"
+  								className="settingsGroupPanel"
   							>
   								<div className="form-group">
   									<a className="col-xs-4 control-label" href="https://twitchapps.com/tmi/" target='_blank'>{i18next.t('STREAM_TWITCH_OAUTH_TOKEN_GET')}</a>
@@ -350,7 +349,7 @@ class KaraokeOptions extends Component<IProps, IState> {
   					</div> : null
   				}
 
-  				<div className="form-group settingsGroupPanel subCategoryGroupPanel">
+  				<div className="form-group subCategoryGroupPanel">
   					<div className="col-xs-12" style={{ textAlign: 'center' }}>
   						{i18next.t('MYSTERY_SONG_SETTINGS')}
   					</div>
@@ -425,15 +424,17 @@ class KaraokeOptions extends Component<IProps, IState> {
   							return (
   								<div key={value}>
   									<label style={{ margin: '10px' }}>{value}</label>
-  									<button type="button" className="btn btn-default"
-  										onClick={() => this.deleteMysterySongLabel(value)}>{i18next.t('ENGINE_LABELS_MYSTERY_SONGS_DELETE')}</button>
+									{this.state.config['Playlist.MysterySongs.Labels'].length > 1 ?
+  										<button type="button" className="btn btn-default"
+										  onClick={() => this.deleteMysterySongLabel(value)}>{i18next.t('ENGINE_LABELS_MYSTERY_SONGS_DELETE')}</button> : null
+							  		}
   								</div>
   							);
   						})}
   					</div>
   				</div>
   			</div>
-  			<div className="form-group settingsGroupPanel subCategoryGroupPanel">
+  			<div className="form-group subCategoryGroupPanel">
   				<div className="col-xs-12" style={{ textAlign: 'center' }}>
   					{i18next.t('ONLINESETTINGS')}
   				</div>
@@ -515,7 +516,7 @@ class KaraokeOptions extends Component<IProps, IState> {
   					</div>
   				</div>
   			</div>
-  			<div className="form-group settingsGroupPanel subCategoryGroupPanel">
+  			<div className="form-group subCategoryGroupPanel">
   				<div className="col-xs-12" style={{ textAlign: 'center' }}>
   					{i18next.t('PUBLICMODESETTINGS')}
   				</div>
@@ -534,7 +535,7 @@ class KaraokeOptions extends Component<IProps, IState> {
   				{this.state.config['Karaoke.Quota.FreeUpVote'] ?
   					<div
   						id="freeUpvotesSettings"
-  						className="well well-sm settingsGroupPanel"
+  						className="settingsGroupPanel"
   					>
   						<div className="form-group">
   							<label className="col-xs-4 control-label">
@@ -579,7 +580,7 @@ class KaraokeOptions extends Component<IProps, IState> {
   				</div>
 
   				{this.state.config['Karaoke.Poll.Enabled'] ?
-  					<div id="songPollSettings" className="well well-sm settingsGroupPanel">
+  					<div id="songPollSettings" className="settingsGroupPanel">
   						<div className="form-group">
   							<label className="col-xs-4 control-label">
   								{i18next.t('ENGINESONGPOLLCHOICES')}
@@ -610,12 +611,6 @@ class KaraokeOptions extends Component<IProps, IState> {
   						</div>
   					</div> : null}
   			</div>
-  			<input
-  				id="App.FirstRun"
-  				className="hideInput hidden"
-  				onChange={this.onChange}
-  				value={this.state.config['App.FirstRun']}
-  			/>
   		</React.Fragment>
   	);
   }

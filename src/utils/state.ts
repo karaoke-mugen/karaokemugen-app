@@ -1,7 +1,12 @@
+// KM Imports
 import {emitWS} from '../lib/utils/ws';
 import {emit} from '../lib/utils/pubsub';
 import logger from '../lib/utils/logger';
+
+// Node modules
 import merge from 'lodash.merge';
+
+// Types
 import {State, PublicState} from '../types/state';
 
 // Internal settings
@@ -66,9 +71,12 @@ export function getState() {
 }
 
 /** Get public state */
-export function getPublicState() {
+export function getPublicState(admin: boolean) {
 	return {
-		modePlaylistID: state.modePlaylistID
+		modePlaylistID: state.modePlaylistID,
+		appPath: admin ? state.appPath : undefined,
+		dataPath: admin ? state.dataPath : undefined,
+		os: admin ? state.os : undefined
 	};
 }
 

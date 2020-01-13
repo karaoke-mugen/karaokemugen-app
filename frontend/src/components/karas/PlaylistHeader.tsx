@@ -80,12 +80,12 @@ class PlaylistHeader extends Component<IProps,IState> {
   	callModal('prompt', i18next.t('CL_ADD_RANDOM_TITLE'), '', (nbOfRandoms:number) => {
   		axios.get(`${this.props.getPlaylistUrl()}?random=${nbOfRandoms}`).then(randomKaras => {
   			if (randomKaras.data.content.length > 0) {
-  				let textContent = randomKaras.data.content.map((e:KaraElement) => <React.Fragment key={e.kid}>{buildKaraTitle(e)} <br /><br /></React.Fragment>);
+  				let textContent = randomKaras.data.content.map((e:KaraElement) => <React.Fragment key={e.kid}>{buildKaraTitle(e, true)} <br /><br /></React.Fragment>);
   				callModal('confirm', i18next.t('CL_CONGRATS'), <React.Fragment>{i18next.t('CL_ABOUT_TO_ADD')}<br /><br />{textContent}</React.Fragment>, () => {
   					var karaList = randomKaras.data.content.map((a:KaraElement) => {
   						return a.kid;
   					}).join();
-  					var urlPost = this.props.getPlaylistUrl();
+  					var urlPost = '/api/playlists/' + this.props.idPlaylistTo + '/karas';
   					axios.post(urlPost, { kid: karaList });
   				}, '');
   			}
