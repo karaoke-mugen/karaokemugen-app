@@ -1,13 +1,13 @@
 import { Router } from "express";
 import { errMessage } from "../common";
-import { getKaraLyrics, getKara, getKaras, deleteKara, getKaraHistory, getTop50, getKaraPlayed } from "../../services/kara";
+import { getKaraLyrics, getKara, getKaras, deleteKara, getKaraHistory, getTop50, getKaraPlayed, copyKaraToRepo } from "../../services/kara";
 import { updateUserLoginTime, requireAuth, requireValidUser, requireAdmin } from "../middlewares/auth";
 import { requireWebappLimited, requireWebappOpen } from "../middlewares/webapp_mode";
 import { getLang } from "../middlewares/lang";
 import { emitWS } from "../../lib/utils/ws";
 import { addKaraToPlaylist } from "../../services/playlist";
 import { getConfig, resolvedPathTemp } from "../../lib/utils/config";
-import { postSuggestionToKaraBase } from "../../services/gitlab";
+import { postSuggestionToKaraBase } from '../../lib/services/gitlab';
 import multer = require("multer");
 import { createKara, editKara } from "../../services/kara_creation";
 
@@ -18,11 +18,14 @@ export default function karaController(router: Router) {
 	/**
 	 * @api {post} /karas/suggest Suggest a new song to your karaokebase project
 	 * @apiName SuggestKara
-	 * @apiVersion 3.1.0
+	 * @apiVersion 3.1.1
 	 * @apiGroup Karaokes
 	 * @apiPermission public
 	 * @apiHeader authorization Auth token received from logging in
 	 * @apiParam {String} karaName Name of song + series / artist
+	 * @apiParam {String} karaSerie Series / artist
+	 * @apiParam {String} karaType songtype
+	 * @apiParam {String} link link to a video
 	 * @apiSuccess {String} issueURL New issue's URL
 	 * @apiSuccessExample Success-Response:
  	 * HTTP/1.1 200 OK
@@ -35,7 +38,7 @@ export default function karaController(router: Router) {
 		.post(requireAuth, requireValidUser, requireWebappOpen, updateUserLoginTime, async(req: any, res: any) => {
 			try {
 				if (getConfig().Gitlab.Enabled) {
-					const url = await postSuggestionToKaraBase(req.body.karaName, req.authToken.username);
+					const url = await postSuggestionToKaraBase(req.body.title, req.body.serie, req.body.type, req.body.link, req.authToken.username);
 					res.status(200).send(url);
 				} else {
 					res.status(403).json();
@@ -60,7 +63,6 @@ export default function karaController(router: Router) {
  * @apiParam {String} [searchType] Can be `search`, `kid`, `requested`, `recent` or `played`
  * @apiParam {String} [searchValue] Value to search for. For `kid` it's a UUID, for `search` it's a string comprised of criterias separated by `!`. Criterias are `s:` for series, `y:` for year et `t:` for tag + type. Example, all songs with tags UUIDs a (singer) and b (songwriter) and year 1990 is `t:a~2,b~8!y:1990`. Refer to tag types to find out which number is which type.
  * @apiParam {Number} [random] If specified, will return a `number` random list of songs
- *
  * @apiSuccess {Object[]} content/karas Array of `kara` objects
  * @apiSuccess {Number} infos/count Number of karaokes in playlist
  * @apiSuccess {Number} infos/from Starting position of listing
@@ -96,19 +98,17 @@ export default function karaController(router: Router) {
  * HTTP/1.1 403 Forbidden
  */
 		.get(getLang, requireAuth, requireWebappOpen, requireValidUser, updateUserLoginTime, async (req: any, res: any) => {
-			// if the query has a &filter=xxx
-			// then the playlist returned gets filtered with the text.
 			try {
 				const karas = await getKaras({
-					filter: req.query.filter,
-					lang: req.lang,
-					from: +req.query.from || 0,
-					size: +req.query.size || 9999999,
-					mode: req.query.searchType,
-					modeValue: req.query.searchValue,
-					token: req.authToken,
-					random: req.query.random
-				});
+						filter: req.query.filter,
+						lang: req.lang,
+						from: +req.query.from || 0,
+						size: +req.query.size || 9999999,
+						mode: req.query.searchType,
+						modeValue: req.query.searchValue,
+						token: req.authToken,
+						random: req.query.random
+					});
 				res.json(karas);
 			} catch(err) {
 				errMessage('SONG_LIST_ERROR', err);
@@ -589,6 +589,29 @@ export default function karaController(router: Router) {
 			} catch(err) {
 				errMessage('LYRICS_VIEW_ERROR',err.message);
 				res.status(500).send('LYRICS_VIEW_ERROR');
+			}
+		});
+	router.route('/karas/:kid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/copyToRepo')
+/**
+ * @api {post} /karas/:kid/moveToRepo Move song to another repository
+ * @apiName PostKaraToRepo
+ * @apiVersion 3.2.0
+ * @apiGroup Repositories
+ * @apiPermission public
+ * @apiHeader authorization Auth token received from logging in
+ * @apiParam {uuid} kid Karaoke ID to copy
+ * @apiParam {string} repo Repo to copy song to
+ * @apiSuccessExample Success-Response:
+ * HTTP/1.1 200 OK
+ * @apiErrorExample Error-Response:
+ * HTTP/1.1 500 Internal Server Error
+ */
+		.post(getLang, requireAuth, requireWebappLimited, requireValidUser, requireAdmin, updateUserLoginTime, async (req: any, res: any) => {
+			try {
+				await copyKaraToRepo(req.params.kid, req.body.repo);
+				res.send('Song successfully moved');
+			} catch(err) {
+				res.status(500).send(err);
 			}
 		});
 }

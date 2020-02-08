@@ -133,12 +133,15 @@ select.form-control {
 	background-color: #222;
 }
 
-.playlistContainer > #playlist2 .list-group-item > .infoDiv > button, .playlistContainer > #playlist1 .list-group-item > .actionDiv > button {
+.playlistContainer > #playlist2 .list-group-item > .infoDiv > button, .playlistContainer > #playlist1 .list-group-item > .actionDiv > button,
+.playlistContainer > #playlist1 .list-group-item > .actionDiv > .actionButtonsDiv
+ {
 	float: right;
 	display: block;
 }
 
-.playlistContainer > #playlist1 .list-group-item > .infoDiv > button, .playlistContainer > #playlist2 .list-group-item > .actionDiv > button {
+.playlistContainer > #playlist1 .list-group-item > .infoDiv > button, .playlistContainer > #playlist2 .list-group-item > .actionDiv > button,
+.playlistContainer > #playlist2 .list-group-item > .actionDiv > .actionButtonsDiv {
 	float: left;
 	display: block;
 }
@@ -357,9 +360,15 @@ button.closeParent.bottom  {
 	z-index: 50;
 }
 
-.plSearch-input {
-	font-weight: bold;
-	font-family: "Font Awesome 5 Free", Arial;
+.plSearch {
+	input {
+		font-weight: bold;
+		font-family: "Font Awesome 5 Free", Arial;
+	}
+
+	i {
+		pointer-events: none;
+	}
 }
 
 .playlistContainer > ul {
@@ -439,10 +448,6 @@ button.closePopupParent {
 	right: 5px;
 	width: auto;
 	height: auto;
-}
-
-.input-md {
-	border-radius: 0;
 }
 
 #video {
@@ -698,13 +703,15 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 .list-group-item .img-circle {
-    width: 100%;
+	width: 100%;
+	height: 100%;
     max-width: 30px;
 	border-radius: 10%;
 	float: right;
 	display: block;
 	margin-left: 2px;
 	margin-right: 2px;
+	user-select: none;
 }
 
 .list-group-item .img-circle.mobile {
@@ -1155,7 +1162,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 
 /* FILTER MENU CSS */
 
-@media (max-width: 1025px) {  
+@media (max-width: 1023px) {  
 
 	.playlistContainer:after {
 		background: url(../assets/nanami_g_980w.jpg) no-repeat;
@@ -1187,7 +1194,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 }
 
 .accountLabel {
-	margin: 10px;
+	margin: 5px 10px 5px 10px;
 }
 
 .forgotPasswordButton {
@@ -1293,4 +1300,28 @@ input[type="text"]:focus, input[type="password"]:focus {
 
 .modal-body,.modal-message {
 	max-height: calc(100vh - 200px);
+}
+
+.mobileHelp, .mobileActions, .sideButton {
+	display: none;
+}
+
+@media (max-width:767px) {
+	.mobileHelp, .mobileActions {
+		display: block;
+	}
+	.buttonsNotMobile {
+		display: none;
+	}
+}
+
+@media (max-width:1023px) {
+	.sideButton {
+		display: block;
+	}
+}
+
+.saveButton {
+	justify-content: flex-end;
+	margin-top: 10px;
 }

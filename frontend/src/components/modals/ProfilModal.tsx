@@ -18,6 +18,7 @@ interface IProps {
 
 interface IState {
 	passwordDifferent: string;
+	nicknameMandatory: string;
 	activeView: number;
 	user: UserProfile;
 	users: Array<User>;
@@ -68,11 +69,18 @@ class ProfilModal extends Component<IProps, IState> {
 
     onKeyPress = (event:any) => {
     	const user = this.state.user;
-    	user[event.target.name as typesAttrUser] = event.target.value;
+		user[event.target.name as typesAttrUser] = event.target.value;
 		this.setState({ user: user });
     	if (event.keyCode === 13) {
 			this.updateUser();
     	}
+	};
+	
+	onClickSelect = (event:any) => {
+    	const user = this.state.user;
+    	user[event.target.name as typesAttrUser] = event.target.value;
+		this.setState({ user: user });
+		this.updateUser();
     };
 
     changeLanguageFallback(name:'main_series_lang'|'fallback_series_lang', value:string) {
@@ -157,10 +165,8 @@ class ProfilModal extends Component<IProps, IState> {
     	}
     	dataFile.append('nickname', (store.getLogInfos() as Token).username);
 
-    	const response = await axios.put('/api/myaccount', dataFile);
-    	const user = this.state.user;
-    	user['avatar_file'] = response.data.avatar_file;
-    	this.setState({ user: user });
+    	await axios.put('/api/myaccount', dataFile);
+		this.getUser();
     };
 
     render() {
@@ -218,27 +224,35 @@ class ProfilModal extends Component<IProps, IState> {
     												<i className="fas fa-user"></i>
 													<input className={this.state.nicknameMandatory} name="nickname" type="text" 
 														placeholder={i18next.t('PROFILE_USERNAME')} defaultValue={this.state.user.nickname}
-														 onKeyUp={this.onKeyPress} />
+														 onKeyUp={this.onKeyPress} onChange={this.onKeyPress} />
     											</div>
     											<div className="profileLine">
     												<i className="fas fa-envelope"></i>
-    												<input className="form-control" name="email" type="text" placeholder={i18next.t('PROFILE_MAIL')} defaultValue={this.state.user.email} onKeyUp={this.onKeyPress} />
+													<input className="form-control" name="email" type="text" 
+														placeholder={i18next.t('PROFILE_MAIL')} defaultValue={this.state.user.email}
+														onKeyUp={this.onKeyPress} onChange={this.onKeyPress} />
     											</div>
     											<div className="profileLine">
     												<i className="fas fa-link"></i>
-    												<input className="form-control" name="url" type="text" placeholder={i18next.t('PROFILE_URL')} defaultValue={this.state.user.url} onKeyUp={this.onKeyPress} />
+													<input className="form-control" name="url" type="text" 
+														placeholder={i18next.t('PROFILE_URL')} defaultValue={this.state.user.url}
+														onKeyUp={this.onKeyPress} onChange={this.onKeyPress} />
     											</div>
     											<div className="profileLine">
     												<i className="fas fa-leaf"></i>
-    												<input className="form-control" name="bio" type="text" placeholder={i18next.t('PROFILE_BIO')} defaultValue={this.state.user.bio} onKeyUp={this.onKeyPress} />
+													<input className="form-control" name="bio" type="text" 
+														placeholder={i18next.t('PROFILE_BIO')} defaultValue={this.state.user.bio}
+														onKeyUp={this.onKeyPress} onChange={this.onKeyPress} />
     											</div>
     											<div className="profileLine">
     												<i className="fas fa-lock"></i>
     												<input className={this.state.passwordDifferent} name="password" type="password"
-    													placeholder={i18next.t('PROFILE_PASSWORD')} defaultValue={this.state.user.password} onKeyUp={this.onKeyPress} />
+														placeholder={i18next.t('PROFILE_PASSWORD')} defaultValue={this.state.user.password} 
+														onKeyUp={this.onKeyPress} onChange={this.onKeyPress} />
     												<input className={this.state.passwordDifferent}
     													name="passwordConfirmation" type="password" placeholder={i18next.t('PROFILE_PASSWORDCONF')}
-    													defaultValue={this.state.user.passwordConfirmation} onKeyUp={this.onKeyPress} style={{ marginLeft: 3 + 'px' }} />
+														defaultValue={this.state.user.passwordConfirmation} 
+														onKeyUp={this.onKeyPress} onChange={this.onKeyPress} style={{ marginLeft: 3 + 'px' }} />
     											</div>
     											<div className="profileLine">
     												<i className="fas fa-star"></i>
@@ -250,7 +264,7 @@ class ProfilModal extends Component<IProps, IState> {
     													<i className="fas fa-upload"></i> {i18next.t('EXPORT')}
     												</button>
     											</div>
-    											{this.props.config.Online.Users ?
+    											{this.props.config.Online.Users && logInfos.username !== 'admin' ?
     												<div className="profileLine">
     													{logInfos && logInfos.onlineToken ?
     														<button type="button" title={i18next.t('PROFILE_ONLINE_DELETE')} className="btn btn-primary btn-action btn-default profileDelete" onClick={this.profileDelete}>
@@ -263,6 +277,16 @@ class ProfilModal extends Component<IProps, IState> {
     													}
     												</div> : null
     											}
+												<div className="profileLine saveButton">
+													<button type="button" className="btn btn-action" 
+														onClick={() => {
+																this.updateUser();
+																var element = document.getElementById('modal');
+																if (element) ReactDOM.unmountComponentAtNode(element);
+															}}>
+														{i18next.t('SUBMIT')}
+    												</button>
+    											</div> 
     										</div> : null
     									}
     								</div>
@@ -275,7 +299,7 @@ class ProfilModal extends Component<IProps, IState> {
     											<label className="col-xs-6 control-label">{i18next.t('SERIE_NAME_MODE')}</label>
     											<div className="col-xs-6">
 													<select className="form-control" name="series_lang_mode" defaultValue={this.state.user.series_lang_mode}
-													 onChange={this.onKeyPress}>
+													 onChange={this.onClickSelect}>
     													<option value={-1}>{i18next.t('SERIE_NAME_MODE_NO_PREF')}</option>
     													<option value={0}>{i18next.t('SERIE_NAME_MODE_ORIGINAL')}</option>
     													<option value={1}>{i18next.t('SERIE_NAME_MODE_SONG')}</option>

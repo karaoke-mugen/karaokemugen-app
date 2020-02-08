@@ -41,7 +41,8 @@ export const defaults: Config = {
 				Jingles: true,
 				Outros: true,
 				Encores: true,
-				Intros: true
+				Intros: true,
+				Sponsors: true
 			},
 			App: true,
 		}
@@ -67,7 +68,22 @@ export const defaults: Config = {
 		Token: 'i5WnabG3fvda4oxx-FRb',
 		IssueTemplate: {
 			Suggestion: {
-				Labels: ['à intégrer']
+				Description: `
+# Suggestion de karaoké
+
+
+**Titre** : $title
+
+
+**Série** : $serie
+
+
+**Type** : $type
+
+
+**Lien** : $link`,
+				Title: "[Suggestion] $serie - $title",
+				Labels: ['suggestion']
 			}
 		}
 	},
@@ -75,6 +91,7 @@ export const defaults: Config = {
 		Autoplay: false,
 		ClassicMode: false,
 		JinglesInterval: 20,
+		SponsorsInterval: 50,
 		Private: true,
 		Repeat: false,
 		SmartInsert: false,
@@ -131,9 +148,6 @@ export const defaults: Config = {
 		AllowDuplicateSeries: true,
 		MaxDejaVuTime: 60,
 		Medias: {
-			Sponsors: {
-				Enabled: true
-			},
 			Intros: {
 				Enabled: true,
 				File: null,
@@ -178,6 +192,30 @@ export const defaults: Config = {
 				Windows: 'app/bin/postgres/bin/'
 			}
 		},
+		Repositories: [
+			{
+				Name: 'kara.moe',
+				Online: true,
+				Path: {
+					Karas: ['repos/kara.moe/karaokes'],
+					Lyrics: ['repos/kara.moe/lyrics'],
+					Medias: ['repos/kara.moe/medias'],
+					Series: ['repos/kara.moe/series'],
+					Tags: ['repos/kara.moe/tags']
+				}
+			},
+			{
+				Name: 'Local',
+				Online: false,
+				Path: {
+					Karas: ['repos/Local/karaokes'],
+					Lyrics: ['repos/Local/lyrics'],
+					Medias: ['repos/Local/medias'],
+					Series: ['repos/Local/series'],
+					Tags: ['repos/Local/tags']
+				}
+			}
+		],
 		Path: {
 			Avatars: 'avatars',
 			Backgrounds: ['backgrounds'],
@@ -187,12 +225,8 @@ export const defaults: Config = {
 			Import: 'import',
 			Intros: ['intros', 'intros/KaraokeMugen'],
 			Jingles: ['jingles', 'jingles/KaraokeMugen'],
-			Karas: ['data/karaokes'],
-			Lyrics: ['data/lyrics'],
-			Medias: ['data/medias'],
 			Outros: ['outros', 'outros/KaraokeMugen'],
-			Series: ['data/series'],
-			Tags: ['data/tags'],
+			Sponsors: ['sponsors', 'sponsors/KaraokeMugen'],
 			Temp: 'temp'
 		}
 	}
@@ -229,6 +263,7 @@ export const configConstraints = {
 	'Karaoke.Repeat': {inclusion : bools},
 	'Karaoke.SmartInsert': {inclusion : bools},
 	'Karaoke.JinglesInterval': {numericality: {onlyInteger: true, greaterThanOrEqualTo: 0}},
+	'Karaoke.SponsorsInterval': {numericality: {onlyInteger: true, greaterThanOrEqualTo: 0}},
 	'Karaoke.Poll.Choices': {numericality: {onlyInteger: true, greaterThanOrEqualTo: 1}},
 	'Karaoke.Poll.Timeout': {numericality: {onlyInteger: true, greaterThanOrEqualTo: 1}},
 	'Karaoke.Poll.Enabled': {inclusion : bools},

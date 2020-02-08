@@ -1,13 +1,14 @@
-import { Router } from "express";
-import { emitWS } from "../../lib/utils/ws";
-import { errMessage } from "../common";
-import { deleteUser, findUserByName, createUser, editUser, convertToRemoteUser, removeRemoteUser, listUsers, createAdminUser, resetRemotePassword, updateSongsLeft } from "../../services/user";
-import { requireAdmin, updateUserLoginTime, requireAuth, requireValidUser, optionalAuth } from "../middlewares/auth";
-import { getLang } from "../middlewares/lang";
-import { check } from "../../lib/utils/validators";
-import multer = require("multer");
-import { resolvedPathTemp } from "../../lib/utils/config";
-import { requireWebappLimited, requireWebappLimitedNoAuth } from "../middlewares/webapp_mode";
+import { Router } from 'express';
+import { emitWS } from '../../lib/utils/ws';
+import { errMessage } from '../common';
+import { deleteUser, findUserByName, createUser, editUser, convertToRemoteUser, removeRemoteUser, listUsers, createAdminUser, resetRemotePassword, updateSongsLeft, resetSecurityCode } from '../../services/user';
+import { requireAdmin, updateUserLoginTime, requireAuth, requireValidUser, optionalAuth } from '../middlewares/auth';
+import { getLang } from '../middlewares/lang';
+import { check } from '../../lib/utils/validators';
+import multer = require('multer');
+import { resolvedPathTemp } from '../../lib/utils/config';
+import { requireWebappLimited, requireWebappLimitedNoAuth } from '../middlewares/webapp_mode';
+import { getState } from '../../utils/state';
 
 export default function userController(router: Router) {
 	// Middleware for playlist and files import
@@ -43,20 +44,20 @@ export default function userController(router: Router) {
 	 * @apiErrorExample Error-Response:
 	 * HTTP/1.1 403 Forbidden
 	 */
-	.get(getLang, requireAuth, requireWebappLimited, requireValidUser, updateUserLoginTime, async (_req: any, res: any) => {
-		try {
-			const users = await	listUsers();
-			res.json(users);
-		} catch(err) {
-			errMessage('USER_LIST_ERROR',err);
-			res.series(500).send('USER_LIST_ERROR');
-		}
-	})
+		.get(getLang, requireAuth, requireWebappLimited, requireValidUser, updateUserLoginTime, async (_req: any, res: any) => {
+			try {
+				const users = await	listUsers();
+				res.json(users);
+			} catch(err) {
+				errMessage('USER_LIST_ERROR',err);
+				res.series(500).send('USER_LIST_ERROR');
+			}
+		})
 
 	/**
  * @api {post} /users Create new user
  * @apiName PostUser
- * @apiVersion 2.1.0
+ * @apiVersion 3.1.0
  * @apiGroup Users
  * @apiPermission admin
  * @apiHeader authorization Auth token received from logging in
@@ -64,7 +65,6 @@ export default function userController(router: Router) {
  * @apiParam {String} login Login name for the user
  * @apiParam {String} password Password for the user
  * @apiParam {String} role `admin` or `user`.
- * @apiParam {Number} securityCode Security code if `admin` is set to `true`
  *
  * @apiSuccessExample Success-Response:
  * HTTP/1.1 200 OK
@@ -205,14 +205,16 @@ export default function userController(router: Router) {
 				res.status(500).send(`Error editing user: ${err}`);
 			}
 		});
-		router.route('/users/:username/resetpassword')
+	router.route('/users/:username/resetpassword')
 		/**
-	 * @api {post} /users/:username/resetpassword Reset password (online account only)
+	 * @api {post} /users/:username/resetpassword Reset password
 	 * @apiName PostResetPassword
 	 * @apiVersion 3.1.0
 	 * @apiGroup Users
 	 * @apiPermission noAuth
 	 * @apiParam {String} username Username for password reset
+	 * @apiParam {String} password New password (for local users only)
+	 * @apiParam {String} securityCode Security code in case you want to change your local password (for local users only)
 	 * @apiSuccess {String} data/login User's login
 	 *
 	 * @apiSuccessExample Success-Response:
@@ -224,27 +226,35 @@ export default function userController(router: Router) {
 	 *       },
 	 *   ]
 	 * }
-	 * @apiError USER_RESETPASSWORD_NOTONLINE_ERROR Only online users can have their password automatically reset
 	 * @apiError USER_RESETPASSWORD_ERROR Reset password generic error
+	 * @apiError USER_RESETPASSWORD_WRONGSECURITYCODE Wrong security code for local user password change
 	 * @apiErrorExample Error-Response:
 	 * HTTP/1.1 500 Internal Server Error
 	 * {
-	 *   "code": "USER_RESETPASSWORD_NOTONLINE_ERROR",
+	 *   "code": "USER_RESETPASSWORD_WRONGSECURITYCODE",
 	 *   "message": null
 	 * }
 	  */
-			.post(async (req: any, res: any) => {
-				try {
-					if (!req.params.username.includes('@')) {
-						res.status(500).json(errMessage('USER_RESETPASSWORD_NOTONLINE_ERROR',null));
-					} else {
-						await resetRemotePassword(req.params.username);
+		.post(async (req: any, res: any) => {
+			try {
+				if (!req.params.username.includes('@')) {
+					if (req.body.securityCode === getState().securityCode) {
+						await editUser(req.params.username, {
+							password: req.body.password
+						}, null, 'admin');
+						resetSecurityCode();
 						res.status(200).json(null);
+					} else {
+						res.status(500).send('USER_RESETPASSWORD_WRONGSECURITYCODE');
 					}
-				} catch(err) {
-					res.status(500).json(errMessage('USER_RESETPASSWORD_ERROR',err));
+				} else {
+					await resetRemotePassword(req.params.username);
+					res.status(200).json(null);
 				}
-			})
+			} catch(err) {
+				res.status(500).send('USER_RESETPASSWORD_ERROR');
+			}
+		});
 	router.route('/myaccount')
 	/**
  * @api {get} /myaccount View own user details
@@ -306,7 +316,7 @@ export default function userController(router: Router) {
 				updateSongsLeft(userData.login);
 				res.json(userData);
 			} catch(err) {
-				res.status(500).json(errMessage('USER_VIEW_ERROR',err));
+				res.status(500).send('USER_VIEW_ERROR');
 			}
 		})
 	/**
@@ -335,7 +345,7 @@ export default function userController(router: Router) {
 				await deleteUser(req.authToken.username);
 				res.status(200).send('USER_DELETED');
 			} catch(err) {
-				res.status(500).json(errMessage('USER_DELETED_ERROR',err));
+				res.status(500).send('USER_DELETED_ERROR');
 			}
 		})
 
@@ -437,7 +447,7 @@ export default function userController(router: Router) {
 						data: tokens
 					});
 				} catch(err) {
-					errMessage(err.code || 'USER_CONVERT_ERROR',err)
+					errMessage(err.code || 'USER_CONVERT_ERROR',err);
 					res.status(500).send(err.code || 'USER_CONVERT_ERROR');
 				}
 			} else {

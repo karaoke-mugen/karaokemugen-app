@@ -36,7 +36,6 @@ interface IProps {
 }
 
 interface IState {
-	displayedKaraDetail: boolean;
 	isLike: boolean;
 }
 
@@ -45,23 +44,16 @@ class KaraLine extends Component<IProps,IState> {
 	constructor(props:IProps) {
 		super(props);
 		this.state = {
-			displayedKaraDetail: false,
 			isLike: this.props.kara.flag_upvoted,
 		};
 	}
 
   toggleKaraDetail = () => {
-  	if (this.state.displayedKaraDetail) {
-		var element = document.getElementById('modal');
-  		if(element) ReactDOM.unmountComponentAtNode(element);
-  	} else {
-  		ReactDOM.render(<KaraDetail kid={this.props.kara.kid} playlistcontentId={this.props.kara.playlistcontent_id} scope={this.props.scope} 
-  			idPlaylist={this.props.idPlaylist} mode='list' toggleKaraDetail={this.toggleKaraDetail}
-  			publicOuCurrent={this.props.playlistInfo && (this.props.playlistInfo.flag_current || this.props.playlistInfo.flag_public)}
-  			showVideo={this.props.showVideo} navigatorLanguage={this.props.navigatorLanguage} freeKara={this.freeKara}>
-			  </KaraDetail>, document.getElementById('modal'));
-  	}
-  	this.setState({ displayedKaraDetail: !this.state.displayedKaraDetail });
+	ReactDOM.render(<KaraDetail kid={this.props.kara.kid} playlistcontentId={this.props.kara.playlistcontent_id} scope={this.props.scope} 
+		idPlaylist={this.props.idPlaylist} mode='list'
+		publicOuCurrent={this.props.playlistInfo && (this.props.playlistInfo.flag_current || this.props.playlistInfo.flag_public)}
+		showVideo={this.props.showVideo} navigatorLanguage={this.props.navigatorLanguage} freeKara={this.freeKara}>
+			</KaraDetail>, document.getElementById('modal'));
   };
 
 
@@ -94,7 +86,7 @@ class KaraLine extends Component<IProps,IState> {
   		}
   		displayMessage('success', i18next.t(response.data));
   	} catch (error) {
-  		displayMessage('error', error.response.data);
+  		displayMessage('error', i18next.t(`ERROR_CODES.${error.response.data}`));
   	}
   };
 
@@ -141,10 +133,10 @@ class KaraLine extends Component<IProps,IState> {
   		} else {
   			response = await axios.post(url, data);
 		  }
-		  if (response.data && response.data.plc && response.data.plc.time_before_play) {
-			var playTime = new Date(Date.now() + response.data.plc.time_before_play * 1000);
+		  if (response.data && response.data.data && response.data.data.plc && response.data.data.plc.time_before_play) {
+			var playTime = new Date(Date.now() + response.data.data.plc.time_before_play * 1000);
 			var playTimeDate = playTime.getHours() + 'h' + ('0' + playTime.getMinutes()).slice(-2);
-			var beforePlayTime = secondsTimeSpanToHMS(response.data.plc.time_before_play, 'hm');
+			var beforePlayTime = secondsTimeSpanToHMS(response.data.data.plc.time_before_play, 'hm');
 			displayMessage('success', <div>
 					{i18next.t(response.data.code)}
 					<br/>
@@ -154,10 +146,10 @@ class KaraLine extends Component<IProps,IState> {
   					})}
 				</div>);
 		  } else {
-			displayMessage('success', i18next.t(response.data.code));
+			displayMessage('success', i18next.t(response.data.code ? response.data.code : response.data));
 		  }
   	} catch (error) {
-  		displayMessage('warning', i18next.t(error.response.data));
+  		displayMessage('warning', i18next.t(`ERROR_CODES.${error.response.data}`));
   	}
   };
 
@@ -250,10 +242,13 @@ class KaraLine extends Component<IProps,IState> {
 							&& this.props.config.Frontend.ShowAvatarsOnPlaylist && this.props.avatar_file ? 
 							<img className={`img-circle ${is_touch_device() ? 'mobile': ''}`}
 							 src={pathAvatar + this.props.avatar_file} alt="User Pic" title={kara.nickname} /> : null}
-						{this.props.idPlaylistTo !== this.props.idPlaylist ?
-							<ActionsButtons idPlaylistTo={this.props.idPlaylistTo} idPlaylist={this.props.idPlaylist}
-								scope={this.props.scope}
-								addKara={this.addKara} deleteKara={this.deleteKara} transferKara={this.transferKara} /> : null}
+							 <div className="actionButtonsDiv">
+								{this.props.idPlaylistTo !== this.props.idPlaylist ?
+									<ActionsButtons idPlaylistTo={this.props.idPlaylistTo} idPlaylist={this.props.idPlaylist}
+										scope={this.props.scope}
+										addKara={this.addKara} deleteKara={this.deleteKara} transferKara={this.transferKara} />
+								: null}
+							 </div>
 						{!is_touch_device() && scope === 'admin' && idPlaylist > 0 ? <DragHandle /> : null}
 					</div>
   					{scope === 'admin' && this.props.idPlaylist !== -2 && this.props.idPlaylist != -4 && this.props.playlistCommands ?
@@ -263,8 +258,7 @@ class KaraLine extends Component<IProps,IState> {
   						</span> : null}
   					<div className="infoDiv">
   						{!is_touch_device() ? <button title={i18next.t('TOOLTIP_SHOWINFO')} name="infoKara" className="btn btn-sm btn-action"
-  							style={this.state.displayedKaraDetail ? { borderColor: '#8aa9af' } : {}} onClick={this.toggleKaraDetail}
-  						>
+  							onClick={this.toggleKaraDetail}>
   							<i className="fas fa-info-circle"></i>
   						</button> : null}
 						{scope === 'admin' && idPlaylist > 0 ? <button title={i18next.t('TOOLTIP_PLAYKARA')} 

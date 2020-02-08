@@ -16,7 +16,6 @@ interface IProps {
 	playlistcontentId?: number;
 	navigatorLanguage: string;
 	publicOuCurrent?: boolean | undefined;
-	toggleKaraDetail?: () => void;
 	freeKara?: () => void;
 	showVideo?: (file:string) => void;
 }
@@ -57,8 +56,13 @@ class KaraDetail extends Component<IProps,IState> {
   keyObserverHandler = (e:any) => {
   	var keyCode = e.keyCode || e.which;
   	if (keyCode == '27') {
-  		this.props.toggleKaraDetail!();
+  		this.closeModal();
   	}
+  }
+
+  closeModal() {
+	var element = document.getElementById('modal');
+	if(element) ReactDOM.unmountComponentAtNode(element);
   }
 
   componentDidMount() {
@@ -146,7 +150,7 @@ class KaraDetail extends Component<IProps,IState> {
           detailsUrl !== '') {
   				var extract = contentResult[0].extract;
   				callModal('alert',
-  					<a target="_blank" href={externalUrl}>{serie}&nbsp;
+  					<a href={externalUrl}>{serie}&nbsp;
   						<i className="fas fa-external-link-alt"></i></a>,extract);
   			} else if (
   				searchInfo &&
@@ -337,7 +341,7 @@ class KaraDetail extends Component<IProps,IState> {
   									type="button"
   									title={i18next.t('TOOLTIP_CLOSEPARENT')}
   									className={`closeParent btn btn-action ${is_touch_device() ? 'mobile' : ''}`}
-  									onClick={this.props.toggleKaraDetail}
+  									onClick={this.closeModal}
   								><i className="fas fa-times"></i></button>
   								{(store.getLogInfos() as Token).role === 'guest'
   									? null

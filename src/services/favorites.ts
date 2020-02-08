@@ -46,12 +46,18 @@ export async function fetchAndAddFavorites(instance: string, token: string, user
 	}
 }
 
-export async function addToFavorites(username: string, kids: string[]) {
+export async function manageFavoriteInInstanceBatch(action: 'POST' | 'DELETE', username: string, kids: string[]) {
+	for (const kid of kids) {
+		await manageFavoriteInInstance(action, username, kid);
+	}
+};
+
+export async function addToFavorites(username: string, kids: string[], sendOnline = true) {
 	try {
 		profile('addToFavorites');
 		await insertFavorites(kids, username);
-		if (username.includes('@') && getConfig().Online.Users) {
-			kids.forEach(k => manageFavoriteInInstance('POST', username, k));
+		if (username.includes('@') && sendOnline && getConfig().Online.Users) {
+			manageFavoriteInInstanceBatch('POST', username, kids);
 		}
 	} catch(err) {
 		throw err;
@@ -83,7 +89,7 @@ export async function deleteFavorites(username: string, kids: string[]) {
 		profile('deleteFavorites');
 		await removeFavorites(kids, username);
 		if (username.includes('@') && getConfig().Online.Users) {
-			kids.forEach(k => manageFavoriteInInstance('DELETE', username, k));
+			manageFavoriteInInstanceBatch('DELETE', username, kids);
 		}
 	} catch(err) {
 		throw {message: err};
@@ -98,11 +104,8 @@ async function manageFavoriteInInstance(action: 'POST' | 'DELETE', username: str
 	const instance = username.split('@')[1];
 	const remoteToken = getRemoteToken(username);
 	try {
-		return await got(`https://${instance}/api/favorites`, {
+		return await got(`https://${instance}/api/favorites/${kid}`, {
 			method: action,
-			form: {
-				kid: kid
-			},
 			headers: {
 				authorization: remoteToken.token || undefined
 			},
@@ -149,7 +152,7 @@ export async function importFavorites(favs: FavExport, username: string) {
 	let favorites = favs.Favorites.map(f => f.kid);
 	const karasUnknown = await isAllKaras(favorites);
 	favorites = favorites.filter(f => !karasUnknown.includes(f));
-	await addToFavorites(username, favorites);
+	await addToFavorites(username, favorites, false);
 	return { karasUnknown: karasUnknown };
 }
 

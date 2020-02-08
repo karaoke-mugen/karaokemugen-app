@@ -12,13 +12,15 @@ import {
   putToDownloadQueueStart,
   putToDownloadQueuePause,
   postAllToDownloadQueue,
-  postUpdateToDownloadQueue
+  postUpdateToDownloadQueue,
+  postCleanToDownloadQueue
 } from "../../api/local";
 import {ReduxMappedProps} from '../../react-app-env';
 import {getCriterasByValue} from './_blc_criterias_types';
 import getTags from '../../api/getTags';
 import i18next from 'i18next';
 import { tagTypes } from '../../utils/tagTypes';
+import { KaraDownloadRequest } from '../../../../src/types/download';
 
 var blacklist_cache = {}
 var api_get_local_karas_interval = null;
@@ -126,16 +128,14 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 	}
 
 	downloadKara(kara) {
-		let downloadObject: any = {};
-		downloadObject.kid = kara.kid;
-		downloadObject.mediafile = kara.mediafile;
-		downloadObject.subfile = kara.subfile;
-		downloadObject.karafile = kara.karafile;
-		downloadObject.seriefiles = kara.seriefiles;
-		downloadObject.tagfiles = kara.tagfiles;
-		downloadObject.size = kara.mediasize;
-		downloadObject.name = kara.name;
-		postToDownloadQueue('kara.moe', [downloadObject]);
+		let downloadObject:KaraDownloadRequest = {
+			kid: kara.kid,
+			mediafile: kara.mediafile,
+			size: kara.mediasize,
+			name: kara.name,
+			repository: kara.repo
+		};
+		postToDownloadQueue([downloadObject]);
 		this.api_read_kara_queue();
 	}
 
@@ -148,7 +148,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 		var psz = this.state.currentPageSize;
 		var pfrom = p*psz;
 
-		axios.get(`/api/karas?filter=${this.state.filter}&q=${this.state.tagFilter}&from=${pfrom}&size=${psz}&instance=kara.moe`)
+		axios.get(`/api/karas/remote?filter=${this.state.filter}&q=${this.state.tagFilter}&from=${pfrom}&size=${psz}`)
 			.then(res => {
 				let karas = res.data.content;
 				karas.forEach((kara) => {
@@ -256,7 +256,7 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 		var psz = this.state.currentPageSize;
 		var pfrom = p*psz;
 
-				axios.get(`/api/karas?filter=${this.state.filter}&q=${this.state.tagFilter}&from=${pfrom}&size=${psz}&instance=kara.moe`
+				axios.get(`/api/karas/remote?filter=${this.state.filter}&q=${this.state.tagFilter}&from=${pfrom}&size=${psz}`
 					+ this.state.compare)
 			.then(res => {
 				let karas = res.data.content;
@@ -359,6 +359,8 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 								<Button type="primary" key="queueDownloadAll" onClick={() => postAllToDownloadQueue()}>{i18next.t('KARA.DOWNLOAD_ALL')}</Button>
 								&nbsp;
 								<Button type="primary" key="queueUpdateAll" onClick={() => postUpdateToDownloadQueue()}>{i18next.t('KARA.UPDATE_ALL')}</Button>
+								&nbsp;
+								<Button type="primary" key="queueCleanAll" onClick={() => postCleanToDownloadQueue()}>{i18next.t('KARA.CLEAN_ALL')}</Button>
 							</Col>
 							<Col style={{ paddingTop: '25px'}}>
 								<label>{i18next.t('KARA.FILTER_SONGS')}</label>
@@ -367,14 +369,14 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 										await this.setState({compare: ''});
 										this.api_get_online_karas();
 								}}>{i18next.t('KARA.FILTER_ALL')}</Radio>
-								<Radio checked={this.state.compare === '&compare=missing'} 
-									onChange={async () => {
-										await this.setState({compare: '&compare=missing'});
-										this.api_get_online_karas();
-									}}>{i18next.t('KARA.FILTER_UPDATED')}</Radio>
 								<Radio checked={this.state.compare === '&compare=updated'} 
 									onChange={async () => {
 										await this.setState({compare: '&compare=updated'});
+										this.api_get_online_karas();
+									}}>{i18next.t('KARA.FILTER_UPDATED')}</Radio>
+								<Radio checked={this.state.compare === '&compare=missing'} 
+									onChange={async () => {
+										await this.setState({compare: '&compare=missing'});
 										this.api_get_online_karas();
 								}}>{i18next.t('KARA.FILTER_NOT_DOWNLOADED')}</Radio>
 							</Col>
@@ -465,6 +467,10 @@ class KaraDownload extends Component<KaraDownloadProps, KaraDownloadState> {
 			return <span>{title}</span>;
 
 		}
+	}, {
+		title: i18next.t('KARA.REPOSITORY'),
+		dataIndex: 'repository',
+		key: 'repository',
 	}, {
 		title: <span><Button title={i18next.t('KARA.DOWNLOAD_ALL_TOOLTIP')} type="default" 
 			onClick={this.downloadAll.bind(this)}><Icon type='download'/></Button>{i18next.t('KARA.DOWNLOAD')}

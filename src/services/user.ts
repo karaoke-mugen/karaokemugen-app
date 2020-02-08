@@ -585,6 +585,7 @@ export async function deleteUser(username: string) {
 		//Reassign karas and playlists owned by the user to the admin user
 		await DBReassignToUser(username, 'admin');
 		await DBDeleteUser(username);
+		if (usersFetched.has(username)) usersFetched.delete(username);
 		logger.debug(`[User] Deleted user ${username}`);
 		return true;
 	} catch (err) {
@@ -627,7 +628,7 @@ async function updateGuestAvatar(user: User) {
 			filename: null,
 			buffer: null,
 			size: null,
-			location: null
+			stream: null,
 		}, 'admin', {
 			renameUser: false,
 			editRemote: false

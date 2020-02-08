@@ -2,11 +2,11 @@ import {selectDownloadBLC, truncateDownloadBLC, insertDownloadBLC,  deleteDownlo
 import Downloader from '../utils/downloader';
 import Queue from 'better-queue';
 import uuidV4 from 'uuid/v4';
-import {resolvedPathMedias, resolvedPathSubs, resolvedPathKaras, resolvedPathSeries, resolvedPathTemp, resolvedPathTags} from '../lib/utils/config';
+import {resolvedPathTemp, resolvedPathRepos, getConfig} from '../lib/utils/config';
 import {resolve} from 'path';
 import internet from 'internet-available';
 import logger from '../lib/utils/logger';
-import {asyncMove, resolveFileInDirs, asyncStat, asyncUnlink, asyncReadDir} from '../lib/utils/files';
+import {asyncMove, resolveFileInDirs, asyncStat, asyncUnlink, asyncReadDir, asyncWriteFile} from '../lib/utils/files';
 import {uuidRegexp, getTagTypeName} from '../lib/utils/constants';
 import {integrateKaraFile, getAllKaras, getKaras} from './kara';
 import {integrateSeriesFile} from './series';
@@ -16,7 +16,7 @@ import { emitWS } from '../lib/utils/ws';
 import got from 'got';
 import { QueueStatus, KaraDownload, KaraDownloadRequest, KaraDownloadBLC, File } from '../types/download';
 import { DownloadItem } from '../types/downloader';
-import { KaraList, KaraParams } from '../lib/types/kara';
+import { KaraList, KaraParams, CompareParam } from '../lib/types/kara';
 import { TagParams, Tag } from '../lib/types/tag';
 import { deleteKara } from '../services/kara';
 import { refreshAll } from '../lib/dao/database';
@@ -24,6 +24,8 @@ import { DBKara } from '../lib/types/database/kara';
 import { getTags, integrateTagFile } from './tag';
 import prettyBytes from 'pretty-bytes';
 import { refreshKaras } from '../lib/dao/kara';
+import merge from 'lodash.merge';
+import { DownloadBundle } from '../lib/types/downloads';
 
 const queueOptions = {
 	id: 'uuid',
@@ -108,28 +110,25 @@ async function processDownload(download: KaraDownload) {
 	try {
 		await setDownloadStatus(download.uuid, 'DL_RUNNING');
 		let list = [];
-		const localMedia = resolve(resolvedPathMedias()[0],download.urls.media.local);
-		const localKara = resolve(resolvedPathKaras()[0],download.urls.kara.local);
-		const localSeriesPath = resolve(resolvedPathSeries()[0]);
-		const localTagsPath = resolve(resolvedPathTags()[0]);
+		const localMedia = resolve(resolvedPathRepos('Medias', download.repository)[0], download.urls.media.local);
+		const localKaraPath = resolve(resolvedPathRepos('Karas', download.repository)[0]);
+		const localSeriesPath = resolve(resolvedPathRepos('Series', download.repository)[0]);
+		const localTagsPath = resolve(resolvedPathRepos('Tags', download.repository)[0]);
+		const localLyricsPath = resolve(resolvedPathRepos('Lyrics', download.repository)[0]);
 
-		let bundle = {
-			kara: localKara,
-			series: [],
-			tags: []
-		};
+		const conf = getConfig();
+		const res = await got.get(`https://${conf.Online.Host}/api/karas/${download.kid}/raw`);
+		const bundle: DownloadBundle = JSON.parse(res.body);
+
 		const tempDir = resolvedPathTemp();
 		const tempMedia = resolve(tempDir, download.urls.media.local);
-		const tempKara = resolve(tempDir, download.urls.kara.local);
-		const tempSeriesPath = tempDir;
-		const tempTagsPath = tempDir;
 
 		// Check if media already exists in any media dir. If it does, do not try to redownload it.
 		let mediaAlreadyExists = false;
 		try {
-			const existingMediaFile = await resolveFileInDirs(download.urls.media.local, resolvedPathMedias());
+			const existingMediaFiles = await resolveFileInDirs(download.urls.media.local, resolvedPathRepos('Medias', download.repository));
 			// Check if file size are different
-			const localMediaStat = await asyncStat(existingMediaFile);
+			const localMediaStat = await asyncStat(existingMediaFiles[0]);
 			if (localMediaStat.size !== download.size) throw null;
 			mediaAlreadyExists = true;
 		} catch(err) {
@@ -140,46 +139,26 @@ async function processDownload(download: KaraDownload) {
 				id: download.name
 			});
 		}
-
-		let localLyrics: string;
-		let tempLyrics: string;
-		if (download.urls.lyrics.local !== null) {
-			localLyrics = resolve(resolvedPathSubs()[0],download.urls.lyrics.local);
-			tempLyrics = resolve(tempDir, download.urls.lyrics.local);
-			list.push({
-				filename: tempLyrics,
-				url: download.urls.lyrics.remote,
-				id: download.name
-			});
-		};
-		list.push({
-			filename: tempKara,
-			url: download.urls.kara.remote,
-			id: download.name
-		});
-
-		for (const serie of download.urls.serie) {
-			if (typeof serie.local === 'string') {
-				list.push({
-					filename: resolve(tempSeriesPath, serie.local),
-					url: serie.remote,
-					id: download.name
-				});
-				bundle.series.push(resolve(localSeriesPath, serie.local));
-			}
-		}
-		for (const tag of download.urls.tag) {
-			if (typeof tag.local === 'string') {
-				list.push({
-					filename: resolve(tempTagsPath, tag.local),
-					url: tag.remote,
-					id: download.name
-				});
-				bundle.tags.push(resolve(localTagsPath, tag.local));
-			}
-		}
-
 		await downloadFiles(download, list);
+
+		const writes = [];
+		let tempLyrics: string;
+		if (bundle.lyrics.file !== null) {
+			tempLyrics = resolve(tempDir, bundle.lyrics.file);
+			writes.push(await asyncWriteFile(tempLyrics, bundle.lyrics.data, 'utf-8'));
+		};
+		const tempKara = resolve(tempDir, bundle.kara.file);
+		writes.push(await asyncWriteFile(tempKara, JSON.stringify(bundle.kara.data, null, 2), 'utf-8'));
+
+		for (const serie of bundle.series) {
+			const tempSeries = resolve(tempDir, serie.file);
+			writes.push(await asyncWriteFile(tempSeries, JSON.stringify(serie.data, null, 2), 'utf-8'));
+		}
+		for (const tag of bundle.tags) {
+			const tempTag = resolve(tempDir, tag.file);
+			writes.push(await asyncWriteFile(tempTag, JSON.stringify(tag.data, null, 2), 'utf-8'));
+		}
+
 		// Delete files if they're already present
 		try {
 			if (!mediaAlreadyExists) await asyncMove(tempMedia, localMedia, {overwrite: true});
@@ -187,67 +166,68 @@ async function processDownload(download: KaraDownload) {
 			logger.error(`[Debug] Unable to move ${tempMedia} to ${localMedia}`);
 		}
 		try {
-			if (download.urls.lyrics.local !== null) await asyncMove(tempLyrics, localLyrics, {overwrite: true});
+			if (bundle.lyrics.file !== null) await asyncMove(tempLyrics, resolve(localLyricsPath, bundle.lyrics.file), {overwrite: true});
 		} catch(err) {
-			logger.error(`[Debug] Unable to move ${tempLyrics} to ${localLyrics}`);
+			logger.error(`[Debug] Unable to move ${tempLyrics} to ${localLyricsPath}`);
 		}
 		try {
-			await asyncMove(tempKara, localKara, {overwrite: true});
+			await asyncMove(tempKara, resolve(localKaraPath, bundle.kara.file), {overwrite: true});
 		} catch(err) {
-			logger.error(`[Debug] Unable to move ${tempKara} to ${localKara}`);
+			logger.error(`[Debug] Unable to move ${tempKara} to ${localKaraPath}`);
 		}
-		for (const seriefile of download.urls.serie) {
-			if (typeof seriefile.local === 'string') {
-				try {
-					await asyncMove(resolve(tempSeriesPath, seriefile.local), resolve(localSeriesPath, seriefile.local), {overwrite: true});
-				} catch(err) {
-					logger.error(`[Debug] Unable to move ${resolve(tempSeriesPath, seriefile.local)} to ${resolve(localSeriesPath, seriefile.local)}`);
-				}
-			}
-		}
-		for (const tagfile of download.urls.tag) {
-			if (typeof tagfile.local === 'string') {
-				try {
-					await asyncMove(resolve(tempTagsPath, tagfile.local), resolve(localTagsPath, tagfile.local), {overwrite: true});
-				} catch(err) {
-					logger.error(`[Debug] Unable to move ${resolve(tempTagsPath, tagfile.local)} to ${resolve(localTagsPath, tagfile.local)}`);
-				}
-			}
-		}
-		logger.info(`[Download] Finished downloading item "${download.name}"`);
-		// Now adding our newly downloaded kara
-		try {
-			for (const serie of bundle.series) {
-				try {
-					const serieName = await integrateSeriesFile(serie);
-					logger.debug(`[Download] Series "${serieName}" in database`);
-				} catch(err) {
-					logger.error(`[Download] Series "${serie}" not properly added to database`);
-					throw err;
-				}
-			}
-			for (const tag of bundle.tags) {
-				try {
-					const tagName = await integrateTagFile(tag);
-					logger.debug(`[Download] Tag "${tagName}" in database`);
-				} catch(err) {
-					logger.error(`[Download] Tag "${tag}" not properly added to database`);
-					throw err;
-				}
-			}
+		for (const serie of bundle.series) {
 			try {
-				await integrateKaraFile(bundle.kara);
-				logger.info(`[Download] Song "${download.name}" added to database`);
-				await setDownloadStatus(download.uuid, 'DL_DONE');
+				await asyncMove(resolve(tempDir, serie.file), resolve(localSeriesPath, serie.file), {overwrite: true});
 			} catch(err) {
-				logger.error(`[Download] Song "${download.name}" not properly added to database`);
+				logger.error(`[Debug] Unable to move ${resolve(tempDir, serie.file)} to ${resolve(localSeriesPath, serie.file)}`);
+			}
+		}
+		for (const tag of bundle.tags) {
+			try {
+				await asyncMove(resolve(tempDir, tag.file), resolve(localTagsPath, tag.file), {overwrite: true});
+			} catch(err) {
+				logger.error(`[Debug] Unable to move ${resolve(tempDir, tag.file)} to ${resolve(localTagsPath, tag.file)}`);
+			}
+		}
+		logger.info(`[Download] Finished downloading "${download.name}"`);
+		// Now adding our newly downloaded kara
+		integrateDownload(bundle, localSeriesPath, localKaraPath, localTagsPath, download);
+	} catch(err) {
+		setDownloadStatus(download.uuid, 'DL_FAILED');
+		throw err;
+	}
+}
+
+async function integrateDownload(bundle: DownloadBundle, localSeriesPath: string, localKaraPath: string, localTagsPath: string, download: KaraDownload ) {
+	try {
+		for (const serie of bundle.series) {
+			try {
+				const serieName = await integrateSeriesFile(resolve(localSeriesPath, serie.file));
+				logger.debug(`[Download] Series "${serieName}" in database`);
+			} catch(err) {
+				logger.error(`[Download] Series "${serie.file}" not properly added to database`);
 				throw err;
 			}
+		}
+		for (const tag of bundle.tags) {
+			try {
+				const tagName = await integrateTagFile(resolve(localTagsPath, tag.file));
+				logger.debug(`[Download] Tag "${tagName}" in database`);
+			} catch(err) {
+				logger.error(`[Download] Tag "${tag.file}" not properly added to database`);
+				throw err;
+			}
+		}
+		try {
+			await integrateKaraFile(resolve(localKaraPath, bundle.kara.file));
+			logger.info(`[Download] Song "${download.name}" added to database`);
+			await setDownloadStatus(download.uuid, 'DL_DONE');
 		} catch(err) {
-			logger.error(`[Download] Song "${download.name}" downloaded but not properly added to database. Regenerate your database manually after fixing errors`);
+			logger.error(`[Download] Song "${download.name}" not properly added to database`);
 			throw err;
 		}
 	} catch(err) {
+		logger.error(`[Download] Song "${download.name}" downloaded but not properly added to database. Regenerate your database manually after fixing errors`);
 		setDownloadStatus(download.uuid, 'DL_FAILED');
 		throw err;
 	}
@@ -284,7 +264,7 @@ export function resumeQueue() {
 	return q.resume();
 }
 
-export async function addDownloads(repo: string, downloads: KaraDownloadRequest[]): Promise<string> {
+export async function addDownloads(downloads: KaraDownloadRequest[]): Promise<string> {
 	const currentDls = await getDownloads();
 	downloads = downloads.filter(dl => {
 		if (currentDls.find(cdl => dl.name === cdl.name &&
@@ -296,39 +276,19 @@ export async function addDownloads(repo: string, downloads: KaraDownloadRequest[
 	});
 	if (downloads.length === 0) throw 'No downloads added, all are already in queue or running';
 	const dls: KaraDownload[] = downloads.map(dl => {
-		const seriefiles = dl.seriefiles.map(s => {
-			return {
-				remote: `https://${repo}/downloads/series/${s}`,
-				local: s
-			};
-		});
-		const tagfiles = dl.tagfiles.map(t => {
-			return {
-				remote: `https://${repo}/downloads/tags/${t}`,
-				local: t
-			};
-		});
 		return {
 			uuid: uuidV4(),
 			urls: {
 				media: {
-					remote: `https://${repo}/downloads/medias/${dl.mediafile}`,
+					remote: `https://${dl.repository}/downloads/medias/${dl.mediafile}`,
 					local: dl.mediafile
 				},
-				lyrics: {
-					remote: `https://${repo}/downloads/lyrics/${dl.subfile}`,
-					local: dl.subfile
-				},
-				kara: {
-					remote: `https://${repo}/downloads/karaokes/${dl.karafile}`,
-					local: dl.karafile
-				},
-				serie: seriefiles,
-				tag: tagfiles
 			},
 			name: dl.name,
 			size: dl.size,
-			status: 'DL_PLANNED'
+			kid: dl.kid,
+			status: 'DL_PLANNED',
+			repository: dl.repository
 		};
 	});
 	await insertDownloads(dls);
@@ -395,15 +355,49 @@ export async function emptyDownloadBLC() {
 	return await truncateDownloadBLC();
 }
 
-export async function getRemoteKaras(repo: string, params: KaraParams, compare?: 'missing' | 'updated' | null): Promise<KaraList> {
+export async function getAllRemoteKaras(repository: string, params: KaraParams, compare?: CompareParam): Promise<KaraList> {
+	if (repository) {
+		return getRemoteKaras(repository, params, compare);
+	} else {
+		const repos = getConfig().System.Repositories.filter(r => r.Online);
+		const tasks = [];
+		for (const repo of repos) {
+			tasks.push(getRemoteKaras(repo.Name, params, compare));
+		}
+		const allKaras: KaraList[] = await Promise.all(tasks);
+		// Let's concatenate our stuff here
+		const everything: KaraList = {
+			content: [],
+			infos: {
+				count: 0,
+				from: 0,
+				to: 0
+			}
+		};
+		allKaras.forEach(l => merge(everything, l));
+		// To get total count we're going to remove all duplicated by repo to keep only one song from each repo.
+		// Each song has a count property which gives us th enumber of songs for that query, so by adding them we get our total maximum count.
+		// Remove the :any for k and k2 once KM Server has merged the lib
+		everything.infos.count = 0;
+		const everythingUnique = everything.content.filter((k: any, i, self) => self.findIndex((k2:any) => k2.repo === k.repo) === i);
+		everythingUnique.forEach(k => everything.infos.count = +everything.infos.count + +k.count);
+		everything.infos.to = +params.from + +params.size;
+		return everything;
+	}
+}
+
+export async function getRemoteKaras(repo: string, params: KaraParams, compare?: CompareParam): Promise<KaraList> {
 	//First get all karas we currently own
 	let localKIDs = {};
+	const query = params.q
+		? `r=${repo}!${params.q}`
+		: `r=${repo}`;
 	if (compare === 'missing' || compare === 'updated') {
 		const karas = await getKaras({
 			filter: params.filter,
 			token: {username: 'admin', role: 'admin'},
-			mode: params.q ? 'search' : null,
-			modeValue: params.q
+			mode: 'search',
+			modeValue: query
 		});
 		karas.content.forEach(k => localKIDs[k.kid] = k.modified_at);
 	}
@@ -420,12 +414,40 @@ export async function getRemoteKaras(repo: string, params: KaraParams, compare?:
 	return JSON.parse(res.body);
 }
 
-export async function getRemoteTags(repo: string, params: TagParams): Promise<any> {
+export async function getAllRemoteTags(repository: string, params: TagParams): Promise<Tag[]> {
+	if (repository) {
+		return getRemoteTags(repository, params);
+	} else {
+		const repos = getConfig().System.Repositories.filter(r => r.Online);
+		const tasks = [];
+		repos.forEach(repo => tasks.push(getRemoteTags(repo.Name, params)));
+		const allTags: Tag[][] = await Promise.all(tasks);
+		// Let's concatenate our stuff here
+		const everything = [].concat.apply([], allTags);
+		everything.sort((a: Tag, b: Tag) => (a.name > b.name) ? 1 : -1);
+		return everything;
+	}
+
+}
+export async function getRemoteTags(repo: string, params: TagParams): Promise<Tag[]> {
 	const queryParams = new URLSearchParams([
 		['type', params.type + '']
 	]);
 	const res = await got(`https://${repo}/api/karas/tags?${queryParams.toString()}`);
 	return JSON.parse(res.body);
+}
+
+export async function updateAllBases() {
+	for (const repo of getConfig().System.Repositories) {
+		try {
+			if (repo.Online) {
+				logger.info(`[Update] Updating base from repository ${repo.Name}`);
+				await updateBase(repo.Name);
+			}
+		} catch(err) {
+			logger.warn(`[Update] Repository ${repo.Name} failed to update properly`);
+		}
+	}
 }
 
 export async function updateBase(repo: string) {
@@ -437,11 +459,11 @@ export async function updateBase(repo: string) {
 		logger.info('[Update] Getting local and remote song inventory');
 		const karas = await getKaraInventory(repo);
 		logger.info('[Update] Removing songs...');
-		await cleanAllKaras(repo, karas.local, karas.remote);
+		await cleanKaras(repo, karas.local, karas.remote);
 		logger.info('[Update] Adding updated/new songs...');
 		const [updatedSongs, newSongs] = await Promise.all([
-			updateAllKaras(repo, karas.local, karas.remote),
-			downloadAllKaras(repo, karas.local, karas.remote)
+			updateKaras(repo, karas.local, karas.remote),
+			downloadKaras(repo, karas.local, karas.remote)
 		]);
 		if (updatedSongs === 0 && newSongs === 0) return true;
 		await waitForUpdateQueueToFinish();
@@ -473,13 +495,27 @@ async function getKaraInventory(repo: string) {
 		getAllKaras(),
 		getRemoteKaras(repo, {})
 	]);
+	local.content = local.content.filter(k => k.repository === repo);
 	return {
 		local,
 		remote
 	};
 }
 
-export async function downloadAllKaras(repo: string, local?: KaraList, remote?: KaraList): Promise<number> {
+export async function downloadAllKaras() {
+	for (const repo of getConfig().System.Repositories) {
+		try {
+			if (repo.Online) {
+				logger.info(`[Update] Downloading all songs from repository ${repo.Name}`);
+				await downloadKaras(repo.Name);
+			}
+		} catch(err) {
+			logger.warn(`[Update] Repository ${repo.Name} failed to download all songs properly`);
+		}
+	}
+};
+
+export async function downloadKaras(repo: string, local?: KaraList, remote?: KaraList): Promise<number> {
 	if (!local || !remote) {
 		const karas = await getKaraInventory(repo);
 		local = karas.local;
@@ -512,16 +548,14 @@ export async function downloadAllKaras(repo: string, local?: KaraList, remote?: 
 		return {
 			size: k.mediasize,
 			mediafile: k.mediafile,
-			subfile: k.subfile,
-			karafile: k.karafile,
-			seriefiles: k.seriefiles,
-			tagfiles: k.tagfiles,
-			name: k.karafile.replace('.kara.json','')
+			kid: k.kid,
+			name: k.karafile.replace('.kara.json',''),
+			repository: repo
 		};
 	});
 	logger.info(`[Update] Adding ${karasToAdd.length} new songs.`);
 	if (initialKarasToAddCount !== karasToAdd.length) logger.info(`[Update] ${initialKarasToAddCount - karasToAdd.length} songs have been blacklisted`);
-	if (karasToAdd.length > 0) await addDownloads(repo, downloads);
+	if (karasToAdd.length > 0) await addDownloads(downloads);
 	return karasToAdd.length;
 }
 
@@ -572,7 +606,20 @@ function filterYearYounger(k: DBKara, value: string) {
 	return k.year >= +value;
 }
 
-export async function cleanAllKaras(repo: string, local?: KaraList, remote?: KaraList) {
+export async function cleanAllKaras() {
+	for (const repo of getConfig().System.Repositories) {
+		try {
+			if (repo.Online) {
+				logger.info(`[Update] Cleaning songs not in repository ${repo.Name} anymore`);
+				await cleanKaras(repo.Name);
+			}
+		} catch(err) {
+			logger.warn(`[Update] Repository ${repo.Name} failed to clean songs properly`);
+		}
+	}
+}
+
+export async function cleanKaras(repo: string, local?: KaraList, remote?: KaraList) {
 	if (!local || !remote) {
 		const karas = await getKaraInventory(repo);
 		local = karas.local;
@@ -592,7 +639,20 @@ export async function cleanAllKaras(repo: string, local?: KaraList, remote?: Kar
 	}
 }
 
-export async function updateAllKaras(repo: string, local?: KaraList, remote?: KaraList): Promise<number> {
+export async function updateAllKaras() {
+	for (const repo of getConfig().System.Repositories) {
+		try {
+			if (repo.Online) {
+				logger.info(`[Update] Updating all songs from repository ${repo.Name}`);
+				await updateKaras(repo.Name);
+			}
+		} catch(err) {
+			logger.warn(`[Update] Repository ${repo.Name} failed to update songs properly`);
+		}
+	}
+}
+
+export async function updateKaras(repo: string, local?: KaraList, remote?: KaraList): Promise<number> {
 	logger.info('[Update] Starting update process...');
 	if (!local || !remote) {
 		const karas = await getKaraInventory(repo);
@@ -608,15 +668,13 @@ export async function updateAllKaras(repo: string, local?: KaraList, remote?: Ka
 		return {
 			size: k.mediasize,
 			mediafile: k.mediafile,
-			subfile: k.subfile,
-			karafile: k.karafile,
-			seriefiles: k.seriefiles,
-			tagfiles: k.tagfiles,
-			name: k.karafile.replace('.kara.json','')
+			kid: k.kid,
+			name: k.karafile.replace('.kara.json',''),
+			repository: repo
 		};
 	});
 	logger.info(`[Update] Updating ${karasToUpdate.length} songs`);
-	if (karasToUpdate.length > 0) await addDownloads(repo, downloads);
+	if (karasToUpdate.length > 0) await addDownloads(downloads);
 	return karasToUpdate.length;
 }
 
@@ -647,7 +705,7 @@ async function compareMedias(localFiles: File[], remoteFiles: File[], repo: stri
 	let removedFiles:string[] = [];
 	let addedFiles:File[] = [];
 	let updatedFiles:File[] = [];
-	const mediasPath = resolvedPathMedias()[0];
+	const mediasPath = resolvedPathRepos('Medias', repo)[0];
 	logger.info('[Update] Comparing your medias with the current ones');
 	emitWS('downloadProgress', {
 		text: 'Comparing your media files with Karaoke Mugen\'s latest files',
@@ -726,11 +784,12 @@ function downloadMedias(files: File[], mediasPath: string, repo: string): Promis
 	});
 }
 
-async function listLocalMedias(): Promise<File[]> {
-	const mediaFiles = await asyncReadDir(resolvedPathMedias()[0]);
+async function listLocalMedias(repo: string): Promise<File[]> {
+	const mediaFiles = await asyncReadDir(resolvedPathRepos('Medias', repo)[0]);
 	let localMedias = [];
 	for (const file of mediaFiles) {
-		const mediaStats = await asyncStat(resolve(resolvedPathMedias()[0], file));
+		const mediaPath = resolveFileInDirs(file, resolvedPathRepos('Medias', repo));
+		const mediaStats = await asyncStat(mediaPath[0]);
 		localMedias.push({
 			basename: file,
 			size: mediaStats.size
@@ -747,13 +806,26 @@ async function removeFiles(files: string[], dir: string): Promise<void> {
 	}
 }
 
+export async function updateAllMedias() {
+	for (const repo of getConfig().System.Repositories) {
+		try {
+			if (repo.Online) {
+				logger.info(`[Update] Updating medias from repository ${repo.Name}`);
+				await updateMedias(repo.Name);
+			}
+		} catch(err) {
+			logger.warn(`[Update] Repository ${repo.Name} failed to update medias properly`);
+		}
+	}
+}
+
 export async function updateMedias(repo: string): Promise<boolean> {
 	if (updateRunning) throw 'An update is already running, please wait for it to finish.';
 	updateRunning = true;
 	try {
 		const [remoteMedias, localMedias] = await Promise.all([
 			listRemoteMedias(repo),
-			listLocalMedias()
+			listLocalMedias(repo)
 		]);
 		const updateVideos = await compareMedias(localMedias, remoteMedias, repo);
 

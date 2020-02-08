@@ -23,7 +23,8 @@ SELECT
 	aseries.i18n AS i18n,
 	aseries.search AS search,
 	aseries.seriefile AS seriefile,
-	aseries.karacount::integer AS karacount
+	aseries.karacount::integer AS karacount,
+	aseries.repository AS repository
 FROM all_series aseries
 WHERE 1 = 1
 	${filterClauses.map(clause => 'AND (' + clause + ')').reduce((a, b) => (a + ' ' + b), '')}
@@ -45,7 +46,8 @@ SELECT
 	aseries.i18n AS i18n,
 	aseries.search AS search,
 	aseries.seriefile AS seriefile,
-	aseries.karacount::integer AS karacount
+	aseries.karacount::integer AS karacount,
+	aseries.repository AS repository
 FROM all_series aseries
 WHERE sid = $1;
 `;
@@ -55,13 +57,15 @@ INSERT INTO serie(
 	name,
 	aliases,
 	pk_sid,
-	seriefile
+	seriefile,
+	repository
 )
 VALUES(
 	:name,
 	:aliases,
 	:sid,
-	:seriefile
+	:seriefile,
+	:repository
 )
 `;
 
@@ -70,7 +74,8 @@ UPDATE serie
 SET
 	name = :name,
 	aliases = :aliases,
-	seriefile = :seriefile
+	seriefile = :seriefile,
+	repository = :repository
 WHERE pk_sid = :sid;
 `;
 
@@ -101,4 +106,4 @@ export const deleteSeries = 'DELETE FROM serie WHERE pk_sid = $1';
 
 export const deleteSeriesi18n = 'DELETE FROM serie_lang WHERE fk_sid = $1';
 
-export const testSerie = 'SELECT seriefile, name FROM serie WHERE pk_sid = $1';
+export const testSerie = 'SELECT seriefile, name, repository FROM serie WHERE pk_sid = $1';

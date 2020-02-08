@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {KaraDownloadRequest} from '../../../src/types/download';
 
 /**
  * I'll be naming api requests with the first word being the http method.
@@ -72,10 +73,9 @@ export async function deleteKAraFromDownloadQueue(kid) {
 }
 
 // POST (add) items to download queue
-export async function postToDownloadQueue(repo = 'kara.moe', downloads) {
+export async function postToDownloadQueue(downloads:KaraDownloadRequest[]) {
 	try {
 		const dl = {
-			repository: repo,
 			downloads
 		};
 		await axios.post('/api/downloads', dl);
@@ -86,12 +86,9 @@ export async function postToDownloadQueue(repo = 'kara.moe', downloads) {
 }
 
 // DOWNLOAD ALL karas
-export async function postAllToDownloadQueue(repo = 'kara.moe') {
+export async function postAllToDownloadQueue() {
 	try {
-		const data = {
-			repository: repo
-		};
-		const res = await axios.post('/api/downloads/all', data);
+		const res = await axios.post('/api/downloads/all');
 		return res.data;
 	} catch (e) {
 		console.log('Error from /api/local.js:downloadAllToDownloadQueue');
@@ -100,15 +97,23 @@ export async function postAllToDownloadQueue(repo = 'kara.moe') {
 }
 
 // UPDATE ALL karas
-export async function postUpdateToDownloadQueue(repo = 'kara.moe') {
+export async function postUpdateToDownloadQueue() {
 	try {
-		const data = {
-			repository: repo
-		};
-		const res = await axios.post('/api/downloads/update', data);
+		const res = await axios.post('/api/downloads/update');
 		return res.data;
 	} catch (e) {
 		console.log('Error from /api/local.js:updateAllToDownloadQueue');
+		throw e;
+	}
+}
+
+// Remove all local karas not on remote repositories
+export async function postCleanToDownloadQueue() {
+	try {
+		const res = await axios.post('/api/downloads/clean ');
+		return res.data;
+	} catch (e) {
+		console.log('Error from /api/local.js:postCleanToDownloadQueue');
 		throw e;
 	}
 }

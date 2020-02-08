@@ -14,6 +14,7 @@ import { emitWS } from '../lib/utils/ws';
 const sleep = promisify(setTimeout);
 
 let commandInProgress = false;
+let introSequence = false;
 
 async function playCurrentSong(now: boolean) {
 	if (!getState().player.playing || now) {
@@ -27,6 +28,7 @@ async function playCurrentSong(now: boolean) {
 				try {
 					setState({currentlyPlayingKara: 'Intros', introPlayed: true});
 					await playMedia('Intros');
+					introSequence = true;
 					return;
 				} catch(err) {
 					throw err;
@@ -40,7 +42,8 @@ async function playCurrentSong(now: boolean) {
 				gain: kara.gain,
 				infos: kara.infos,
 				avatar: kara.avatar,
-				duration: kara.duration
+				duration: kara.duration,
+				repo: kara.repo
 			});
 			setState({currentlyPlayingKara: kara.kid});
 			addPlayedKara(kara.kid);
@@ -87,7 +90,7 @@ export async function playerEnding() {
 		}
 		// If we just played an intro, play a sponsor.
 		if (state.player.mediaType === 'Intros') {
-			if (conf.Playlist.Medias.Sponsors.Enabled) {
+			if (conf.Karaoke.SponsorsInterval > 0) {
 				try {
 					await playMedia('Sponsors');
 					setState({currentlyPlayingKara: 'Sponsors'});
@@ -103,10 +106,12 @@ export async function playerEnding() {
 			stopPlayer(true);
 			return;
 		}
-		// In other cases, just play currently selected song.
-		if (state.player.mediaType === 'Sponsors') {
+		// If Sponsor, just play currently selected song.
+		if (state.player.mediaType === 'Sponsors' && introSequence) {
 			try {
+				// If it's played just after an intro, play next sonc. If not, proceed as usual
 				await playCurrentSong(true);
+				introSequence = false;
 			} catch(err) {
 				logger.error(`[Player] Unable to play current song, skipping : ${err}`);
 				try {
@@ -130,7 +135,7 @@ export async function playerEnding() {
 		}
 		// Testing for position before last to play an encore
 		const pl = await getPlaylistInfo(state.currentPlaylistID, {username: 'admin', role: 'admin'});
-		if (conf.Playlist.Medias.Encores.Enabled && state.currentSong.pos === pl.karacount -1 && !getState().encorePlayed) {
+		if (conf.Playlist.Medias.Encores.Enabled && state.currentSong.pos === pl.karacount - 1 && !getState().encorePlayed) {
 			try {
 				await playMedia('Encores');
 				setState({currentlyPlayingKara: 'Encores', encorePlayed: true});
@@ -166,9 +171,8 @@ export async function playerEnding() {
 				return;
 			}
 		}
-		// Jingle code
-		// Jingles are played inbetween songs so we need to load the next song
-		logger.info(`[Jingles] Songs before next jingle: ${conf.Karaoke.JinglesInterval - state.counterToJingle}`);
+		// Jingles and sponsors are played inbetween songs so we need to load the next song
+		logger.info(`[Player] Songs before next jingle: ${conf.Karaoke.JinglesInterval - state.counterToJingle} / before next sponsor: ${conf.Karaoke.SponsorsInterval - state.counterToSponsor}`);
 		if (state.counterToJingle >= conf.Karaoke.JinglesInterval && conf.Karaoke.JinglesInterval > 0) {
 			try {
 				setState({counterToJingle: 0});
@@ -185,8 +189,27 @@ export async function playerEnding() {
 			} finally {
 				return;
 			}
+		} else if (state.counterToSponsor >= conf.Karaoke.SponsorsInterval && conf.Karaoke.SponsorsInterval > 0) {
+			try {
+				setState({counterToSponsor: 0});
+				await playMedia('Sponsors');
+				setState({currentlyPlayingKara: 'Sponsors'});
+
+			} catch(err) {
+				logger.error(`[Player] Unable to play sponsor file, going to next song : ${err}`);
+				try {
+					await next();
+				} catch(err) {
+					logger.error(`[Player] Failed going to next song : ${err}`);
+					throw err;
+				}
+			} finally {
+				return;
+			}
 		} else {
 			state.counterToJingle++;
+			state.counterToSponsor++;
+			setState({counterToSponsor: state.counterToSponsor});
 			setState({counterToJingle: state.counterToJingle});
 			if (state.status !== 'stop') {
 				try {

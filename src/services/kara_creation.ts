@@ -1,24 +1,26 @@
 import {dirname, basename, resolve} from 'path';
 import {createKaraInDB, editKaraInDB, getKara} from './kara';
-import { addKaraToStore, editKaraInStore, sortKaraStore, getStoreChecksum } from '../dao/dataStore';
+import { addKaraToStore, editKaraInStore, sortKaraStore, getStoreChecksum, removeKaraInStore } from '../dao/dataStore';
 import { saveSetting } from '../lib/dao/database';
 import { Kara, NewKara } from '../lib/types/kara';
-import { resolvedPathMedias, resolvedPathSubs, resolvedPathKaras, resolvedPathTemp } from '../lib/utils/config';
+import { resolvedPathRepos, resolvedPathTemp } from '../lib/utils/config';
 import { asyncUnlink, asyncExists, asyncCopy, resolveFileInDirs } from '../lib/utils/files';
 import {generateKara} from '../lib/services/kara_creation';
 import logger from '../lib/utils/logger';
 
 export async function editKara(kara: Kara) {
 	let newKara: NewKara;
+	let karaFile: string;
 	try {
 		const oldKara = await getKara(kara.kid, {role: 'admin', username: 'admin'});
 		let mediaFile: string;
 		let mediaDir: string;
 		if (kara.mediafile_orig) {
 			mediaFile = resolve(resolvedPathTemp(), kara.mediafile);
-			mediaDir = dirname(await resolveFileInDirs(oldKara.mediafile, resolvedPathMedias()));
+			const mediaPaths = (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', kara.repository)))[0];
+			mediaDir = dirname(mediaPaths);
 		} else {
-			mediaFile = await resolveFileInDirs(kara.mediafile, resolvedPathMedias());
+			mediaFile = (await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias', kara.repository)))[0];
 			mediaDir = dirname(mediaFile);
 		}
 		let subFile = kara.subfile;
@@ -27,16 +29,16 @@ export async function editKara(kara: Kara) {
 			if (kara.subfile_orig) {
 				subFile = resolve(resolvedPathTemp(), kara.subfile);
 				if (oldKara.subfile) {
-					subDir = dirname(await resolveFileInDirs(oldKara.subfile, resolvedPathSubs()));
+					subDir = dirname((await resolveFileInDirs(oldKara.subfile, resolvedPathRepos('Lyrics', kara.repository)))[0]);
 				} else {
-					subDir = resolvedPathSubs()[0];
+					subDir = resolvedPathRepos('Lyrics', kara.repository)[0];
 				}
 			} else {
-				subFile = await resolveFileInDirs(kara.subfile, resolvedPathSubs());
+				subFile = (await resolveFileInDirs(kara.subfile, resolvedPathRepos('Lyrics', kara.repository)))[0];
 				subDir = dirname(subFile);
 			}
 		};
-		const karaFile = await resolveFileInDirs(kara.karafile, resolvedPathKaras());
+		karaFile = (await resolveFileInDirs(kara.karafile, resolvedPathRepos('Karas', kara.repository)))[0];
 		const karaDir = dirname(karaFile);
 
 		// Removing useless data
@@ -64,24 +66,30 @@ export async function editKara(kara: Kara) {
 			await asyncUnlink(karaFile);
 		}
 		if (newKara.data.subfile && oldKara.subfile && newKara.data.subfile.toLowerCase() !== oldKara.subfile.toLowerCase()) {
-			const oldSubFile = await resolveFileInDirs(oldKara.subfile, resolvedPathSubs());
-			if (await asyncExists(oldSubFile)) {
-				logger.info(`[KaraGen] Removing ${oldSubFile}`);
-				await asyncUnlink(oldSubFile);
+			const oldSubFiles = await resolveFileInDirs(oldKara.subfile, resolvedPathRepos('Lyrics', kara.repository));
+			if (await asyncExists(oldSubFiles[0])) {
+				logger.info(`[KaraGen] Removing ${oldSubFiles[0]}`);
+				await asyncUnlink(oldSubFiles[0]);
 			}
 		}
 		if (newKara.data.mediafile.toLowerCase() !== oldKara.mediafile.toLowerCase()) {
-			const oldMediaFile = await resolveFileInDirs(oldKara.mediafile, resolvedPathMedias());
-			if (await asyncExists(oldMediaFile)) {
-				logger.info(`[KaraGen] Removing ${oldMediaFile}`);
-				await asyncUnlink(oldMediaFile);
+			const oldMediaFiles = await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', kara.repository));
+			if (await asyncExists(oldMediaFiles[0])) {
+				logger.info(`[KaraGen] Removing ${oldMediaFiles[0]}`);
+				await asyncUnlink(oldMediaFiles[0]);
 			}
 		}
 	} catch(err) {
 		logger.error(`[KaraGen] Error while editing kara : ${err}`);
 		throw err;
 	}
-	editKaraInStore(newKara.data.kid, newKara.fileData);
+	if (karaFile === newKara.file) {
+		await editKaraInStore(newKara.file);
+	} else {
+		removeKaraInStore(karaFile);
+		await addKaraToStore(newKara.file);
+		sortKaraStore();
+	}
 	saveSetting('baseChecksum', getStoreChecksum());
 	newKara.data.karafile = basename(newKara.file);
 	// Update in database
@@ -95,8 +103,8 @@ export async function editKara(kara: Kara) {
 }
 
 export async function createKara(kara: Kara) {
-	const newKara = await generateKara(kara, resolvedPathKaras()[0], resolvedPathMedias()[0], resolvedPathSubs()[0]);
-	addKaraToStore(newKara.fileData);
+	const newKara = await generateKara(kara, resolvedPathRepos('Karas', kara.repository)[0], resolvedPathRepos('Medias', kara.repository)[0], resolvedPathRepos('Lyrics', kara.repository)[0]);
+	await addKaraToStore(newKara.file);
 	sortKaraStore();
 	saveSetting('baseChecksum', getStoreChecksum());
 	try {

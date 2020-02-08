@@ -29,7 +29,8 @@ var tagsTypesList = [
 	'BLCTYPE_10',
 	'BLCTYPE_11',
 	'BLCTYPE_12',
-	'BLCTYPE_13',];
+	'BLCTYPE_13',
+	'BLCTYPE_14'];
 
 interface IProps {
 	idPlaylist: number;
@@ -47,7 +48,7 @@ interface IProps {
 	playlistWillUpdate: () => void;
 	playlistDidUpdate: () => void;
 	getPlaylist: (searchType?:string) => void;
-	onChangeTags: (type:number|string, value:string) => void;
+	onChangeTags: (type:number|string, value:string, yearSeason?:string) => void;
 	editNamePlaylist: () => void;
 	addAllKaras: () => void;
 	selectAllKaras: () => void;
@@ -175,7 +176,7 @@ class PlaylistHeader extends Component<IProps,IState> {
 		axios.put(this.props.getPlaylistUrl().replace('/karas', '') + '/empty');
 	  }
 	} catch (error) {
-		displayMessage('error', `ERROR_CODES.${error.response.code}`);
+		displayMessage('error', i18next.t(`ERROR_CODES.${error.response.code}`));
 	}
   };
 
@@ -221,9 +222,31 @@ class PlaylistHeader extends Component<IProps,IState> {
   };
 
   onChangeTags = (value:string) => {
+	let yearSeason;
+	if (this.state.tagType === 14) {
+		let valueSplit = value.split(' ');
+		value = valueSplit[0];
+		yearSeason = valueSplit[1];
+	}
   	this.setState({ activeFilter: 5, activeFilterUUID: value });
-  	this.props.onChangeTags(this.state.tagType, value);
+  	this.props.onChangeTags(this.state.tagType, value, yearSeason);
   };
+
+  getTagsForSearch = () => {
+	if (this.state.tagType === 14) {
+		let tags:Tag[] = [];
+		let seasons = (this.props.tags as Tag[]).filter(tag => tag.type.includes(this.state.tagType));
+		(this.props.tags as Tag[]).filter(tag => tag.type.includes('year')).forEach(year => {
+			seasons.forEach(season => {
+				tags.push({label: `${season.label} ${year.label}`, value: `${season.value} ${year.value}`, 
+					type: season.type, karacount: season.karacount});
+			});
+		});
+		return tags;
+	} else {
+		return (this.props.tags as Tag[]).filter(tag => tag.type.includes(this.state.tagType));
+	}
+  }
 
   render() {
   	const commandsControls = (
@@ -296,10 +319,7 @@ class PlaylistHeader extends Component<IProps,IState> {
   	const plCommandsContainer =(
   		this.props.scope === 'admin' && this.props.playlistCommands && this.props.idPlaylist !== -4 ?
   			<div className="plCommandsContainer actionDivContainer">
-  				{this.props.side === 1 ?
-  					<React.Fragment>{commandsControls} {actionDivContainer}</React.Fragment> :
-  					<React.Fragment>{actionDivContainer}{commandsControls} </React.Fragment>
-  				}
+  				<React.Fragment>{commandsControls} {actionDivContainer}</React.Fragment>
   			</div> : null);
 
   	const searchMenu = (this.props.tags && this.props.tags.filter(tag => tag.type.includes(this.state.tagType)).length > 0 ? 
@@ -323,8 +343,7 @@ class PlaylistHeader extends Component<IProps,IState> {
   				</select>
   				<div className="filterElement filterTagsOptions">
   					<Autocomplete value={this.state.activeFilterUUID || ''}
-  						options={this.props.tags.filter(tag => tag.type.includes(this.state.tagType))}
-  						onChange={this.onChangeTags} />
+  						options={this.getTagsForSearch()} onChange={this.onChangeTags} />
   				</div>
   			</div>
   			<div className="filterContainer">
@@ -347,23 +366,26 @@ class PlaylistHeader extends Component<IProps,IState> {
 
     
   	const plSearch = (<div className="pull-left plSearch">
-  		<input type="text" className="plSearch-input form-control input-md"
-  			defaultValue={store.getFilterValue(this.props.side)} onChange={e => store.setFilterValue(e.target.value, this.props.side, this.props.idPlaylist)}
-  			id={'searchPlaylist' + this.props.side} placeholder="&#xF002;" name="searchPlaylist" />
+		  <input type="text" placeholder="&#xF002;" defaultValue={store.getFilterValue(this.props.side)}
+		  	onChange={e => store.setFilterValue(e.target.value, this.props.side, this.props.idPlaylist)} />
   	</div>);
 
   	const flagsContainer = (
   		this.props.idPlaylist >= 0 && this.props.scope !== 'public' && this.props.playlistInfo ?
   			<div className="flagsContainer " >
   				<div className="btn-group plCommands flags" id={'flag' + this.props.side}>
-  					<button title={i18next.t('PLAYLIST_CURRENT')} name="flag_current" onClick={this.setFlagCurrent}
-  						className={'btn ' + (this.props.playlistInfo.flag_current ? 'btn-primary' : 'btn-default')} >
-  						<i className="fas fa-video"></i>
-  					</button>
-  					<button title={i18next.t('PLAYLIST_PUBLIC')} name="flag_public" onClick={this.setFlagPublic}
-  						className={'btn ' + (this.props.playlistInfo.flag_public ? 'btn-primary' : 'btn-default')} >
-  						<i className="fas fa-globe"></i>
-  					</button>
+				  	{!this.props.playlistInfo.flag_public ?
+						<button title={i18next.t('PLAYLIST_CURRENT')} name="flag_current" onClick={this.setFlagCurrent}
+							className={'btn ' + (this.props.playlistInfo.flag_current ? 'btn-primary' : 'btn-default')} >
+							<i className="fas fa-video"></i>
+						</button> : null
+  					}
+					{!this.props.playlistInfo.flag_current ?
+						<button title={i18next.t('PLAYLIST_PUBLIC')} name="flag_public" onClick={this.setFlagPublic}
+							className={'btn ' + (this.props.playlistInfo.flag_public ? 'btn-primary' : 'btn-default')} >
+							<i className="fas fa-globe"></i>
+						</button> : null
+  					}
   					{this.props.idPlaylist >= 0 ?
   						<button title={i18next.t('PLAYLIST_VISIBLE')} className="btn btn-default" name="flag_visible" onClick={this.setFlagVisible}>
   							{this.props.playlistInfo.flag_visible ?

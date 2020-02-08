@@ -630,6 +630,11 @@ export async function getPLCInfoMini(plc_id: number) {
 	return await getPLCInfoMiniDB(plc_id);
 }
 
+/** Notify user of song play time */
+export async function notifyUserOfSongPlayTime(plc_id: number, username: string) {
+	emitWS('userSongPlaysIn', await getPLCInfo(plc_id, true, username));
+}
+
 /** Copy song from one playlist to another */
 export async function copyKaraToPlaylist(plc_id: number[], playlist_id: number, pos?: number) {
 	const [plcData, pl] = await Promise.all([
@@ -682,6 +687,11 @@ export async function copyKaraToPlaylist(plc_id: number[], playlist_id: number, 
 			updatePlaylistKaraCount(playlist_id)
 		]);
 		updatePlaylistLastEditTime(playlist_id);
+		const state = getState();
+		// If we're adding to the current playlist ID and KM's mode is public, we have to notify users that their song has been added and will be playing in xxx minutes
+		if (playlist_id === state.currentPlaylistID && !state.private) {
+			plcList.forEach(plc => notifyUserOfSongPlayTime(plc.playlistcontent_id, plc.username));
+		}
 		return playlist_id;
 	} catch(err) {
 		throw {
@@ -689,7 +699,7 @@ export async function copyKaraToPlaylist(plc_id: number[], playlist_id: number, 
 			data: pl.name
 		};
 	} finally {
-		profile('addKaraToPL');
+		profile('copyKaraToPL');
 	}
 }
 
@@ -703,6 +713,7 @@ export async function deleteKaraFromPlaylist(plcs: number[], playlist_id:number,
 		const plcData = await getPLCInfoMini(plcs[i]);
 		if (!plcData) throw 'At least one playlist content is unknown';
 		if (token.role !== 'admin' && plcData.username !== token.username) throw 'You cannot delete a song you did not add';
+		if (plcData.flag_playing && getState().status === 'play') throw 'You cannot delete a song being currently played. Stop playback first.';
 	}
 	logger.debug(`[Playlist] Deleting karaokes from playlist ${pl.name}`);
 	try {
@@ -1096,8 +1107,7 @@ export async function notificationNextSong(): Promise<void> {
 		const kara = await nextSong(false);
 		emitWS('nextSong', kara);
 	} catch(err) {
-		//Non-fatal
-		logger.warn(`[Playlist] Could not send next song notification : ${err}`);
+		//Non-fatal, it usually means we're at the last song
 	}
 }
 

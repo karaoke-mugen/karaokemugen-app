@@ -14,6 +14,7 @@ import { Token } from '~../../../src/lib/types/user';
 import { Session } from '../../../src/types/session';
 import { News } from '../types/news';
 import Switch from './generic/Switch';
+import WelcomePageArticle from './WelcomePageArticle';
 require ('../styles/welcome/WelcomePage.scss');
 require('../styles/welcome/updateBanner.scss');
 
@@ -24,7 +25,6 @@ interface IProps {
 }
 
 interface IState {
-	open: boolean;
 	news: Array<News>;
 	sessions: Array<Session>;
 	activeSession?: Session;
@@ -36,7 +36,6 @@ class WelcomePage extends Component<IProps, IState> {
 		super(props);
 		this.state = {
 			news: [],
-			open: false,
 			sessions: []
 		};
 		if (!store.getLogInfos() || !(store.getLogInfos() as Token).token) {
@@ -258,12 +257,11 @@ class WelcomePage extends Component<IProps, IState> {
   				<div className="menu-top-right">
   					<a
   						href="http://mugen.karaokes.moe/contact.html"
-  						target="_blank"
   					>
   						<i className="fas fa-pencil-alt" />&nbsp;
   						{i18next.t('WLCM_CONTACT')}
   					</a>
-  					<a href="http://mugen.karaokes.moe/" target="_blank">
+  					<a href="http://mugen.karaokes.moe/">
   						<i className="fas fa-link" />&nbsp;
   						{i18next.t('WLCM_SITE')}
   					</a>
@@ -311,7 +309,7 @@ class WelcomePage extends Component<IProps, IState> {
   										: 'manage'
   								}
   								onClick={() =>
-  									window.open('/admin' + window.location.search, '_blank')
+  									window.open('/admin' + window.location.search)
   								}
   							>
   								<div className="dash days_dash">
@@ -328,7 +326,7 @@ class WelcomePage extends Component<IProps, IState> {
   							<li>
   								<div
   									className="dash hours_dash"
-  									onClick={() => window.open('/system', '_blank')}
+  									onClick={() => window.open('/system')}
   								>
   									<i className="digit fas fa-cog" />
   									<div className="dash_title">
@@ -340,7 +338,7 @@ class WelcomePage extends Component<IProps, IState> {
   								<div
   									className="dash seconds_dash"
   									onClick={() =>
-  										window.open('/' + window.location.search, '_blank')
+  										window.open('/' + window.location.search)
   									}
   								>
   									<i className="digit fas fa-user" />
@@ -349,7 +347,7 @@ class WelcomePage extends Component<IProps, IState> {
   							</li>
   							<li
   								onClick={() =>
-  									window.open('http://mugen.karaokes.moe/docs/', '_blank')
+  									window.open('http://mugen.karaokes.moe/docs/')
   								}
   							>
   								<div className="dash minutes_dash">
@@ -363,22 +361,7 @@ class WelcomePage extends Component<IProps, IState> {
   						<ul className="news">
   							{this.state.news.map(article => {
   								return (
-  									<li
-  										key={Math.random()}
-  										className={this.state.open ? 'new open' : 'new'}
-  										data-type={article.type}
-  										onClick={() =>
-  											this.setState({ open: !this.state.open })
-  										}
-  									>
-  										<p className="new-header">
-  											<b>{article.title}</b>
-  											<a href={article.link} target="_blank">
-  												{article.dateStr}
-  											</a>
-  										</p>
-  										<p dangerouslySetInnerHTML={{ __html: article.html }} />
-  									</li>
+									<WelcomePageArticle key={article.date} article={article} />
   								);
   							})}
   						</ul>

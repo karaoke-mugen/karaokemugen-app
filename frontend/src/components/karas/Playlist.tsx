@@ -16,6 +16,8 @@ import { Tag } from '../../types/tag';
 import { KaraElement } from '../../types/kara';
 import { DBBLC,DBBlacklist } from '../../../../src/types/database/blacklist';
 import { Token } from '../../../../src/lib/types/user';
+import SuggestionModal from '../modals/SuggestionModal';
+import ReactDOM from 'react-dom';
 require('./Playlist.scss');
 
 const chunksize = 400;
@@ -45,6 +47,7 @@ interface IState {
 	getPlaylistInProgress: boolean;
 	stopUpdate: boolean;
 	forceUpdate: boolean;
+	forceUpdateFirst: boolean;
 	scope?: string;
 	idPlaylist: number;
 	data: KaraList | Array<DBBLC> | undefined;
@@ -52,6 +55,7 @@ interface IState {
 	playlistList: Array<PlaylistList>;
 	scrollToIndex?: number;
 	playlistInfo?: DBPL;
+	yearSeason?: string;
 }
 
 interface KaraList {
@@ -73,6 +77,7 @@ class Playlist extends Component<IProps, IState> {
 			getPlaylistInProgress: false,
 			stopUpdate: false,
 			forceUpdate: false,
+			forceUpdateFirst: false,
 			idPlaylist: 0,
 			data: undefined,
 			playlistList: []
@@ -81,7 +86,7 @@ class Playlist extends Component<IProps, IState> {
 
 	componentWillReceiveProps(nextProps:IProps) {
 		if (nextProps.idPlaylistTo && nextProps.idPlaylistTo !== this.props.idPlaylistTo) {
-			this.playlistForceRefresh();
+			this.playlistForceRefresh(true);
 		}
 	}
 
@@ -120,6 +125,8 @@ class Playlist extends Component<IProps, IState> {
 				this.changeIdPlaylist(idPlaylist);
 			}
 		});
+
+    	window.addEventListener('resize', this.refreshUiOnResize, true);
 	}
 
   initCall = async () => {
@@ -132,8 +139,13 @@ class Playlist extends Component<IProps, IState> {
   }
 
   componentWillUnmount() {
+    window.removeEventListener('resize', this.refreshUiOnResize, true);
   	store.removeChangeListener('playlistContentsUpdated', this.playlistContentsUpdated);
   	store.removeChangeListener('loginUpdated', this.initCall);
+  }
+
+  refreshUiOnResize = () => {
+	this.playlistForceRefresh(true);
   }
 
   SortableList = SortableContainer((List as any), { withRef: true })
@@ -234,7 +246,7 @@ noRowsRenderer = () => {
 }
 
   playlistContentsUpdated = (idPlaylist:number) => {
-  	if (this.state.idPlaylist === Number(idPlaylist) && !this.state.stopUpdate) this.getPlaylist();
+  	if (this.state.idPlaylist === Number(idPlaylist) && !this.state.stopUpdate) this.getPlaylist(this.state.searchType);
   };
 
   updateQuotaAvailable = (data:{username:string, quotaType:number, quotaLeft:number}) => {
@@ -315,9 +327,9 @@ noRowsRenderer = () => {
 		}
 		
   		if (this.props.side === 1) {
-  			value = Number(plVal1Cookie) !== NaN ? Number(plVal1Cookie) : -1;
+			value = plVal1Cookie != null && Number(plVal1Cookie) !== NaN ? Number(plVal1Cookie) : -1;
   		} else {
-  			value = Number(plVal2Cookie) !== NaN ? Number(plVal2Cookie)  : store.getModePlaylistID();
+			value = plVal2Cookie != null && Number(plVal2Cookie) !== NaN ? Number(plVal2Cookie)  : store.getModePlaylistID();
   		}
 	  }
   	this.setState({ idPlaylist: value });
@@ -412,7 +424,8 @@ noRowsRenderer = () => {
 		  criterias[this.state.searchCriteria]
   			: '';
   		url += '&searchType=' + this.state.searchType
-          + ((searchCriteria && this.state.searchValue) ? ('&searchValue=' + searchCriteria + ':' + this.state.searchValue) : '');
+		  + ((searchCriteria && this.state.searchValue) ? ('&searchValue=' + searchCriteria + ':' + this.state.searchValue) : '')
+		  + ((searchCriteria && this.state.yearSeason) ? ('!y:' + this.state.yearSeason) : '')
 	}
 	try {
 	  	var response = await axios.get(url);
@@ -449,13 +462,9 @@ noRowsRenderer = () => {
 			data = karas;
 		}
 		this.setState({ data: data, getPlaylistInProgress: false });
-		this.playlistForceRefresh();
-		_cache.clearAll();
-		setTimeout(() => {
-			this.playlistForceRefresh();
-		}, 50);
+		this.playlistForceRefresh(true);
 	} catch (error) {
-		displayMessage('error', `ERROR_CODES.${error.response.code}`);
+		displayMessage('error', i18next.t(`ERROR_CODES.${error.response.code}`));
 	}
   };
 
@@ -520,7 +529,7 @@ noRowsRenderer = () => {
 		  if(kara) kara.checked = !kara.checked;
   	});
 	  this.setState({ data: data });
-	  this.playlistForceRefresh();
+	  this.playlistForceRefresh(true);
   };
 
   checkKara = (id:string|number) => {
@@ -535,7 +544,7 @@ noRowsRenderer = () => {
   		}
   	});
 	  this.setState({ data: data });
-	  this.playlistForceRefresh();
+	  this.playlistForceRefresh(true);
   };
 
   addAllKaras = async () => {
@@ -591,7 +600,7 @@ noRowsRenderer = () => {
   	} catch (error) {
 		(error.response.data && error.response.data.plc_id && error.response.data.plc_id.length > 0) ?
 			displayMessage('warning', error.response.data.plc_id[0]) :
-			displayMessage('warning', i18next.t(error.response.data));
+			displayMessage('warning', i18next.t(`ERROR_CODES.${error.response.data}`));
   	}
   };
 
@@ -626,26 +635,20 @@ noRowsRenderer = () => {
   			var response = await axios.delete(url, {data:data});
   			displayMessage('success', i18next.t(response.data));
   		} catch (error) {
-  			displayMessage('warning', i18next.t(error.response.data));
+			displayMessage('warning', i18next.t(`ERROR_CODES.${error.response.data}`));
   		}
   	}
   };
 
-  karaSuggestion() {
-  	callModal('prompt', i18next.t('KARA_SUGGESTION_NAME'), '', (text:string) => {
-  		axios.post('/api/karas/suggest', { karaName: text }).then(response => {
-  			setTimeout(() => {
-  				displayMessage('info', <div><label>{i18next.t('KARA_SUGGESTION_INFO')}</label> <br/> 
-  					{i18next.t('KARA_SUGGESTION_LINK', response.data.issueURL, 'console')}</div>, 30000);
-  			}, 200);
-  		});
-  	});
+  karaSuggestion = () => {
+	ReactDOM.render(<SuggestionModal
+		songtypes={(this.props.tags as Tag[]).filter(tag => tag.type.includes(3)).map((tag: any) => tag.label)}/>, document.getElementById('modal'));
   }
 
-  onChangeTags = (type:number|string, value:string) => {
+  onChangeTags = (type:number|string, value:string, yearSeason?:string) => {
   	var searchCriteria = (type === 'serie' || type === 'year') ? type : 'tag';
   	var stringValue = searchCriteria === 'tag' ? `${value}~${type}` : value;
-  	this.setState({searchCriteria: searchCriteria, searchValue: stringValue}, () => this.getPlaylist('search'));
+  	this.setState({searchCriteria: searchCriteria, searchValue: stringValue, yearSeason: yearSeason}, () => this.getPlaylist('search'));
   };
 
   deleteCriteria = (kara:DBBlacklist) => {
@@ -695,7 +698,7 @@ noRowsRenderer = () => {
   			);
   		}
   		data.content = karas;
-  		this.setState({data:data, scrollToIndex: oldIndex, stopUpdate: false});
+  		this.setState({data:data, stopUpdate: false});
   	}
   }
   
@@ -707,8 +710,17 @@ noRowsRenderer = () => {
 	  this.setState({stopUpdate : true});
   }
 
-  playlistForceRefresh = () => {
-	  this.setState({forceUpdate: !this.state.forceUpdate});
+  playlistForceRefresh = (forceUpdateFirstParam: boolean) => {
+	  this.setState({forceUpdate: !this.state.forceUpdate, forceUpdateFirst: forceUpdateFirstParam});
+	  _cache.clearAll();
+  }
+
+  componentDidUpdate() {
+	  if (this.state.forceUpdateFirst) {
+		setTimeout(() => {
+			this.playlistForceRefresh(false);
+		}, 50);
+	  }
   }
   
   render() {
@@ -724,9 +736,10 @@ noRowsRenderer = () => {
   			<div className="playlist--wrapper">
   				<PlaylistHeader
   					side={this.props.side}
-					  scope={this.props.scope}
-					  config={this.props.config}
-  					playlistList={this.state.playlistList}
+					scope={this.props.scope}
+					config={this.props.config}
+  					playlistList={this.state.playlistList.filter(
+						  (playlist:PlaylistList) => playlist.playlist_id !== this.props.idPlaylistTo)}
   					idPlaylist={this.state.idPlaylist}
   					changeIdPlaylist={this.changeIdPlaylist}
   					playlistInfo={this.state.playlistInfo}

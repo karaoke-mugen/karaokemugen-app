@@ -3,17 +3,16 @@ import {insertSeriei18n, removeSerie, updateSerie, insertSerie, selectSerieByNam
 import {refreshSeries, refreshKaraSeries, refreshKaraSeriesLang, refreshSeriesi18n} from '../lib/dao/series';
 import {profile} from '../lib/utils/logger';
 import logger from 'winston';
-import {removeSerieInKaras} from '../lib/dao/karafile';
 import uuidV4 from 'uuid/v4';
-import { sanitizeFile } from '../lib/utils/files';
+import { sanitizeFile, resolveFileInDirs } from '../lib/utils/files';
 import { refreshKaras } from '../lib/dao/kara';
 import {Series} from '../lib/types/series';
 import { KaraParams, KaraList, IDQueryResult } from '../lib/types/kara';
-import { removeSeriesInStore, editSeriesInStore, addSeriesToStore, sortSeriesStore, getStoreChecksum } from '../dao/dataStore';
+import { removeSeriesInStore, editSeriesInStore, addSeriesToStore, sortSeriesStore, getStoreChecksum, sortKaraStore } from '../dao/dataStore';
 import { saveSetting } from '../lib/dao/database';
-import {resolvedPathSeries} from '../lib/utils/config';
 import {getDataFromSeriesFile} from '../lib/dao/seriesfile';
-import { getAllKaras } from './kara';
+import { removeSerieInKaras, getAllKaras } from './kara';
+import { resolvedPathRepos } from '../lib/utils/config';
 
 /** Get all series */
 export async function getSeries(params: KaraParams) {
@@ -62,8 +61,11 @@ export async function deleteSerie(sid: string) {
 		removeSeriesFile(serie.seriefile),
 		removeSerieInKaras(serie.name, await getAllKaras()),
 	]);
+	// Sorting kara data just to be sure in case it's been modified by removeSerieInKaras
+	sortKaraStore();
 	// Refreshing karas is done asynchronously
-	removeSeriesInStore(sid);
+	const serieFiles = await resolveFileInDirs(serie.seriefile, resolvedPathRepos('Series', serie.repository));
+	removeSeriesInStore(serieFiles[0]);
 	saveSetting('baseChecksum', getStoreChecksum());
 	refreshKaraSeries().then(() => refreshKaras());
 }
@@ -82,12 +84,13 @@ export async function addSerie(serieObj: Series, opts = {refresh: true}): Promis
 	await insertSerie(serieObj);
 	await Promise.all([
 		insertSeriei18n(serieObj),
-		writeSeriesFile(serieObj, resolvedPathSeries()[0])
+		writeSeriesFile(serieObj, resolvedPathRepos('Series', serieObj.repository)[0])
 	]);
 
 	const seriesData = formatSeriesFile(serieObj).series;
 	seriesData.seriefile = seriefile;
-	addSeriesToStore(seriesData);
+	const serieFiles = await resolveFileInDirs(seriefile, resolvedPathRepos('Series', serieObj.repository));
+	await addSeriesToStore(serieFiles[0]);
 	sortSeriesStore();
 	saveSetting('baseChecksum', getStoreChecksum());
 
@@ -102,19 +105,28 @@ export async function editSerie(sid: string, serieObj: Series, opts = { refresh:
 	const oldSerie = await testSerie(sid);
 	if (!oldSerie) throw 'Series ID unknown';
 	serieObj.seriefile = sanitizeFile(serieObj.name) + '.series.json';
-	if (oldSerie.seriefile !== serieObj.seriefile) try {
-		await removeSeriesFile(oldSerie.seriefile);
-	} catch(err) {
-		//Non fatal. Can be triggered if the series file has already been removed.
-	}
 	const seriefile = serieObj.seriefile;
 	await Promise.all([
 		updateSerie(serieObj),
-		writeSeriesFile(serieObj, resolvedPathSeries()[0])
+		writeSeriesFile(serieObj, resolvedPathRepos('Series', serieObj.repository)[0])
 	]);
 	const seriesData = formatSeriesFile(serieObj).series;
 	seriesData.seriefile = seriefile;
-	editSeriesInStore(sid, seriesData);
+	const oldSerieFiles = await resolveFileInDirs(oldSerie.seriefile, resolvedPathRepos('Series', oldSerie.repository));
+	const newSerieFiles = await resolveFileInDirs(serieObj.seriefile, resolvedPathRepos('Series', serieObj.repository));
+
+	if (oldSerie.seriefile !== serieObj.seriefile) {
+		try {
+			await removeSeriesFile(oldSerie.seriefile);
+			await addSeriesToStore(newSerieFiles[0]);
+			removeSeriesInStore(oldSerieFiles[0]);
+			sortSeriesStore();
+		} catch(err) {
+			//Non fatal. Can be triggered if the series file has already been removed.
+		}
+	} else {
+		await editSeriesInStore(newSerieFiles[0]);
+	}
 	saveSetting('baseChecksum', getStoreChecksum());
 	if (opts.refresh) {
 		await refreshSeriesAfterDBChange();

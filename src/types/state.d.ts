@@ -11,9 +11,10 @@ export interface State {
 	currentlyPlayingKara?: string,
 	currentSong: CurrentSong
 	counterToJingle?: number,
+	counterToSponsor?: number,
 	introPlayed?: boolean,
 	encorePlayed?: boolean,
-	status?: string,
+	status?: 'stop' |  'play' | 'pause',
 	private?: boolean,
 	fullscreen?: boolean,
 	ontop?: boolean,
