@@ -1,5 +1,5 @@
 // KM Imports
-import {asyncCheckOrMkdir, asyncExists, asyncRemove,  asyncCopyAlt} from './lib/utils/files';
+import {asyncCheckOrMkdir, asyncExists, asyncRemove, asyncCopy} from './lib/utils/files';
 import {getConfig, setConfig, resolvedPathTemp, resolvedPathAvatars} from './lib/utils/config';
 import {initConfig} from './utils/config';
 import {parseCommandLineArgs} from './args';
@@ -59,6 +59,10 @@ const appPath = process.versions.electron
 	? join(__dirname, '../../../')
 	: join(__dirname, '../');
 
+const resourcePath = process.versions.electron
+	? resolve(appPath, 'resources/')
+	: resolve(appPath);
+
 let dataPath = resolve(appPath, 'app/');
 
 // Testing if we're in portable mode or not
@@ -77,7 +81,7 @@ if (existsSync(resolve(appPath, 'database.json')) && !existsSync(resolve(dataPat
 	moveSync(resolve(appPath, 'database.json'), resolve(dataPath, 'database.json'));
 }
 
-setState({appPath: appPath, dataPath: dataPath});
+setState({appPath: appPath, dataPath: dataPath, resourcePath: resourcePath});
 
 process.env['NODE_ENV'] = 'production'; // Default
 
@@ -185,6 +189,7 @@ async function main() {
 	await parseCommandLineArgs(argv);
 	logger.debug(`[Launcher] AppPath : ${appPath}`);
 	logger.debug(`[Launcher] DataPath : ${dataPath}`);
+	logger.debug(`[Launcher] ResourcePath : ${resourcePath}`);
 	logger.debug(`[Launcher] Locale : ${state.EngineDefaultLocale}`);
 	logger.debug(`[Launcher] OS : ${state.os}`);
 	logger.debug(`[Launcher] Loaded configuration : ${JSON.stringify(publicConfig, null, 2)}`);
@@ -193,24 +198,18 @@ async function main() {
 	// Checking paths, create them if needed.
 	await checkPaths(getConfig());
 
-	// Copying files from the app's sources to the app's working folder.
-	// This is an ugly hack : we could use fs.copy but due to a bug in pkg,
-	// using a writeFile/readFile combination is making it work with recent versions
-	// of pkg, thus allowing us to build for Node 10
-	// See https://github.com/zeit/pkg/issues/420
-
 	// Copy the input.conf file to modify mpv's default behaviour, namely with mouse scroll wheel
 	const tempInput = resolve(resolvedPathTemp(), 'input.conf');
 	logger.debug(`[Launcher] Copying input.conf to ${tempInput}`);
-	await asyncCopyAlt(join(__dirname, '../assets/input.conf'), tempInput);
+	await asyncCopy(resolve(resourcePath, 'assets/input.conf'), tempInput);
 
 	const tempBackground = resolve(resolvedPathTemp(), 'default.jpg');
 	logger.debug(`[Launcher] Copying default background to ${tempBackground}`);
-	await asyncCopyAlt(join(__dirname, `../assets/${state.version.image}`), tempBackground);
+	await asyncCopy(resolve(resourcePath, `assets/${state.version.image}`), tempBackground);
 
 	// Copy avatar blank.png if it doesn't exist to the avatar path
 	logger.debug(`[Launcher] Copying blank.png to ${resolvedPathAvatars()}`);
-	await asyncCopyAlt(join(__dirname, '../assets/blank.png'), resolve(resolvedPathAvatars(), 'blank.png'));
+	await asyncCopy(resolve(resourcePath, 'assets/blank.png'), resolve(resolvedPathAvatars(), 'blank.png'));
 
 	/**
 	 * Test if network ports are available

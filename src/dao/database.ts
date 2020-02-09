@@ -5,13 +5,14 @@ import {exit} from '../services/engine';
 import {duration} from '../lib/utils/date';
 import {generateDatabase} from '../lib/services/generation';
 import DBMigrate from 'db-migrate';
-import {join} from 'path';
+
 import {isShutdownPG, initPG} from '../utils/postgresql';
 import { baseChecksum } from './dataStore';
 import { DBStats } from '../types/database/database';
 import { getSettings, saveSetting, connectDB, db, vacuum, getInstanceID, setInstanceID } from '../lib/dao/database';
 import { generateBlacklist } from '../services/blacklist';
 import uuidV4 from 'uuid/v4';
+import { resolve } from 'path';
 
 const sql = require('./sql/database');
 
@@ -73,7 +74,7 @@ async function migrateDB() {
 			}
 		},
 		cmdOptions: {
-			'migrations-dir': join(__dirname, '../../migrations/'),
+			'migrations-dir': resolve(getState().resourcePath, 'migrations/'),
 			'log-level': 'warn|error'
 		}
 	};
@@ -163,7 +164,7 @@ export async function generateDB(): Promise<boolean> {
 		const modified = await generateDatabase(false, true);
 		logger.info('[DB] Database generation completed successfully!');
 		if (modified) {
-			logger.info('[DB] Kara files have been modified during generation, re-evaluating store')
+			logger.info('[DB] Kara files have been modified during generation, re-evaluating store');
 			await compareKarasChecksum(true);
 		}
 		if (state.opt.generateDB) await exit(0);
