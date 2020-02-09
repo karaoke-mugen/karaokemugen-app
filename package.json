@@ -23,7 +23,7 @@
     "startSystemPanel": "cd systempanel && yarn start",
     "packer": "electron-builder --dir",
     "dist": "electron-builder",
-    "electron": "electron .",
+    "electron": "yarn build && electron .",
     "migrate": "db-migrate sync [all] --config app/database.json",
     "migrateDown": "db-migrate down --config app/database.json",
     "migrateUp": "db-migrate up --config app/database.json",
@@ -203,21 +203,23 @@
       "target": "portable",
       "publisherName": "Karaoke Mugen Team"
     },
-    "productName": "Karaoke Mugen",
+    "productName": "KaraokeMugen",
     "extraResources": [
       "migrations/**",
-      "js/locales/*",
+      "locales/*",
       "assets/**",
       "frontend/build/**",
       "systempanel/build/**"
-    ],
+	],
+	"extraFiles": [
+	  "app/bin/**"
+	],
     "directories": {
       "output": "dist",
       "buildResources": "assets"
     },
     "files": [
       "js/**/*"
-    ],
-    "afterPack": "./afterPack.js"
+    ]
   }
 }

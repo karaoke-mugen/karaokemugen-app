@@ -9,7 +9,6 @@ import {logo} from './logo';
 import { setState, getState } from './utils/state';
 import { version } from './version';
 import { migrateOldFoldersToRepo, addRepo, getRepo } from './services/repo';
-
 // Types
 import {Config} from './types/config';
 
@@ -55,22 +54,27 @@ if (process.platform === 'win32' ) {
 
 // Main app begins here.
 // Testing if we're in a packaged version of KM or not.
-const appPath = process.versions.electron
-	? join(__dirname, '../../../')
+// First, this is a test for unpacked electron mode :
+let appPath = process.versions.electron
+	? process.execPath
 	: join(__dirname, '../');
-
+// Resources are all the stuff our app uses and is bundled with. mpv config files, default avatar, background, migrations, locales, etc.
 const resourcePath = process.versions.electron
 	? resolve(appPath, 'resources/')
 	: resolve(appPath);
 
-let dataPath = resolve(appPath, 'app/');
-
-// Testing if we're in portable mode or not
-if (!existsSync(resolve(appPath, 'portable'))) {
+// DataPath is by default appPath + app. This is default when running from source
+let dataPath: string;
+// Testing if we're in portable mode or not. This is defined by electron-builder when packaging an app
+appPath = process.env.PORTABLE_EXECUTABLE_DIR
+	? process.env.PORTABLE_EXECUTABLE_DIR
+	: appPath;
+if (existsSync(resolve(appPath, 'portable'))) {
+	dataPath = resolve(appPath, 'app/');
+} else {
 	// Rewriting dataPath to point to user home directory
 	dataPath = resolve(process.env.HOME || process.env.HOMEPATH, 'KaraokeMugen');
 }
-
 if (!existsSync(dataPath)) mkdirSync(dataPath);
 
 // Move config file if it's in appPath to dataPath
@@ -190,6 +194,8 @@ async function main() {
 	logger.debug(`[Launcher] AppPath : ${appPath}`);
 	logger.debug(`[Launcher] DataPath : ${dataPath}`);
 	logger.debug(`[Launcher] ResourcePath : ${resourcePath}`);
+	logger.debug(`[Launcher] Electron ResourcePath: ${process.resourcesPath}`);
+
 	logger.debug(`[Launcher] Locale : ${state.EngineDefaultLocale}`);
 	logger.debug(`[Launcher] OS : ${state.os}`);
 	logger.debug(`[Launcher] Loaded configuration : ${JSON.stringify(publicConfig, null, 2)}`);
