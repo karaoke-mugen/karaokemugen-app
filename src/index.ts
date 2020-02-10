@@ -85,6 +85,7 @@ if (!existsSync(dataPath)) mkdirSync(dataPath);
 if (existsSync(resolve(originalAppPath, 'config.yml')) && !existsSync(resolve(dataPath, 'config.yml'))) {
 	moveSync(resolve(originalAppPath, 'config.yml'), resolve(dataPath, 'config.yml'));
 }
+
 if (existsSync(resolve(originalAppPath, 'database.json')) && !existsSync(resolve(dataPath, 'database.json'))) {
 	moveSync(resolve(originalAppPath, 'database.json'), resolve(dataPath, 'database.json'));
 }
@@ -114,7 +115,7 @@ if(app) {
 		// Sur macOS, il est commun pour une application et leur barre de menu
 		// de rester active tant que l'utilisateur ne quitte pas explicitement avec Cmd + Q
 		if (process.platform !== 'darwin') {
-			app.quit();
+			exit(0).then(() => app.quit());
 		}
 	});
 
