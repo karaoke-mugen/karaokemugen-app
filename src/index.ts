@@ -54,38 +54,42 @@ if (process.platform === 'win32' ) {
 
 // Main app begins here.
 // Testing if we're in a packaged version of KM or not.
-// First, this is a test for unpacked electron mode :
-let appPath = process.versions.electron
-	? process.execPath
-	: join(__dirname, '../');
+// First, this is a test for unpacked electron mode.
+// If we're not using electron, then use __dirname's parent)
+const appPath = process.cwd();
+const originalAppPath = process.versions.electron
+	//INIT_CWD exists only when electron is launched from yarn (dev)
+	//PORTABLE_EXECUTABLE_DIR exists only when launched from a packaged eletron app (yarn dist) (production)
+	// The last one is when running an unpackaged electron for testing purposes (yarn packer) (dev)
+	? process.env.INIT_CWD || process.env.PORTABLE_EXECUTABLE_DIR || join(__dirname, '../../../')
+	// Launched without electron
+	: process.cwd();
 // Resources are all the stuff our app uses and is bundled with. mpv config files, default avatar, background, migrations, locales, etc.
-const resourcePath = process.versions.electron
+const resourcePath = process.versions.electron && existsSync(resolve(appPath, 'resources/'))
+	// If launched from electron we check if cwd/resources exists and set it to resourcePath. If not we'll use appPath
+	// CWD = current working directory, so if launched from a dist exe, this is $HOME/AppData/Local/ etc. on Windows, and equivalent path on Unix systems.
+	// It also works from unpackaged electron, if all things are well.
+	// If it doesn't exist, we'll assume the resourcePath is originalAppPath.
 	? resolve(appPath, 'resources/')
-	: resolve(appPath);
+	: originalAppPath;
 
 // DataPath is by default appPath + app. This is default when running from source
-let dataPath: string;
-// Testing if we're in portable mode or not. This is defined by electron-builder when packaging an app
-appPath = process.env.PORTABLE_EXECUTABLE_DIR
-	? process.env.PORTABLE_EXECUTABLE_DIR
-	: appPath;
-if (existsSync(resolve(appPath, 'portable'))) {
-	dataPath = resolve(appPath, 'app/');
-} else {
+const dataPath = existsSync(resolve(originalAppPath, 'portable'))
+	? resolve(originalAppPath, 'app/')
 	// Rewriting dataPath to point to user home directory
-	dataPath = resolve(process.env.HOME || process.env.HOMEPATH, 'KaraokeMugen');
-}
+	: resolve(process.env.HOME || process.env.HOMEPATH, 'KaraokeMugen');
+
 if (!existsSync(dataPath)) mkdirSync(dataPath);
 
 // Move config file if it's in appPath to dataPath
-if (existsSync(resolve(appPath, 'config.yml')) && !existsSync(resolve(dataPath, 'config.yml'))) {
-	moveSync(resolve(appPath, 'config.yml'), resolve(dataPath, 'config.yml'));
+if (existsSync(resolve(originalAppPath, 'config.yml')) && !existsSync(resolve(dataPath, 'config.yml'))) {
+	moveSync(resolve(originalAppPath, 'config.yml'), resolve(dataPath, 'config.yml'));
 }
-if (existsSync(resolve(appPath, 'database.json')) && !existsSync(resolve(dataPath, 'database.json'))) {
-	moveSync(resolve(appPath, 'database.json'), resolve(dataPath, 'database.json'));
+if (existsSync(resolve(originalAppPath, 'database.json')) && !existsSync(resolve(dataPath, 'database.json'))) {
+	moveSync(resolve(originalAppPath, 'database.json'), resolve(dataPath, 'database.json'));
 }
 
-setState({appPath: appPath, dataPath: dataPath, resourcePath: resourcePath});
+setState({originalAppPath: originalAppPath, appPath: appPath, dataPath: dataPath, resourcePath: resourcePath});
 
 process.env['NODE_ENV'] = 'production'; // Default
 

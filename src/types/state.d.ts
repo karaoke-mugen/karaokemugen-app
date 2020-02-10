@@ -29,6 +29,7 @@ export interface State {
 	appPath?: string,
 	dataPath?: string,
 	resourcePath?: string,
+	originalAppPath?: string,
 	osURL?: string,
 	os?: string,
 	osHost?: string
