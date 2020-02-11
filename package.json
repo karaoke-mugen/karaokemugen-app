@@ -199,11 +199,13 @@
   },
   "build": {
     "appId": "KaraokeMugen",
-    "compression": "store",
     "win": {
       "target": "portable",
       "publisherName": "Karaoke Mugen Team"
-    },
+	},
+	"mac": {
+	  "category": "public.app-category.entertainment"
+	},
     "productName": "KaraokeMugen",
     "extraResources": [
       "migrations/**",
