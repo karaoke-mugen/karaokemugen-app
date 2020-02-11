@@ -89,7 +89,7 @@ export async function initEngine() {
 		let ready = 'READY';
 		if (Math.floor(Math.random() * Math.floor(10)) >= 9) ready = 'LADY';
 		logger.info(`[Engine] Karaoke Mugen is ${ready}`);
-		if (!state.isTest) welcomeToYoukousoKaraokeMugen(conf.Frontend.Port);
+		if (!state.isTest && !state.electron) welcomeToYoukousoKaraokeMugen();
 		setState({ ready: true });
 	} catch(err) {
 		logger.error(`[Engine] Karaoke Mugen IS NOT READY : ${JSON.stringify(err)}`);

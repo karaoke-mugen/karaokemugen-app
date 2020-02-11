@@ -22,6 +22,8 @@ import {createInterface} from 'readline';
 import { getPortPromise } from 'portfinder';
 import { app, BrowserWindow, Menu, MenuItem } from 'electron';
 import cloneDeep from 'lodash.clonedeep';
+import open from 'open';
+import { welcomeToYoukousoKaraokeMugen } from './services/welcome';
 
 process.on('uncaughtException', exception => {
 	console.log('Uncaught exception:', exception);
@@ -104,14 +106,15 @@ if(app) {
 	// Cette méthode sera appelée quand Electron aura fini
 	// de s'initialiser et sera prêt à créer des fenêtres de navigation.
 	// Certaines APIs peuvent être utilisées uniquement quand cet événement est émit.
-	app.on('ready', () => {
+	app.on('ready', async () => {
 		createWindow();
-		main()
+		await main()
 			.catch(err => {
 				logger.error(`[Launcher] Error during launch : ${err}`);
 				console.log(err);
 				exit(1);
 			});
+		win.loadURL(await welcomeToYoukousoKaraokeMugen());
 	});
 
 	// Quitte l'application quand toutes les fenêtres sont fermées.
@@ -133,11 +136,11 @@ if(app) {
 
 	const menu = new Menu();
 	menu.append(new MenuItem({ label: 'Update', click() {
-		updateKM();
+		console.log('item 1 clicked');
 	}}));
 	menu.append(new MenuItem({ type: 'separator' }));
 	menu.append(new MenuItem({ label: 'Launch MPV', click() {
-		relaunchMPV();
+		console.log('item 2 clicked');
 	} }));
 	Menu.setApplicationMenu(menu);
 } else {
@@ -148,15 +151,6 @@ if(app) {
 			exit(1);
 		});
 }
-
-function updateKM() {
-	console.log('item 1 clicked');
-}
-
-function relaunchMPV() {
-	console.log('item 2 clicked');
-}
-
 
 function createWindow () {
 	// Cree la fenetre du navigateur.
@@ -173,8 +167,10 @@ function createWindow () {
 	win.maximize();
 	win.show();
 
-	// Ouvre les DevTools.
-	win.webContents.openDevTools();
+	win.webContents.on('new-window', (event, url) => {
+		event.preventDefault();
+		open(url);
+	});
 
 	// Émit lorsque la fenêtre est fermée.
 	win.on('closed', () => {
