@@ -40,10 +40,10 @@ export async function initEngine() {
 	}
 	if (state.opt.mediaUpdate) try {
 		await updateAllMedias();
-		await exit(0)
+		await exit(0);
 	} catch(err) {
 		logger.error(`[Engine] Updating medias failed : ${err}`);
-		await exit(1)
+		await exit(1);
 	}
 	//Database system is the foundation of every other system
 	await initDBSystem();
