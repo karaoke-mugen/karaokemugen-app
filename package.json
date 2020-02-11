@@ -5,7 +5,7 @@
   "bin": {
     "karaokemugen": "./dist/index.js"
   },
-  "main": "js/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "noElectron": "yarn build && node js/index.js",
     "start": "yarn build && electron .",
