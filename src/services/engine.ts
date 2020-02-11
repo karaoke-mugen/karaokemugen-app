@@ -145,6 +145,11 @@ function mataNe(rc: any) {
 	if (!getState().electron) process.exit(rc);
 }
 
+export function shutdown() {
+	logger.info('[Engine] Dropping the mic, shutting down!');
+	exit(0);
+}
+
 export async function getKMStats() {
 	return await getStats();
 }
