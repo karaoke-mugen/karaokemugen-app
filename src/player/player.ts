@@ -20,6 +20,7 @@ import { initializationCatchphrases } from '../utils/constants';
 import { getSingleMedia } from '../services/medias';
 import { MediaType } from '../types/medias';
 import { notificationNextSong } from '../services/playlist';
+import randomstring from 'randomstring';
 
 const sleep = promisify(setTimeout);
 
@@ -207,9 +208,13 @@ async function startmpv() {
 
 	let socket: string;
 	// Name socket file accordingly depending on OS.
+	const random = randomstring.generate({
+		length: 3,
+		charset: 'numeric'
+	});
 	state.os === 'win32'
-		? socket = '\\\\.\\pipe\\mpvsocket'
-		: socket = '/tmp/km-node-mpvsocket';
+		? socket = '\\\\.\\pipe\\mpvsocket' + random
+		: socket = '/tmp/km-node-mpvsocket' + random;
 
 	player = new mpv(
 		{
