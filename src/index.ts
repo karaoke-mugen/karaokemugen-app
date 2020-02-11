@@ -169,7 +169,9 @@ function createWindow () {
 	});
 
 	// and load the index.html of the app.
-	win.loadFile(__dirname + 'index.html');
+	win.loadFile('./src/index.html');
+	win.maximize();
+	win.show();
 
 	// Ouvre les DevTools.
 	win.webContents.openDevTools();
