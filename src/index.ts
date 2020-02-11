@@ -56,13 +56,17 @@ if (process.platform === 'win32' ) {
 // Testing if we're in a packaged version of KM or not.
 // First, this is a test for unpacked electron mode.
 // If we're not using electron, then use __dirname's parent)
-const appPath = process.cwd();
 const originalAppPath = process.versions.electron
 	//INIT_CWD exists only when electron is launched from yarn (dev)
 	//PORTABLE_EXECUTABLE_DIR exists only when launched from a packaged eletron app (yarn dist) (production)
 	// The last one is when running an unpackaged electron for testing purposes (yarn packer) (dev)
 	? process.env.INIT_CWD || process.env.PORTABLE_EXECUTABLE_DIR || join(__dirname, '../../../')
 	// Launched without electron
+	: process.cwd();
+// On OSX, process.cwd() returns /, which is utter stupidity but let's go along with it.
+// What's funny is that originalAppPath is correct on OSX no matter if you're using Electron or not.
+const appPath = process.platform === 'darwin'
+	? originalAppPath
 	: process.cwd();
 // Resources are all the stuff our app uses and is bundled with. mpv config files, default avatar, background, migrations, locales, etc.
 const resourcePath = process.versions.electron && existsSync(resolve(appPath, 'resources/'))
