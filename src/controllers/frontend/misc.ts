@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getLang } from '../middlewares/lang';
 import { requireAuth, requireValidUser, requireAdmin, updateUserLoginTime, optionalAuth } from '../middlewares/auth';
-import { shutdown, getKMStats } from '../../services/engine';
+import { getKMStats } from '../../services/engine';
 import { getConfig } from '../../lib/utils/config';
 import { editSetting, getPublicConfig, backupConfig } from '../../utils/config';
 import { getDisplays } from '../../utils/displays';
@@ -19,34 +19,6 @@ import { dumpPG, restorePG } from '../../utils/postgresql';
 import { browseFs } from '../../lib/utils/files';
 
 export default function miscController(router: Router) {
-	/**
- * @api {post} /shutdown Shutdown the entire application
- * @apiDescription
- * Shutdowns application completely. Kind of a self-destruct button.
- * @apiName PostShutdown
- * @apiGroup Main
- * @apiVersion 3.1.0
- *
- * @apiHeader authorization Auth token received from logging in
- * @apiPermission admin
- * @apiSuccess {String} Shutdown in progress.
- *
- * @apiSuccessExample Success-Response:
- * HTTP/1.1 200 OK
- * "Shutdown in progress."
- *
- */
-	router.route('/shutdown')
-		.post(getLang, requireAuth, requireValidUser, requireAdmin, async (_req: any, res: any) => {
-		// Sends command to shutdown the app.
-			try {
-				shutdown();
-				res.status(200).send('Shutdown in progress');
-			} catch(err) {
-				res.status(500).json(err);
-			}
-		});
-
 	router.route('/settings')
 	/**
  * @api {get} /settings Get settings
