@@ -32,7 +32,8 @@ export interface State {
 	originalAppPath?: string,
 	osURL?: string,
 	os?: string,
-	osHost?: string
+	osHost?: string,
+	electron?: boolean,
 	EngineDefaultLocale?: string,
 	player?: PlayerState,
 	securityCode: number,

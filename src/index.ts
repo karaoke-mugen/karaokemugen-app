@@ -183,7 +183,7 @@ function createWindow () {
 
 async function main() {
 	const argv = minimist(process.argv.slice(2));
-	setState({ os: process.platform, version: version });
+	setState({ os: process.platform, version: version, electron: app });
 	const state = getState();
 	console.log(chalk.white(logo));
 	console.log('Karaoke Player & Manager - http://karaokes.moe');

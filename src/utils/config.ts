@@ -180,12 +180,11 @@ async function checkBinaries(config: Config): Promise<BinariesConfig> {
 
 	try {
 		await Promise.all(requiredBinariesChecks);
+		return binariesPath;
 	} catch (err) {
 		binMissing(binariesPath, err);
-		await exit(1);
+		throw err;
 	}
-
-	return binariesPath;
 }
 
 /** Return all configured paths for binaries */
@@ -229,12 +228,21 @@ function binMissing(binariesPath: any, err: string) {
 	logger.error('[BinCheck] mpv : ' + binariesPath.mpv);
 	logger.error('[BinCheck] Postgres : ' + binariesPath.postgres);
 	logger.error('[BinCheck] Exiting...');
-	console.log('\n');
-	console.log('One or more binaries needed by Karaoke Mugen could not be found.');
-	console.log('Check the paths above and make sure these are available.');
-	console.log('Edit your config.yml and set System.Binaries.ffmpeg, System.Binaries.Player and System.Binaries.Postgres variables correctly for your OS.');
-	console.log('You can download mpv for your OS from http://mpv.io/');
-	console.log('You can download postgreSQL for your OS from http://postgresql.org/');
-	console.log('You can download ffmpeg for your OS from http://ffmpeg.org');
-	if (process.platform === 'win32') console.log('If the missing file is msvcr120.dll, download Microsoft Visual C++ 2013 Redistribuable Package here : https://www.microsoft.com/en-US/download/details.aspx?id=40784');
+	const error = `One or more binaries needed by Karaoke Mugen could not be found.
+
+Check the paths above and make sure these are available.
+
+Edit your config.yml and set System.Binaries.ffmpeg, System.Binaries.Player and System.Binaries.Postgres variables correctly for your OS.
+
+You can download mpv for your OS from http://mpv.io/
+You can download postgreSQL for your OS from http://postgresql.org/
+You can download ffmpeg for your OS from http://ffmpeg.org
+(Windows Only) If the missing file is msvcr120.dll, download Microsoft Visual C++ 2013 Redistribuable Package here : https://www.microsoft.com/en-US/download/details.aspx?id=40784
+`;
+	if (!getState().electron) {
+		console.log(error);
+		exit(1);
+	} else {
+		throw Error(error);
+	}
 }
