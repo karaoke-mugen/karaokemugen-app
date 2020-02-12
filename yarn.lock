@@ -5309,6 +5309,11 @@ winston-daily-rotate-file@^4.4.2:
     triple-beam "^1.3.0"
     winston-transport "^4.2.0"
 
+winston-electron@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/winston-electron/-/winston-electron-0.2.0.tgz#ede1a7e5c29eba581e0c076e5d13dc81f03decd2"
+  integrity sha512-nJKD7hvd+ETRcD5wb5Jy3PmlpaU3l2Oexh2CNA2Yf8sYkkAZKJzjBZwToAjBakc7hZSds/Jz6d6cxTX6UugIJg==
+
 winston-socket.io@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/winston-socket.io/-/winston-socket.io-0.4.0.tgz#c393ce48f4df7598f723347f150ee9d0f25bb349"
