@@ -145,8 +145,8 @@
     "uuid": "^3.4.0",
     "validate.js": "^0.13.1",
     "winston": "^3.2.1",
+    "winston-console-for-electron": "AxelTerizaki/winston-console-for-electron#bc67e67f728586b3df6d451f64113f1d22f66257",
     "winston-daily-rotate-file": "^4.4.2",
-    "winston-electron": "^0.2.0",
     "winston-socket.io": "^0.4.0",
     "xml-js": "^1.6.11",
     "yesql": "^4.1.1"

@@ -3256,7 +3256,7 @@ log-symbols@2.2.0:
   dependencies:
     chalk "^2.0.1"
 
-logform@^2.1.1:
+logform@^2.1.1, logform@^2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/logform/-/logform-2.1.2.tgz#957155ebeb67a13164069825ce67ddb5bb2dd360"
   integrity sha512-+lZh4OpERDBLqjiwDLpAWNQu6KMjnlXH2ByZwCuSqVPJletw0kTWJf5CgSNAUKn1KUkv3m2cUz/LK8zyEy7wzQ==
@@ -5299,6 +5299,13 @@ widest-line@^3.1.0:
   dependencies:
     string-width "^4.0.0"
 
+winston-console-for-electron@AxelTerizaki/winston-console-for-electron#bc67e67f728586b3df6d451f64113f1d22f66257:
+  version "0.0.6"
+  resolved "https://codeload.github.com/AxelTerizaki/winston-console-for-electron/tar.gz/bc67e67f728586b3df6d451f64113f1d22f66257"
+  dependencies:
+    logform "^2.1.2"
+    winston-transport "^4.3.0"
+
 winston-daily-rotate-file@^4.4.2:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/winston-daily-rotate-file/-/winston-daily-rotate-file-4.4.2.tgz#7a4dd34fc26ab3873bdee8c4f9d5bf1d8fd6d562"
@@ -5308,11 +5315,6 @@ winston-daily-rotate-file@^4.4.2:
     object-hash "^2.0.1"
     triple-beam "^1.3.0"
     winston-transport "^4.2.0"
-
-winston-electron@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/winston-electron/-/winston-electron-0.2.0.tgz#ede1a7e5c29eba581e0c076e5d13dc81f03decd2"
-  integrity sha512-nJKD7hvd+ETRcD5wb5Jy3PmlpaU3l2Oexh2CNA2Yf8sYkkAZKJzjBZwToAjBakc7hZSds/Jz6d6cxTX6UugIJg==
 
 winston-socket.io@^0.4.0:
   version "0.4.0"
