@@ -82,7 +82,7 @@ export const defaults: Config = {
 
 
 **Lien** : $link`,
-				Title: "[Suggestion] $serie - $title",
+				Title: '[Suggestion] $serie - $title',
 				Labels: ['suggestion']
 			}
 		}
