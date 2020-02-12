@@ -7,13 +7,13 @@
   },
   "main": "dist/index.js",
   "scripts": {
-    "noElectron": "yarn build && node js/index.js",
+    "noElectron": "yarn build && node dist/index.js",
     "start": "yarn build && electron .",
     "frontend-dev": "cd frontend && yarn dev",
     "frontend-prod": "cd frontend && yarn build",
     "debug": "ts-node $NODE_DEBUG_OPTION src/index.ts -- --debug",
-	"qstart": "electron .",
-	"qNoElectron": "node js/index.js",
+    "qstart": "electron .",
+    "qNoElectron": "node dist/index.js",
     "test": "mocha --require ts-node/register --timeout 20000 test/*.ts",
     "build": "npx rimraf \"dist\" && tsc --build",
     "setup": "git submodule sync --recursive && git submodule update --init --recursive && yarn install && yarn build && yarn installFrontend && yarn frontend-prod && yarn installSystemPanel && yarn buildSystemPanel",
@@ -146,6 +146,7 @@
     "validate.js": "^0.13.1",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.4.2",
+    "winston-socket.io": "^0.4.0",
     "xml-js": "^1.6.11",
     "yesql": "^4.1.1"
   },
@@ -202,10 +203,10 @@
     "win": {
       "target": "portable",
       "publisherName": "Karaoke Mugen Team"
-	},
-	"mac": {
-	  "category": "public.app-category.entertainment"
-	},
+    },
+    "mac": {
+      "category": "public.app-category.entertainment"
+    },
     "productName": "KaraokeMugen",
     "extraResources": [
       "migrations/**",
@@ -213,10 +214,10 @@
       "assets/**",
       "frontend/build/**",
       "systempanel/build/**"
-	],
-	"extraFiles": [
-	  "app/bin/**"
-	],
+    ],
+    "extraFiles": [
+      "app/bin/**"
+    ],
     "directories": {
       "output": "packages",
       "buildResources": "assets"

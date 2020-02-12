@@ -1,5 +1,5 @@
-import { PlayerState } from "./player";
-import { CurrentSong } from "./playlist";
+import { PlayerState } from './player';
+import { CurrentSong } from './playlist';
 
 export interface State {
 	currentPlaylistID?: number,
@@ -37,6 +37,7 @@ export interface State {
 	EngineDefaultLocale?: string,
 	player?: PlayerState,
 	securityCode: number,
+	wsLogNamespace: string,
 	version?: {
 		number?: string,
 		name?: string,

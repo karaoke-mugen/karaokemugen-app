@@ -1,6 +1,6 @@
 //Utils
 import {getConfig} from '../lib/utils/config';
-import {profile} from '../lib/utils/logger';
+import {profile, enableWSLogging} from '../lib/utils/logger';
 import readlineSync from 'readline-sync';
 import logger from 'winston';
 import {getState, setState} from '../utils/state';
@@ -85,6 +85,7 @@ export async function initEngine() {
 	if (conf.Online.Stats === true) inits.push(initStats(false));
 	try {
 		await Promise.all(inits);
+		enableWSLogging();
 		//Easter egg
 		let ready = 'READY';
 		if (Math.floor(Math.random() * Math.floor(10)) >= 9) ready = 'LADY';
