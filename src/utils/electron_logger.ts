@@ -1,5 +1,5 @@
 import Transport from 'winston-transport';
-import {ipcMain} from 'electron';
+import {win} from '../index';
 
 export class IPCTransport extends Transport {
 	constructor(opts: any) {
@@ -7,7 +7,7 @@ export class IPCTransport extends Transport {
 	}
 
 	log(info: any, callback: any) {
-		ipcMain.emit('log', info);
+		win.webContents.send('log', info);
 		callback();
 	}
 }

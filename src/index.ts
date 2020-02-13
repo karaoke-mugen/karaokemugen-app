@@ -96,11 +96,12 @@ if (existsSync(resolve(originalAppPath, 'database.json')) && !existsSync(resolve
 	moveSync(resolve(originalAppPath, 'database.json'), resolve(dataPath, 'database.json'));
 }
 
+export let win: Electron.BrowserWindow;
+
 setState({originalAppPath: originalAppPath, appPath: appPath, dataPath: dataPath, resourcePath: resourcePath});
 
 process.env['NODE_ENV'] = 'production'; // Default
 
-let win: Electron.BrowserWindow;
 
 if(app) {
 	// Cette méthode sera appelée quand Electron aura fini
