@@ -167,9 +167,9 @@ function createWindow () {
 			nodeIntegration: true
 		}
 	});
-	win.webContents.openDevTools();
+	
 	// and load the index.html of the app.
-	win.loadFile('./src/index.html');
+	win.loadURL(`file://${join(__dirname, 'webapp/index.html')}`)
 	win.maximize();
 	win.show();
 
