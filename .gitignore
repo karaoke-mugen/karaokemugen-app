@@ -48,3 +48,4 @@ frontend/build/
 *.requestedCount.csv
 dist2
 js
+packages
