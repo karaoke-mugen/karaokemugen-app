@@ -14,6 +14,7 @@ import {Config} from './types/config';
 
 // Node modules
 import {moveSync} from 'fs-extra';
+import {dirname} from 'path';
 import {mkdirSync, existsSync} from 'fs';
 import {join, resolve} from 'path';
 import minimist from 'minimist';
@@ -73,7 +74,7 @@ if (process.versions.electron) {
 // On OSX, process.cwd() returns /, which is utter stupidity but let's go along with it.
 // What's funny is that originalAppPath is correct on OSX no matter if you're using Electron or not.
 const appPath = process.platform === 'darwin'
-	? originalAppPath
+	? dirname(process.execPath)
 	: process.cwd();
 // Resources are all the stuff our app uses and is bundled with. mpv config files, default avatar, background, migrations, locales, etc.
 const resourcePath = process.versions.electron && existsSync(resolve(appPath, 'resources/'))
