@@ -99,7 +99,7 @@ export async function initPGData() {
 			stdio: 'inherit'
 		});
 	} catch(err) {
-		logger.error(`[DB] Failed to initialize database : ${JSON.stringify(err, null, 2)}`);
+		logger.error(`[DB] Failed to initialize database : ${JSON.stringify(err)}`);
 		throw `Init failed : ${err}`;
 	}
 }
@@ -166,7 +166,7 @@ export async function initPG() {
 			stdio: 'ignore'
 		});
 	} catch(err) {
-		logger.error(`[DB] Failed to start PostgreSQL : ${JSON.stringify(err, null, 2)}`);
+		logger.error(`[DB] Failed to start PostgreSQL : ${JSON.stringify(err)}`);
 		throw err.message;
 	}
 }

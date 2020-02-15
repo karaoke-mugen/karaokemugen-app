@@ -271,7 +271,7 @@ async function startmpv() {
 		if (monitorEnabled) promises.push(playerMonitor.start());
 		await Promise.all(promises);
 	} catch(err) {
-		logger.error(`[Player] mpvAPI : ${JSON.stringify(err, null, 2)}`);
+		logger.error(`[Player] mpvAPI : ${JSON.stringify(err)}`);
 		throw err;
 	}
 

@@ -167,7 +167,7 @@ function createWindow () {
 			nodeIntegration: true
 		}
 	});
-	
+
 	// and load the index.html of the app.
 	win.loadURL(`file://${join(__dirname, 'webapp/index.html')}`)
 	win.maximize();
@@ -211,8 +211,8 @@ async function main() {
 
 	logger.debug(`[Launcher] Locale : ${state.EngineDefaultLocale}`);
 	logger.debug(`[Launcher] OS : ${state.os}`);
-	logger.debug(`[Launcher] Loaded configuration : ${JSON.stringify(publicConfig, null, 2)}`);
-	logger.debug(`[Launcher] Initial state : ${JSON.stringify(state, null, 2)}`);
+	logger.debug(`[Launcher] Loaded configuration : ${JSON.stringify(publicConfig)}`);
+	logger.debug(`[Launcher] Initial state : ${JSON.stringify(state)}`);
 
 	// Checking paths, create them if needed.
 	await checkPaths(getConfig());
