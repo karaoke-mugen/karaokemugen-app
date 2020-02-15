@@ -81,7 +81,9 @@ const resourcePath = process.versions.electron && existsSync(resolve(appPath, 'r
 	// CWD = current working directory, so if launched from a dist exe, this is $HOME/AppData/Local/ etc. on Windows, and equivalent path on Unix systems.
 	// It also works from unpackaged electron, if all things are well.
 	// If it doesn't exist, we'll assume the resourcePath is originalAppPath.
-	? resolve(appPath, 'resources/')
+	? process.platform === 'darwin'
+		? process.resourcesPath
+		: resolve(appPath, 'resources/')
 	: originalAppPath;
 
 // DataPath is by default appPath + app. This is default when running from source
@@ -208,7 +210,6 @@ async function main() {
 	logger.debug(`[Launcher] DataPath : ${dataPath}`);
 	logger.debug(`[Launcher] ResourcePath : ${resourcePath}`);
 	logger.debug(`[Launcher] Electron ResourcePath: ${process.resourcesPath}`);
-
 	logger.debug(`[Launcher] Locale : ${state.EngineDefaultLocale}`);
 	logger.debug(`[Launcher] OS : ${state.os}`);
 	logger.debug(`[Launcher] Loaded configuration : ${JSON.stringify(publicConfig)}`);
