@@ -172,7 +172,7 @@ function createWindow () {
 	});
 
 	// and load the index.html of the app.
-	win.loadURL(`file://${join(__dirname, 'webapp/index.html')}`)
+	win.loadURL(`file://${join(__dirname, 'webapp/index.html')}`);
 	win.maximize();
 	win.show();
 
