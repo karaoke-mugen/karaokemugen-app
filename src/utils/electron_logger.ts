@@ -7,7 +7,7 @@ export class IPCTransport extends Transport {
 	}
 
 	log(info: any, callback: any) {
-		win.webContents.send('log', info);
+		if (win) win.webContents.send('log', info);
 		callback();
 	}
 }
