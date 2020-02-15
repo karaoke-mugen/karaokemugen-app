@@ -9,7 +9,7 @@ import i18next from 'i18next';
 interface LogProps extends ReduxMappedProps {}
 
 interface LogState {
-	log: string[],
+	log: {level:string, message:string, timestamp:string}[],
 	error: string,
 }
 
@@ -34,22 +34,10 @@ class Log extends Component<LogProps, LogState> {
 
 	parseLogs(data: string) {
 		const logs = [];
-		const re = /[0-9]{2} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT\+[0-9]{4} \(GMT\+[0-9]{2}:[0-9]{2}\) - [a-z]+:/
 		const lines = data.split("\n")
-		lines.forEach((line, i) => {
-			if (re.test(line)) {
-				let a = 1;
-				let string = line;
-				while (!re.test(lines[i + a])) {
-					string = string+"\n"+lines[i + a];
-					a++;
-					if(a>100)
-					{
-						string = string+"\n...";
-						break;
-					}
-				}
-				logs.push(string);
+		lines.forEach(line => {
+			if (line) {
+				logs.push(JSON.parse(line));
 			}
 		})
 		this.setState({log: logs});
@@ -61,7 +49,6 @@ class Log extends Component<LogProps, LogState> {
 
 	render() {
 		return (
-
 			<Layout.Content style={{ padding: '25px 50px', textAlign: 'left' }}>
 
 			<p><Button type='primary' onClick={this.refresh.bind(this)}>{i18next.t('REFRESH')}</Button></p>
@@ -69,12 +56,12 @@ class Log extends Component<LogProps, LogState> {
 				{
 					this.state.log.map((line,i) => {
 						let color = '#a6e22d'; // green
-						if (line.includes( ' - warn: ')) { color = '#e6db74'; } // yellow
-						if (line.includes(' - error: ')) { color = '#f9265d'; } // red
-						if (line.includes(' - debug: ')) { color = '#999999'; } // blue
+						if (line.level === 'warn') { color = '#e6db74'; } // yellow
+						if (line.level === 'error') { color = '#f9265d'; } // red
+						if (line.level === 'debug') { color = '#999999'; } // grey
 						return (
 							<Timeline.Item key={i} style={{color: color }}>
-								<code style={{whiteSpace:'pre-wrap'}}>{line}</code>
+								<code style={{whiteSpace:'pre-wrap'}}>{new Date(line.timestamp).toString()} {line.message}</code>
 							</Timeline.Item>
 						);
 					})
@@ -82,7 +69,6 @@ class Log extends Component<LogProps, LogState> {
 			</Timeline>
 		</Layout.Content>
 		);
-
 	}
 }
 
