@@ -67,7 +67,7 @@ if (process.versions.electron) {
 	// Because OSX packages are structured differently, we'll modify our path
 	if (process.platform === 'darwin') originalAppPath = resolve(originalAppPath, '../../');
 } else {
-	process.cwd();
+	originalAppPath = process.cwd();
 }
 
 // On OSX, process.cwd() returns /, which is utter stupidity but let's go along with it.
