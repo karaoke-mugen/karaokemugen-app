@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
-import {Button, Layout, Timeline} from 'antd';
+import {Layout, Timeline} from 'antd';
 import {connect} from 'react-redux';
-import Axios from 'axios';
+import axios from 'axios';
 import {loading, infoMessage, errorMessage, warnMessage} from '../actions/navigation';
 import {ReduxMappedProps} from '../react-app-env';
 import i18next from 'i18next';
+import openSocket from 'socket.io-client';
 
 interface LogProps extends ReduxMappedProps {}
 
@@ -24,12 +25,24 @@ class Log extends Component<LogProps, LogState> {
 
 	refresh() {
 		this.props.loading(true);
-		Axios.get('/api/log')
+		axios.get('/api/log')
 			.then(res => {
 				this.props.loading(false);
 				this.parseLogs(res.data);
 			})
 			.catch(err => this.props.errorMessage(i18next.t('CONFIG.LOG_FAILED') + ' ' + err));
+
+		axios.get('/api/settings')
+			.then(res => {
+				let url = window.location.port === '3000' ? `${window.location.protocol}//${window.location.hostname}:1337` : window.location.origin;
+				const socket = openSocket(`${url}${res.data.state.wsLogNamespace}`);
+				socket.on('log', (socket, log) => {
+					let logs = this.state.log;
+					logs.push(log);
+					this.setState({log: logs});
+				});
+			})
+			.catch(err => this.props.errorMessage(i18next.t('CONFIG.FETCH_ERROR')+ ' ' + err));
 	}
 
 	parseLogs(data: string) {
@@ -50,9 +63,7 @@ class Log extends Component<LogProps, LogState> {
 	render() {
 		return (
 			<Layout.Content style={{ padding: '25px 50px', textAlign: 'left' }}>
-
-			<p><Button type='primary' onClick={this.refresh.bind(this)}>{i18next.t('REFRESH')}</Button></p>
-			<Timeline>
+			<Timeline reverse={true}>
 				{
 					this.state.log.map((line,i) => {
 						let color = '#a6e22d'; // green
