@@ -35,8 +35,8 @@ class Log extends Component<LogProps, LogState> {
 		axios.get('/api/settings')
 			.then(res => {
 				let url = window.location.port === '3000' ? `${window.location.protocol}//${window.location.hostname}:1337` : window.location.origin;
-				const socket = openSocket(`${url}${res.data.state.wsLogNamespace}`);
-				socket.on('log', (socket, log) => {
+				const socket = openSocket(`${url}/${res.data.state.wsLogNamespace}`);
+				socket.on('log', (log) => {
 					let logs = this.state.log;
 					logs.push(log);
 					this.setState({log: logs});
