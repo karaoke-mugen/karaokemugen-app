@@ -1,13 +1,10 @@
 #welcomePage {
     height:100vh;
     display: flex;
-    flex-direction: column;
-    padding: 0;
+	flex-direction: column;
+	align-items: center;
     background: rgba(0, 0, 0, 0) linear-gradient(135deg, hsla(205, 39%, 20%, 1) 0%, hsla(151, 17%, 40%, 1) 100%) repeat scroll 0 0;
 
-    html,  body {
-        height: 100%;
-    }
     body {
         font-family: 'Lato', sans-serif;
         font-size: 14px;
@@ -18,89 +15,22 @@
         -webkit-font-smoothing: antialiased;
     }
     
-    p {
-        font-size: 16px;
-        line-height: 25px;
-        margin: 0px;
-    }
     ul {
         padding: 0;
         margin: 0;
         list-style: none;
     }
 
-    a, li {
-        transition: all 0.5s ease-in-out 0s;
-    }
-
-    a:focus,
-    .btn:focus,
-    .btn:active:focus {
-        box-shadow: none;
-        outline: 0 none;
-    }
-    a,
-    a:active,
-    a:focus,
-    a:active {
+    a {
         text-decoration: none;
     }
 
-    .btn {    
-        border-radius: 0;
-    }
-
-    .btn-home {
-    background-color: hsla(274, 49%, 34%, 0.3);
-    border: 1px solid #fff;
-    border-radius: 0px;
-    color: #fff;
-    font-size: 18px;
-    padding: 10px 40px;
-    margin-top: 30px;
-    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
-    }
-
-    .btn-home:hover,
-    .btn-home:focus {
-        background-color: #fff;
-        color: #555;
-    }
-
-    .btn-border {
-        border: 1px solid #fff;
-        padding: 13px 40px;
-        color: #fff;
-        font-size: 15px;
-        text-transform: uppercase;
-        text-shadow: none;
-	}
-    
     .menu-top {
+		width: 100%;
         padding:20px;
         display: flex;
         justify-content: space-around;
         
-        a:focus{
-            color: #009ee5;
-        }
-
-        a, a:hover {
-            color: #fff;
-            padding: 7px;
-        }
-
-        li {
-            padding: 0px 15px;
-        }
-        li a {
-            color: #fff;
-            padding: 10px 0px;
-            font-family: 'Roboto', sans-serif;
-            font-weight: 400;
-            font-size: 14px;
-        }
-
         .menu-top-left {
             display: flex;         
             .menu-top-sessions-label {
@@ -109,23 +39,23 @@
         }
 
         .menu-top-right {
-            display: flex;
-        }
-    }
+			display: flex;
+			
+			a {
+				color: #fff;
+				padding: 7px;
+			}
 
-    .container {
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-    .container,
-    .container > .row {
-        height: 100%;
-        padding: 5px;
-    }
-    .block {
-    	padding-top: 5px;
+			a:hover, a:focus {
+				color: #009ee5;
+			}
+        }
 	}
 	
+    .row {
+        height: 100%;
+        padding: 5px;
+    }	
     .logoDiv {
 		margin: 5px;
 		display: flex;
@@ -154,33 +84,21 @@
         border: 3px solid  #d83838a8;
     }
 
-    a {
-        color: hsla(208, 91%, 79%, 1);
+    .row{
+		width: 90%;
+        display: flex;
+        flex-direction: column;
     }
-    li.new .new-header > a {
-        float: right;
+   .row > div {
+        flex: 0 0 auto;
     }
-    li.new .new-header{
-        position: relative;
-        margin-bottom: 14px;
+    .row > div:last-child {
+        flex-shrink: 1;
+        overflow: auto;
     }
-    li.new .new-header:after {
-        content: "";
-        position: absolute;
-        left: -50%;
-        bottom: -9px;
-        background: #ffffff60;
-        height: 2px;
-        width: 200%;
-    }
-    li.new[data-type="mast"] .new-header:after {
-        background: #ffffff60;
-    }
-    li.new[data-type="app"] .new-header:after {
-        background: #ffbd79bd;
-    }
-    li.new[data-type="base"] .new-header:after {
-        background: #d46cb9ad;
+
+    #welcome_dashboard {
+        display: flex;
     }
 
     .block {
@@ -190,55 +108,18 @@
         box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2)
     }
 
-    .container > .row,
-    .news ul {
-        display: flex;
-        flex-direction: column;
-    }
-    .container > .row > div {
-        flex: 0 0 auto;
-    }
-    .container > .row > div:last-child {
-        flex-shrink: 1;
-        overflow: auto;
-        width: auto;
-    }
-
-    ul.news li.new {
-        flex: 0 1 auto;
-        width: 100%;
-        text-align: left;
-        font-size: 110%;
-        margin-bottom: 5px;
-        background-color: hsla(0, 12%, 24%, 0.4) !important;
-        max-height: 200px;
-        overflow: hidden;
-        position: relative;
-    }
-    ul.news li.new.open {
-    max-height: none;
-    }
-    #welcome_dashboard {
-        display: flex;
-    }
-    .menu > ul  > li {
-        text-align: center;
-        padding: 25px 28px 20px;
-    }
-    .block.wow > ul > li,
-    .news li.new {
-        color: #fff;
-        display: inline-block;
-        line-height: 25px;
-        padding: 10px 15px 10px;
-        flex-grow: 1;
-        flex-basis: 0;
-        margin-bottom: 3px;
-        box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
-        cursor: pointer;
-	}
-	
 	.menuWelcome {
+		li {
+			padding: 10px 15px 10px;
+			box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+			cursor: pointer;
+			line-height: 25px;
+			text-align: center;
+			
+			flex-grow: 1;
+			flex-basis: 0;
+		}
+
 		// operator page
 		li:nth-child(1) {
 			background-color: hsla(234, 44%, 67%, 0.2)
@@ -273,15 +154,7 @@
 	
 	}
 
-    ul li:active {
-        background-color: rgba(255, 255, 255, 0.12);
-    }
-
-    ul li span {
-        font-size: 16px;
-        font-weight: 300;
-    }
-    ul li .digit {
+    .digit {
         display: inline-block;
         font-size: 50px;
         line-height: 50px;

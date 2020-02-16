@@ -291,46 +291,44 @@ class WelcomePage extends Component<IProps, IState> {
   					) : null}
   				</div>
   			</div>
-  			<div className="container">
-  				<div className="row">
-  					<div className="logoDiv">
-  						<img src={logo} alt="Logo Karaoke Mugen" />
-						<div className="separatorLogo" />
-						<div className="catchPhrase">{this.state.catchphrase}</div>
-  					</div>
-  					<div className="block wow menu menuWelcome">
-  						<ul id="welcome_dashboard">
-  							<li className={`manage ${this.props.admpwd && this.props.config.App.FirstRun ? 'tutorial' : ''}`}
-  								onClick={() => window.open('/admin' + window.location.search)}>
-								<i className={`digit fas ${this.props.admpwd && this.props.config.App.FirstRun ? 'fa-hand-point-right' : 'fa-list'}`} />
-								<div>
-									{this.props.admpwd && this.props.config.App.FirstRun ? i18next.t('WLCM_GETSTARTED') : i18next.t('WLCM_KARAMANAGER')}
-								</div>
-  							</li>
-  							<li onClick={() => window.open('/system')}>
-								<i className="digit fas fa-cog" />
-								<div>{i18next.t('WLCM_ADMINISTRATION')}</div>
-  							</li>
-  							<li onClick={() => window.open('/' + window.location.search)}>
-								<i className="digit fas fa-user" />
-								<div>{i18next.t('WLCM_PUBLIC')}</div>
-  							</li>
-  							<li	onClick={() => window.open('https://mugen.karaokes.moe/docs/')}>
-								<i className="digit fas fa-question-circle" />
-								<div>{i18next.t('WLCM_HELP')}</div>
-  							</li>
-  						</ul>
-  					</div>
-  					<div className="wow block">
-  						<ul className="news">
-  							{this.state.news.map(article => {
-  								return (
-									<WelcomePageArticle key={article.date} article={article} />
-  								);
-  							})}
-  						</ul>
-  					</div>
-  				</div>
+			<div className="row">
+				<div className="logoDiv">
+					<img src={logo} alt="Logo Karaoke Mugen" />
+					<div className="separatorLogo" />
+					<div className="catchPhrase">{this.state.catchphrase}</div>
+				</div>
+				<div className="block menu menuWelcome">
+					<ul id="welcome_dashboard">
+						<li className={`manage ${this.props.admpwd && this.props.config.App.FirstRun ? 'tutorial' : ''}`}
+							onClick={() => window.open('/admin' + window.location.search)}>
+							<i className={`digit fas ${this.props.admpwd && this.props.config.App.FirstRun ? 'fa-hand-point-right' : 'fa-list'}`} />
+							<div>
+								{this.props.admpwd && this.props.config.App.FirstRun ? i18next.t('WLCM_GETSTARTED') : i18next.t('WLCM_KARAMANAGER')}
+							</div>
+						</li>
+						<li onClick={() => window.open('/system')}>
+							<i className="digit fas fa-cog" />
+							<div>{i18next.t('WLCM_ADMINISTRATION')}</div>
+						</li>
+						<li onClick={() => window.open('/' + window.location.search)}>
+							<i className="digit fas fa-user" />
+							<div>{i18next.t('WLCM_PUBLIC')}</div>
+						</li>
+						<li	onClick={() => window.open('https://mugen.karaokes.moe/docs/')}>
+							<i className="digit fas fa-question-circle" />
+							<div>{i18next.t('WLCM_HELP')}</div>
+						</li>
+					</ul>
+				</div>
+				<div className="block">
+					<ul>
+						{this.state.news.map(article => {
+							return (
+								<WelcomePageArticle key={article.date} article={article} />
+							);
+						})}
+					</ul>
+				</div>
   			</div>
   		</div>
   	);
