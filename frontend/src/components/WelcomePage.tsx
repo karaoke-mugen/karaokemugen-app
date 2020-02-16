@@ -259,9 +259,7 @@ class WelcomePage extends Component<IProps, IState> {
 					) : null}
 				</div>
   				<div className="menu-top-right">
-  					<a
-  						href="http://mugen.karaokes.moe/contact.html"
-  					>
+  					<a href="http://mugen.karaokes.moe/contact.html">
   						<i className="fas fa-pencil-alt" />&nbsp;
   						{i18next.t('WLCM_CONTACT')}
   					</a>
@@ -295,29 +293,18 @@ class WelcomePage extends Component<IProps, IState> {
   			</div>
   			<div className="container">
   				<div className="row">
-  					<div className="col-md-12 logoDiv">
-  						<h1 className="wow">
-  							<img className="logo-1" height="122" src={logo} alt="LOGO" />
-  						</h1>
+  					<div className="logoDiv">
+  						<img src={logo} alt="Logo Karaoke Mugen" />
+						<div className="separatorLogo" />
+						<div className="catchPhrase">{this.state.catchphrase}</div>
   					</div>
-  					<div className="col-md-12 catchPhrase">
-  						{this.state.catchphrase}
-  					</div>
-  					<div className="col-md-12 block wow menu">
+  					<div className="block wow menu menuWelcome">
   						<ul id="welcome_dashboard">
-  							<li className={
-  									this.props.admpwd && this.props.config.App.FirstRun
-  										? 'manage tutorial'
-  										: 'manage'
-  								}
+  							<li className={`manage ${this.props.admpwd && this.props.config.App.FirstRun ? 'tutorial' : ''}`}
   								onClick={() => window.open('/admin' + window.location.search)}>
-								<i className="digit fas fa-list normalText" />
-								<i className="digit fas fa-hand-point-right tutorialText" />
-								<div className="normalText">
-									{i18next.t('WLCM_KARAMANAGER')}
-								</div>
-								<div className="tutorialText">
-									{i18next.t('WLCM_GETSTARTED')}
+								<i className={`digit fas ${this.props.admpwd && this.props.config.App.FirstRun ? 'fa-hand-point-right' : 'fa-list'}`} />
+								<div>
+									{this.props.admpwd && this.props.config.App.FirstRun ? i18next.t('WLCM_GETSTARTED') : i18next.t('WLCM_KARAMANAGER')}
 								</div>
   							</li>
   							<li onClick={() => window.open('/system')}>
@@ -328,13 +315,13 @@ class WelcomePage extends Component<IProps, IState> {
 								<i className="digit fas fa-user" />
 								<div>{i18next.t('WLCM_PUBLIC')}</div>
   							</li>
-  							<li	onClick={() => window.open('http://mugen.karaokes.moe/docs/')}>
+  							<li	onClick={() => window.open('https://mugen.karaokes.moe/docs/')}>
 								<i className="digit fas fa-question-circle" />
 								<div>{i18next.t('WLCM_HELP')}</div>
   							</li>
   						</ul>
   					</div>
-  					<div className="col-md-12 wow block">
+  					<div className="wow block">
   						<ul className="news">
   							{this.state.news.map(article => {
   								return (
