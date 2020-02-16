@@ -147,7 +147,6 @@
     "winston": "^3.2.1",
     "winston-console-for-electron": "^0.0.7",
     "winston-daily-rotate-file": "^4.4.2",
-    "winston-socket.io": "^0.4.0",
     "xml-js": "^1.6.11",
     "yesql": "^4.1.1"
   },
