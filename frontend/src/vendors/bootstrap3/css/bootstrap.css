@@ -12,16 +12,6 @@ html {
 body {
   margin: 0;
 }
-article,
-details,
-footer,
-header,
-main,
-menu,
-nav {
-  display: block;
-}
-progress,
 video {
   display: inline-block;
   vertical-align: baseline;

@@ -269,7 +269,7 @@ class WelcomePage extends Component<IProps, IState> {
   						<i className="fas fa-link" />&nbsp;
   						{i18next.t('WLCM_SITE')}
   					</a>
-  					<a href="#" id="wlcm_login" onClick={this.openLoginOrProfileModal}>
+  					<a href="#" onClick={this.openLoginOrProfileModal}>
   						<i className="fas fa-user" />&nbsp;
   						<span>
   							{logInfos && logInfos.token
@@ -303,65 +303,38 @@ class WelcomePage extends Component<IProps, IState> {
   					<div className="col-md-12 catchPhrase">
   						{this.state.catchphrase}
   					</div>
-  					<div className="col-md-12 block wow menu zoomIn">
+  					<div className="col-md-12 block wow menu">
   						<ul id="welcome_dashboard">
-  							<li
-  								className={
-  									this.props.admpwd &&
-                    this.props.config.App.FirstRun
+  							<li className={
+  									this.props.admpwd && this.props.config.App.FirstRun
   										? 'manage tutorial'
   										: 'manage'
   								}
-  								onClick={() =>
-  									window.open('/admin' + window.location.search)
-  								}
-  							>
-  								<div className="dash days_dash">
-  									<i className="digit fas fa-list normalText" />
-  									<i className="digit fas fa-hand-point-right tutorialText" />
-  									<div className="dash_title normalText">
-  										{i18next.t('WLCM_KARAMANAGER')}
-  									</div>
-  									<div className="dash_title tutorialText">
-  										{i18next.t('WLCM_GETSTARTED')}
-  									</div>
-  								</div>
+  								onClick={() => window.open('/admin' + window.location.search)}>
+								<i className="digit fas fa-list normalText" />
+								<i className="digit fas fa-hand-point-right tutorialText" />
+								<div className="normalText">
+									{i18next.t('WLCM_KARAMANAGER')}
+								</div>
+								<div className="tutorialText">
+									{i18next.t('WLCM_GETSTARTED')}
+								</div>
   							</li>
-  							<li>
-  								<div
-  									className="dash hours_dash"
-  									onClick={() => window.open('/system')}
-  								>
-  									<i className="digit fas fa-cog" />
-  									<div className="dash_title">
-  										{i18next.t('WLCM_ADMINISTRATION')}
-  									</div>
-  								</div>
+  							<li onClick={() => window.open('/system')}>
+								<i className="digit fas fa-cog" />
+								<div>{i18next.t('WLCM_ADMINISTRATION')}</div>
   							</li>
-  							<li>
-  								<div
-  									className="dash seconds_dash"
-  									onClick={() =>
-  										window.open('/' + window.location.search)
-  									}
-  								>
-  									<i className="digit fas fa-user" />
-  									<div className="dash_title">{i18next.t('WLCM_PUBLIC')}</div>
-  								</div>
+  							<li onClick={() => window.open('/' + window.location.search)}>
+								<i className="digit fas fa-user" />
+								<div>{i18next.t('WLCM_PUBLIC')}</div>
   							</li>
-  							<li
-  								onClick={() =>
-  									window.open('http://mugen.karaokes.moe/docs/')
-  								}
-  							>
-  								<div className="dash minutes_dash">
-  									<i className="digit fas fa-question-circle" />
-  									<div className="dash_title">{i18next.t('WLCM_HELP')}</div>
-  								</div>
+  							<li	onClick={() => window.open('http://mugen.karaokes.moe/docs/')}>
+								<i className="digit fas fa-question-circle" />
+								<div>{i18next.t('WLCM_HELP')}</div>
   							</li>
   						</ul>
   					</div>
-  					<div className="col-md-12 wow block zoomIn">
+  					<div className="col-md-12 wow block">
   						<ul className="news">
   							{this.state.news.map(article => {
   								return (
