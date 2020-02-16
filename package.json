@@ -15,7 +15,7 @@
     "qstart": "electron .",
     "qNoElectron": "node dist/index.js",
     "test": "mocha --require ts-node/register --timeout 20000 test/*.ts",
-    "build": "npx rimraf \"dist\" && tsc --build && cp src/webapp/index.html dist/webapp/index.html && cp src/webapp/index.js dist/webapp/index.js",
+    "build": "npx rimraf \"dist\" && tsc --build",
     "setup": "git submodule sync --recursive && git submodule update --init --recursive && yarn install && yarn build && yarn installFrontend && yarn frontend-prod && yarn installSystemPanel && yarn buildSystemPanel",
     "gitconfig": "git config diff.submodule log && git config fetch.recursesubmodules on-demand && git config status.submodulesummary true && git config push.recursesubmodules on-demand && git config submodule.recurse true",
     "pull": "git pull && git submodule sync --recursive && git submodule update --init --recursive",
@@ -214,7 +214,8 @@
       "locales/*",
       "assets/**",
       "frontend/build/**",
-      "systempanel/build/**"
+	  "systempanel/build/**",
+	  "initpage/**"
     ],
     "extraFiles": [
       "app/bin/**"

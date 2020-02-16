@@ -165,14 +165,14 @@ function createWindow () {
 	// Cree la fenetre du navigateur.
 	win = new BrowserWindow({
 		backgroundColor: '#36393f',
-		icon: join(__dirname, '../assets/icon.png'),
+		icon: resolve(resourcePath, 'assets/icon.png'),
 		webPreferences: {
 			nodeIntegration: true
 		}
 	});
 
 	// and load the index.html of the app.
-	win.loadURL(`file://${join(__dirname, 'webapp/index.html')}`);
+	win.loadURL(`file://${resolve(resourcePath, 'initpage/index.html')}`);
 	win.maximize();
 	win.show();
 
