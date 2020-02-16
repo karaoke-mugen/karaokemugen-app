@@ -15,19 +15,13 @@
         -webkit-font-smoothing: antialiased;
     }
     
-    ul {
-        padding: 0;
-        margin: 0;
-        list-style: none;
-    }
-
     a {
         text-decoration: none;
     }
 
     .menu-top {
 		width: 100%;
-        padding:20px;
+        padding: 15px;
         display: flex;
         justify-content: space-around;
         
@@ -53,9 +47,24 @@
 	}
 	
     .row {
-        height: 100%;
+		height: 100%;
+		width: 90%;
         padding: 5px;
-    }	
+        display: flex;
+        flex-direction: column;
+    }
+    .row > div:last-child {
+		overflow: auto;
+		height: calc(100% - 400px);
+    }
+
+    .block {
+        background: rgba(255, 255, 255, 0.2);
+        margin: 5px;
+        padding:13px;
+        box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2)
+    }
+
     .logoDiv {
 		margin: 5px;
 		display: flex;
@@ -80,44 +89,27 @@
 		}
     }
 
-    .tutorial {
-        border: 3px solid  #d83838a8;
-    }
-
-    .row{
-		width: 90%;
-        display: flex;
-        flex-direction: column;
-    }
-   .row > div {
-        flex: 0 0 auto;
-    }
-    .row > div:last-child {
-        flex-shrink: 1;
-        overflow: auto;
-    }
-
-    #welcome_dashboard {
-        display: flex;
-    }
-
-    .block {
-        background: rgba(255, 255, 255, 0.2);
-        margin: 5px;
-        padding:13px;
-        box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2)
-    }
-
 	.menuWelcome {
+		display: flex;
+
+		.tutorial {
+			border: 3px solid  #d83838a8;
+		}
+
 		li {
 			padding: 10px 15px 10px;
 			box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
 			cursor: pointer;
 			line-height: 25px;
 			text-align: center;
-			
+			list-style: none;
 			flex-grow: 1;
 			flex-basis: 0;
+
+			i {
+				font-size: 50px;
+				height: 60px;
+			}
 		}
 
 		// operator page
@@ -154,11 +146,4 @@
 	
 	}
 
-    .digit {
-        display: inline-block;
-        font-size: 50px;
-        line-height: 50px;
-        position: relative;
-        height: 60px;
-	}
 }
