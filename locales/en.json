@@ -5,5 +5,18 @@
 	"GO_TO": "Go to",
 	"VOTE_MESSAGE_SCREEN": "Vote for the next song !",
 	"VOTE_MESSAGE_SCREEN_WINNER": "We have a winner !",
-	"NEXT_SONG": "Next song"
+	"NEXT_SONG": "Next song",
+	"INIT_INIT": "Starting up...",
+	"INIT_DUMPDB": "Saving database...",
+	"INIT_RESTOREDB": "Restoring database...",
+	"INIT_DB": "Initializing database...",
+	"INIT_VALIDATION": "Validating your files...",
+	"INIT_GEN": "Generating database, please wait...",
+	"INIT_UPDATEMEDIAS": "Updating medias...",
+	"INIT_BASEUPDATE": "Updating songs...",
+	"INIT_USER": "Initializing users...",
+	"INIT_ONLINEURL": "Connecting to Karaoke Mugen Server...",
+	"INIT_LAST": "Almost there...",
+	"INIT_DONE": "All done!",
+	"INIT_ERROR": "Initialization failed!"
 }

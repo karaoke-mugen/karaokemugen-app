@@ -13,6 +13,8 @@ import { getSettings, saveSetting, connectDB, db, vacuum, getInstanceID, setInst
 import { generateBlacklist } from '../services/blacklist';
 import uuidV4 from 'uuid/v4';
 import { resolve } from 'path';
+import { initStep } from '../utils/electron_logger';
+import i18next from 'i18next';
 
 const sql = require('./sql/database');
 
@@ -132,6 +134,7 @@ export async function initDBSystem(): Promise<boolean> {
 		doGenerate = true;
 	}
 	if (doGenerate) try {
+		initStep(i18next.t('INIT_GEN'));
 		await generateDB();
 	} catch(err) {
 		logger.error(`[DB] Generation failed : ${err}`);

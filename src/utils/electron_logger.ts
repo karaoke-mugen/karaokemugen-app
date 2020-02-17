@@ -1,6 +1,10 @@
 import Transport from 'winston-transport';
 import {win} from '../index';
 
+export function initStep(step: string) {
+	if (win) win.webContents.send('initStep', step);
+}
+
 export class IPCTransport extends Transport {
 	constructor(opts: any) {
 		super(opts);

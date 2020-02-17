@@ -1,3 +1,6 @@
+//Node modules
+import i18n from 'i18next';
+
 //Utils
 import {getConfig} from '../lib/utils/config';
 import {profile, enableWSLogging} from '../lib/utils/logger';
@@ -21,6 +24,7 @@ import { generateDatabase } from '../lib/services/generation';
 import { initTwitch, stopTwitch, getTwitchClient } from '../utils/twitch';
 import { initSession } from './session';
 import { updatePlaylistMedias } from './medias';
+import { initStep } from '../utils/electron_logger';
 
 export async function initEngine() {
 	profile('Init');
@@ -32,6 +36,7 @@ export async function initEngine() {
 		private: conf.Karaoke.Private,
 	});
 	if (state.opt.validate) try {
+		initStep(i18n.t('INIT_VALIDATION'));
 		await generateDatabase(true, true);
 		await exit(0);
 	} catch(err) {
@@ -39,6 +44,7 @@ export async function initEngine() {
 		await exit(1);
 	}
 	if (state.opt.mediaUpdate) try {
+		initStep(i18n.t('INIT_UPDATEMEDIAS'));
 		await updateAllMedias();
 		await exit(0);
 	} catch(err) {
@@ -46,20 +52,24 @@ export async function initEngine() {
 		await exit(1);
 	}
 	//Database system is the foundation of every other system
+	initStep(i18n.t('INIT_DB'));
 	await initDBSystem();
 	if (state.opt.dumpDB) try {
+		initStep(i18n.t('INIT_DUMPDB'));
 		await dumpPG();
 		await exit(0);
 	} catch(err) {
 		await exit(1);
 	}
 	if (state.opt.restoreDB) try {
+		initStep(i18n.t('INIT_RESTOREDB'));
 		await restorePG();
 		await exit(0);
 	} catch(err) {
 		await exit(1);
 	}
 	if (state.opt.baseUpdate) try {
+		initStep(i18n.t('INIT_BASEUPDATE'));
 		await updateAllBases();
 		logger.info('[Engine] Done updating karaoke base');
 		await exit(0);
@@ -67,8 +77,10 @@ export async function initEngine() {
 		logger.error(`[Engine] Update failed : ${err}`);
 		await exit(1);
 	}
+	initStep(i18n.t('INIT_USER'));
 	await initUserSystem();
 	if (conf.Online.URL) try {
+		initStep(i18n.t('INIT_ONLINEURL'));
 		await initOnlineURLSystem();
 	} catch(err) {
 		//Non-blocking
@@ -84,7 +96,9 @@ export async function initEngine() {
 	initDownloader();
 	if (conf.Online.Stats === true) inits.push(initStats(false));
 	try {
+		initStep(i18n.t('INIT_LAST'));
 		await Promise.all(inits);
+		initStep(i18n.t('INIT_DONE'));
 		enableWSLogging();
 		//Easter egg
 		let ready = 'READY';
@@ -92,13 +106,13 @@ export async function initEngine() {
 		logger.info(`[Engine] Karaoke Mugen is ${ready}`);
 		if (!state.isTest && !state.electron) welcomeToYoukousoKaraokeMugen();
 		setState({ ready: true });
+		// This is done later because it's not important.
+		if (!state.isTest && !state.isDemo) updatePlaylistMedias();
 	} catch(err) {
 		logger.error(`[Engine] Karaoke Mugen IS NOT READY : ${JSON.stringify(err)}`);
 	} finally {
 		profile('Init');
 	}
-	// This is done later because it's not important.
-	if (!state.isTest && !state.isDemo) updatePlaylistMedias();
 }
 
 export async function exit(rc: any) {

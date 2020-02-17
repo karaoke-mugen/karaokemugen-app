@@ -10,7 +10,7 @@ import cloneDeep from 'lodash.clonedeep';
 // KM Imports
 import logger from '../lib/utils/logger';
 import {relativePath, asyncCopy, asyncRequired} from '../lib/utils/files';
-import {configureIDs, configureLocale, loadConfigFiles, setConfig, verifyConfig, getConfig, setConfigConstraints} from '../lib/utils/config';
+import {configureIDs, loadConfigFiles, setConfig, verifyConfig, getConfig, setConfigConstraints} from '../lib/utils/config';
 import {configConstraints, defaults} from './default_settings';
 import {publishURL} from '../services/online';
 import {playerNeedsRestart, prepareClassicPauseScreen} from '../services/player';
@@ -119,7 +119,6 @@ export async function mergeConfig(newConfig: Config, oldConfig: Config) {
 /** Initializing configuration */
 export async function initConfig(argv: any) {
 	setConfigConstraints(configConstraints);
-	await configureLocale();
 	await loadConfigFiles(getState().dataPath, argv.config, defaults);
 	const binaries = await checkBinaries(getConfig());
 	setState({binPath: binaries});

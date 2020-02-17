@@ -1,6 +1,6 @@
 // KM Imports
 import {asyncCheckOrMkdir, asyncExists, asyncRemove, asyncCopy} from './lib/utils/files';
-import {getConfig, setConfig, resolvedPathTemp, resolvedPathAvatars} from './lib/utils/config';
+import {getConfig, setConfig, resolvedPathTemp, resolvedPathAvatars, configureLocale} from './lib/utils/config';
 import {initConfig} from './utils/config';
 import {parseCommandLineArgs} from './args';
 import logger, { configureLogger } from './lib/utils/logger';
@@ -13,6 +13,7 @@ import { migrateOldFoldersToRepo, addRepo, getRepo } from './services/repo';
 import {Config} from './types/config';
 
 // Node modules
+import i18n from 'i18next';
 import {moveSync} from 'fs-extra';
 import {dirname} from 'path';
 import {mkdirSync, existsSync} from 'fs';
@@ -25,6 +26,7 @@ import { app, BrowserWindow, Menu, MenuItem } from 'electron';
 import cloneDeep from 'lodash.clonedeep';
 import open from 'open';
 import { welcomeToYoukousoKaraokeMugen } from './services/welcome';
+import { initStep } from './utils/electron_logger';
 
 process.on('uncaughtException', exception => {
 	console.log('Uncaught exception:', exception);
@@ -193,6 +195,8 @@ function createWindow () {
 
 
 async function main() {
+	await configureLocale();
+	initStep(i18n.t('INIT_INIT'));
 	const argv = minimist(process.argv.slice(2));
 	setState({ os: process.platform, version: version, electron: app });
 	const state = getState();
