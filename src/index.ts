@@ -263,17 +263,22 @@ async function checkPaths(config: Config) {
 	const appPath = getState().appPath;
 	const dataPath = getState().dataPath;
 	// If no karaoke is found, copy the samples directory if it exists
-	if (!await asyncExists(resolve(dataPath, conf.System.Repositories[0].Path.Karas[0])) && await asyncExists(resolve(appPath, 'samples/')) && !getRepo('Samples')) {
+	if (!await asyncExists(resolve(dataPath, conf.System.Repositories[0].Path.Karas[0])) && await asyncExists(resolve(dataPath, 'samples/')) && !getRepo('Samples')) {
 		try {
+			await asyncCopy(
+				resolve(appPath, 'samples'),
+				resolve(dataPath, 'repos/samples'),
+				{overwrite: true}
+			);
 			await addRepo({
 				Name: 'Samples',
 				Online: false,
 				Path: {
-					Lyrics: [resolve(appPath, 'samples/lyrics')],
-					Medias: [resolve(appPath, 'samples/medias')],
-					Karas: [resolve(appPath, 'samples/karaokes')],
-					Tags: [resolve(appPath, 'samples/tags')],
-					Series: [resolve(appPath, 'samples/series')]
+					Lyrics: [resolve(dataPath, 'repos/samples/lyrics')],
+					Medias: [resolve(dataPath, 'repos/samples/medias')],
+					Karas: [resolve(dataPath, 'repos/samples/karaokes')],
+					Tags: [resolve(dataPath, 'repos/samples/tags')],
+					Series: [resolve(dataPath, 'repos/samples/series')]
 				}
 			});
 		} catch (err) {

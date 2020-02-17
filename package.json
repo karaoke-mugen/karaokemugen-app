@@ -214,7 +214,8 @@
       "assets/**",
       "frontend/build/**",
 	  "systempanel/build/**",
-	  "initpage/**"
+	  "initpage/**",
+	  "samples/**"
     ],
     "extraFiles": [
       "app/bin/**"
