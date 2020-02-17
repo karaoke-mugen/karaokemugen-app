@@ -200,13 +200,13 @@ async function main() {
 	console.log('Karaoke Player & Manager - http://karaokes.moe');
 	console.log(`Version ${chalk.bold.green(state.version.number)} (${chalk.bold.green(state.version.name)})`);
 	console.log('================================================================================');
-	await configureLogger(dataPath, !!argv.debug, true);
+	await configureLogger(dataPath, argv.debug || (app && app.commandLine.hasSwitch('debug')), true);
+	await parseCommandLineArgs(argv, app ? app.commandLine : null);
 	await initConfig(argv);
 	const publicConfig = cloneDeep(getConfig());
 	publicConfig.Karaoke.StreamerMode.Twitch.OAuth = 'xxxxx';
 	publicConfig.App.JwtSecret = 'xxxxx';
 	publicConfig.App.InstanceID = 'xxxxx';
-	await parseCommandLineArgs(argv);
 	logger.debug(`[Launcher] AppPath : ${appPath}`);
 	logger.debug(`[Launcher] DataPath : ${dataPath}`);
 	logger.debug(`[Launcher] ResourcePath : ${resourcePath}`);
