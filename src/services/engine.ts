@@ -7,7 +7,7 @@ import {profile, enableWSLogging} from '../lib/utils/logger';
 import readlineSync from 'readline-sync';
 import logger from 'winston';
 import {getState, setState} from '../utils/state';
-import {checkPG, killPG, dumpPG, restorePG} from '../utils/postgresql';
+import { killPG, dumpPG, restorePG} from '../utils/postgresql';
 
 //KM Modules
 import {initUserSystem} from './user';
@@ -132,7 +132,8 @@ export async function exit(rc: any) {
 	if (getTwitchClient() || (getConfig() && getConfig().Karaoke.StreamerMode.Twitch.Enabled)) await stopTwitch();
 	//CheckPG returns if postgresql has been started by Karaoke Mugen or not.
 	try {
-		if (await checkPG()) {
+		// Let's try to kill PGSQL anyway, not a problem if it fails.
+		if (getConfig().Database.prod.bundledPostgresBinary) {
 			try {
 				await killPG();
 				logger.info('[Engine] PostgreSQL has shutdown');
