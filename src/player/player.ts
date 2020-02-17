@@ -21,6 +21,7 @@ import { getSingleMedia } from '../services/medias';
 import { MediaType } from '../types/medias';
 import { notificationNextSong } from '../services/playlist';
 import randomstring from 'randomstring';
+import { errorStep } from '../utils/electron_logger';
 
 const sleep = promisify(setTimeout);
 
@@ -126,9 +127,14 @@ export async function initPlayerSystem() {
 	const state = getState();
 	playerState.fullscreen = state.fullscreen;
 	playerState.stayontop = state.ontop;
-	await startmpv();
-	emitPlayerState();
-	logger.debug('[Player] Player is READY');
+	try {
+		await startmpv();
+		emitPlayerState();
+		logger.debug('[Player] Player is READY');
+	} catch(err) {
+		errorStep(i18n.t('ERROR_START_PLAYER'));
+		throw err;
+	}
 }
 
 async function getmpvVersion(path: string): Promise<string> {

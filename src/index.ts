@@ -26,7 +26,7 @@ import { app, BrowserWindow, Menu, MenuItem } from 'electron';
 import cloneDeep from 'lodash.clonedeep';
 import open from 'open';
 import { welcomeToYoukousoKaraokeMugen } from './services/welcome';
-import { initStep } from './utils/electron_logger';
+import { initStep, errorStep } from './utils/electron_logger';
 
 process.on('uncaughtException', exception => {
 	console.log('Uncaught exception:', exception);
@@ -260,13 +260,11 @@ async function checkPaths(config: Config) {
 	// Migrate old folder config to new repository one :
 	await migrateOldFoldersToRepo();
 	const conf = getConfig();
-	const appPath = getState().appPath;
-	const dataPath = getState().dataPath;
 	// If no karaoke is found, copy the samples directory if it exists
 	if (!await asyncExists(resolve(dataPath, conf.System.Repositories[0].Path.Karas[0])) && await asyncExists(resolve(dataPath, 'samples/')) && !getRepo('Samples')) {
 		try {
 			await asyncCopy(
-				resolve(appPath, 'samples'),
+				resolve(resourcePath, 'samples'),
 				resolve(dataPath, 'repos/samples'),
 				{overwrite: true}
 			);
@@ -304,8 +302,13 @@ async function checkPaths(config: Config) {
 	}
 	checks.push(asyncCheckOrMkdir(resolve(dataPath, 'logs/')));
 
-	await Promise.all(checks);
-	logger.debug('[Launcher] Directory checks complete');
+	try {
+		await Promise.all(checks);
+		logger.debug('[Launcher] Directory checks complete');
+	} catch(err) {
+		errorStep(i18n.t('ERROR_INIT_PATHS'));
+		throw err;
+	}
 }
 
 async function verifyOpenPort(portConfig: number, firstRun: boolean) {

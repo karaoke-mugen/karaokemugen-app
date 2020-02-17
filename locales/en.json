@@ -18,5 +18,11 @@
 	"INIT_ONLINEURL": "Connecting to Karaoke Mugen Server...",
 	"INIT_LAST": "Almost there...",
 	"INIT_DONE": "All done!",
-	"INIT_ERROR": "Initialization failed!"
+	"INIT_ERROR": "Initialization failed!",
+	"ERROR_MISSING_BINARIES": "Some needed binaries (mpv/postgresql/ffmpeg) seem to be missing.",
+	"ERROR_INIT_PG_DATA": "Error initializing database data",
+	"ERROR_START_PG": "Error starting up database server",
+	"ERROR_GENERATION": "Error generating database",
+	"ERROR_START_PLAYER": "Error starting up media player",
+	"ERROR_INIT_PATHS": "Error creating default directories"
 }

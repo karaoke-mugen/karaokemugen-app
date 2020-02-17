@@ -26,6 +26,8 @@ import { BinariesConfig } from '../types/binChecker';
 import { exit } from '../services/engine';
 import { initTwitch, stopTwitch } from './twitch';
 import { removeNulls } from '../lib/utils/object_helpers';
+import { errorStep } from './electron_logger';
+import i18next from 'i18next';
 
 /** Edit a config item, verify the new config is valid, and act according to settings changed */
 export async function editSetting(part: object) {
@@ -182,6 +184,7 @@ async function checkBinaries(config: Config): Promise<BinariesConfig> {
 		return binariesPath;
 	} catch (err) {
 		binMissing(binariesPath, err);
+		errorStep(i18next.t('ERROR_MISSING_BINARIES'));
 		throw err;
 	}
 }
