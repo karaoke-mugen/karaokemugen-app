@@ -5,8 +5,17 @@ body {
 	align-items: center;
 }
 
-img {
+#init,#error {
+	font-size: large;
+	margin: 5px;
+}
+
+a>img {
 	height: 35vh;
+}
+
+.nanamiSD {
+	height: 100px;
 }
 
 .hidden {
