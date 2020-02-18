@@ -96,9 +96,9 @@ export async function initEngine() {
 	initDownloader();
 	if (conf.Online.Stats === true) inits.push(initStats(false));
 	try {
-		initStep(i18n.t('INIT_LAST'));
+		initStep(i18n.t('INIT_LAST'), true);
 		await Promise.all(inits);
-		initStep(i18n.t('INIT_DONE'));
+		initStep(i18n.t('INIT_DONE'), true);
 		enableWSLogging();
 		//Easter egg
 		let ready = 'READY';
