@@ -23,7 +23,7 @@ import minimist from 'minimist';
 import chalk from 'chalk';
 import {createInterface} from 'readline';
 import { getPortPromise } from 'portfinder';
-import { app, BrowserWindow, Menu, MenuItem, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, MenuItem, ipcMain, dialog } from 'electron';
 import cloneDeep from 'lodash.clonedeep';
 import open from 'open';
 import { welcomeToYoukousoKaraokeMugen } from './services/welcome';
@@ -122,6 +122,14 @@ if (app || !argv.batch) {
 		createWindow();
 		on('KMReady', async () => {
 			win.loadURL(await welcomeToYoukousoKaraokeMugen());
+			let menu = Menu.getApplicationMenu();
+			menu.append(new MenuItem({ label: i18n.t('MENU_SHOW_SECURITY_CODE'), click() {
+				const state = getState();
+				dialog.showMessageBox({ type: "info", title : i18n.t('SECURITY_CODE_TITLE'), 
+					message: `${i18n.t('SECURITY_CODE_MESSAGE')}
+				${state.securityCode}` });
+			}}));
+			Menu.setApplicationMenu(menu);
 		});
 		ipcMain.on('initPageReady', async () => {
 			try {
