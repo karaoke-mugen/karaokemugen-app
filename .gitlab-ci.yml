@@ -6,6 +6,7 @@ variables:
 cache:
   key: km-app-${CI_COMMIT_REF_SLUG}
   paths:
+    - dist
     - node_modules/
     - systempanel/node_modules/
     - frontend/node_modules/
