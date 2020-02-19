@@ -9,6 +9,8 @@ cache:
     - node_modules/
     - systempanel/node_modules/
     - frontend/node_modules/
+    - ~/.cache/electron
+    - ~/.cache/electron-builder
 
 stages:
   - test
@@ -35,14 +37,14 @@ test:
     - cp -f database.CICD.json database.json
     - export LANG=en_US
     - node --version
-    - node_modules/.bin/ts-node --version
     - node util/extUnaccent.js
-    - yarn start --debug --test &disown
+    - yarn startNoElectron --debug --test &disown
     - bash test/run.sh
   only:
     - master
     - next
     - tags
+    - 533-investigate-use-of-electron
 
 build:
   stage: build
@@ -55,74 +57,48 @@ build:
     - dist/
     - frontend/build/
   script:
-    - npm install -g modclean parcel-bundler
+    - npm install -g parcel-bundler
     - yarn build
     - yarn buildSystemPanel
     - yarn frontend-prod
-    - yarn install --production
-    - cd node_modules
-    - find -name *.node -delete
-    - modclean -r
   only:
     - master
     - next
     - tags
+    - 533-investigate-use-of-electron
 
 pkg_win:
   stage: package
+  image: electronuserland/builder:wine
   interruptible: true
   artifacts:
     expire_in: 1 day
     name: km-app-pkgwin-${CI_COMMIT_REF_SLUG}
-    paths:
-    - bin/
   dependencies:
     - build
   script:
-    - mkdir -p bin
-    - npm install -g pkg
-    - pkg . -d --targets node12-win-x64 --out-path bin
+    - wget -qO- http://mugen.karaokes.moe/downloads/dist_win.3.2.tar.gz | tar xvz
+    - electron-builder -w
+    - mkdir out
+    - cp -Rf samples out/
+    - mv packages/*.exe out/
+    - cp -f config.sample.yml out/
+    - cd out
+    - touch portable
+    - zip -r KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip *
   only:
     - master
     - next
     - tags
-
-pkg_osx:
-  stage: package
-  interruptible: true
-  artifacts:
-    expire_in: 1 day
-    name: km-app-pkgosx-${CI_COMMIT_REF_SLUG}
-    paths:
-    - bin/
-  dependencies:
-    - build
-  script:
-    - mkdir -p bin
-    - npm install -g pkg
-    - pkg . -d --targets node12-macos-x64 --out-path bin
-  only:
-    - master
-    - next
-    - tags
+    - 533-investigate-use-of-electron
 
 deploy_win:
   stage: deploy
   interruptible: true
   dependencies:
     - pkg_win
-  cache: {}
   script:
-    - mkdir build_win
-    - cd build_win
-    - wget -qO- http://mugen.karaokes.moe/downloads/dist_win.tar.gz | tar xvz
-    - cp -f ../bin/karaokemugen-app.exe KaraokeMugen.exe
-    - cp -f ../config.sample.yml .
-    - cp -Rf ../samples .
-    - touch portable
-    - zip -r KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip *
-    - cd ..
-    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put build_win/KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip"
+    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put out/KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip"
   only:
     - master
     - next
@@ -131,44 +107,8 @@ deploy_win:
 latest_tag:
   stage: deploy
   interruptible: true
-  cache: {}
   script:
     - echo $CI_COMMIT_REF_NAME >latest
     - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put latest"
   only:
     - tags
-
-deploy_osx:
-  stage: deploy
-  interruptible: true
-  cache: {}
-  dependencies:
-    - pkg_osx
-  script:
-    - mkdir build_mac
-    - cd build_mac
-    - wget -qO- http://mugen.karaokes.moe/downloads/dist_macos.tar.gz | tar xvz
-    - chmod -R +x app/bin
-    - cp -f ../bin/karaokemugen-app KaraokeMugen
-    - cp -f ../config.sample.yml .
-    - cp -Rf ../samples .
-    - tar cvz * >KaraokeMugen-$CI_COMMIT_REF_NAME-macOS.tar.gz
-    - cd ..
-    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put build_mac/KaraokeMugen-$CI_COMMIT_REF_NAME-macOS.tar.gz"
-  only:
-    - master
-    - next
-    - tags
-
-apidoc:
-  stage: deploy
-  interruptible: true
-  cache: {}
-  script:
-    - npm install -g apidoc
-    - apidoc -i src/controllers -o apidoc -t apidoc_template
-    - cd apidoc
-    - lftp -c "set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; mkdir -p site/apidoc/$CI_COMMIT_REF_NAME; cd site/apidoc/$CI_COMMIT_REF_NAME; mirror -Rnev --parallel=10"
-  only:
-    - master
-    - next
