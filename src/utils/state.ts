@@ -5,6 +5,13 @@ import logger from '../lib/utils/logger';
 
 // Node modules
 import merge from 'lodash.merge';
+import {ipcMain} from 'electron';
+
+if (ipcMain) {
+	ipcMain.on('askSecurityCode', (event) => {
+		event.sender.send('replySecurityCode', state.securityCode);
+	});
+}
 
 // Types
 import {State, PublicState} from '../types/state';
