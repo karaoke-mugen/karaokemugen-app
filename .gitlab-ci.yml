@@ -79,7 +79,7 @@ pkg_win:
   dependencies:
     - build
   script:
-    - wget -qO- http://mugen.karaokes.moe/downloads/dist_win.3.2.tar.gz | tar xvz
+    - wget -qO- http://mugen.karaokes.moe/downloads/dist_win-3.2.tar.gz | tar xvz
     - electron-builder -w
     - mkdir out
     - mv packages/*.exe out/
