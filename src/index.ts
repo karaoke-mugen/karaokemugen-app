@@ -113,8 +113,10 @@ setState({originalAppPath: originalAppPath, appPath: appPath, dataPath: dataPath
 
 process.env['NODE_ENV'] = 'production'; // Default
 
+const argv = minimist(process.argv.slice(2));
 
-if (app) {
+if (app || !argv.batch) {
+	setState({electron: app });
 	// This is called when Electron finished initializing
 	app.on('ready', async () => {
 		createWindow();
@@ -128,7 +130,6 @@ if (app) {
 			console.log(err);
 			exit(1);
 		}
-
 	});
 
 	app.on('window-all-closed', () => {
@@ -207,8 +208,7 @@ function createWindow () {
 
 async function main() {
 	initStep(i18n.t('INIT_INIT'));
-	const argv = minimist(process.argv.slice(2));
-	setState({ os: process.platform, version: version, electron: app });
+	setState({ os: process.platform, version: version});
 	const state = getState();
 	console.log(chalk.white(logo));
 	console.log('Karaoke Player & Manager - http://karaokes.moe');
