@@ -113,10 +113,8 @@ setState({originalAppPath: originalAppPath, appPath: appPath, dataPath: dataPath
 process.env['NODE_ENV'] = 'production'; // Default
 
 
-if(app) {
-	// Cette méthode sera appelée quand Electron aura fini
-	// de s'initialiser et sera prêt à créer des fenêtres de navigation.
-	// Certaines APIs peuvent être utilisées uniquement quand cet événement est émit.
+if (app) {
+	// This is called when Electron finished initializing
 	app.on('ready', async () => {
 		createWindow();
 		await main()
@@ -128,23 +126,21 @@ if(app) {
 		win.loadURL(await welcomeToYoukousoKaraokeMugen());
 	});
 
-	// Quitte l'application quand toutes les fenêtres sont fermées.
 	app.on('window-all-closed', () => {
-		// Sur macOS, il est commun pour une application et leur barre de menu
-		// de rester active tant que l'utilisateur ne quitte pas explicitement avec Cmd + Q
+		// On macOS it is common that the application won't quit when all windows are closed until the user doesn't quit with Cmd + Q
 		if (process.platform !== 'darwin') {
 			exit(0).then(() => app.quit());
 		}
 	});
 
 	app.on('activate', () => {
-		// Sur macOS, il est commun de re-créer une fenêtre de l'application quand
-		// l'icône du dock est cliquée et qu'il n'y a pas d'autres fenêtres d'ouvertes.
+		// Recreate the window if the app is clicked on in the dock(for macOS)
 		if (win === null) {
 			createWindow();
 		}
 	});
 } else {
+	// This is in case we're running with yarn startNoElectron
 	main()
 		.catch(err => {
 			logger.error(`[Launcher] Error during launch : ${err}`);
@@ -154,7 +150,7 @@ if(app) {
 }
 
 function createWindow () {
-	// Cree la fenetre du navigateur.
+	// Create the browser window
 	win = new BrowserWindow({
 		backgroundColor: '#36393f',
 		icon: resolve(resourcePath, 'assets/icon.png'),
@@ -173,11 +169,8 @@ function createWindow () {
 		open(url);
 	});
 
-	// Émit lorsque la fenêtre est fermée.
+	// What to do when the window is closed.
 	win.on('closed', () => {
-	  // Dé-référence l'objet window , normalement, vous stockeriez les fenêtres
-	  // dans un tableau si votre application supporte le multi-fenêtre. C'est le moment
-	  // où vous devez supprimer l'élément correspondant.
 	  win = null;
 	});
 }
