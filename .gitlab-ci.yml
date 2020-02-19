@@ -60,7 +60,7 @@ build:
     - npm install -g parcel-bundler
     - yarn build
     - yarn buildSystemPanel
-    - yarn frontend-prod
+    - yarn buildFrontend
   only:
     - master
     - next
@@ -74,6 +74,8 @@ pkg_win:
   artifacts:
     expire_in: 1 day
     name: km-app-pkgwin-${CI_COMMIT_REF_SLUG}
+    paths:
+      - out
   dependencies:
     - build
   script:
