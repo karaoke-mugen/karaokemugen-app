@@ -23,7 +23,6 @@ import { updateSongsLeft } from '../services/user';
 import { emitWS } from '../lib/utils/ws';
 import { emit } from '../lib/utils/pubsub';
 import { BinariesConfig } from '../types/binChecker';
-import { exit } from '../services/engine';
 import { initTwitch, stopTwitch } from './twitch';
 import { removeNulls } from '../lib/utils/object_helpers';
 import { errorStep } from './electron_logger';
@@ -183,9 +182,9 @@ async function checkBinaries(config: Config): Promise<BinariesConfig> {
 		await Promise.all(requiredBinariesChecks);
 		return binariesPath;
 	} catch (err) {
-		binMissing(binariesPath, err);
+		const error = binMissing(binariesPath, err);
 		errorStep(i18next.t('ERROR_MISSING_BINARIES'));
-		throw err;
+		throw error;
 	}
 }
 
@@ -241,10 +240,5 @@ You can download postgreSQL for your OS from http://postgresql.org/
 You can download ffmpeg for your OS from http://ffmpeg.org
 (Windows Only) If the missing file is msvcr120.dll, download Microsoft Visual C++ 2013 Redistribuable Package here : https://www.microsoft.com/en-US/download/details.aspx?id=40784
 `;
-	if (!getState().electron) {
-		console.log(error);
-		exit(1);
-	} else {
-		throw Error(error);
-	}
+	return Error(error);
 }
