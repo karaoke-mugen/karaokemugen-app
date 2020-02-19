@@ -28,3 +28,5 @@ function clickButton () {
 	document.getElementById("logs").className = buttonLogsStatus ? 'hidden' : '';
 	buttonLogsStatus = !buttonLogsStatus;
 }
+
+ipcRenderer.send('initPageReady');

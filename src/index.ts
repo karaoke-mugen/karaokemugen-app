@@ -23,7 +23,7 @@ import minimist from 'minimist';
 import chalk from 'chalk';
 import {createInterface} from 'readline';
 import { getPortPromise } from 'portfinder';
-import { app, BrowserWindow, Menu, MenuItem } from 'electron';
+import { app, BrowserWindow, Menu, MenuItem, ipcMain } from 'electron';
 import cloneDeep from 'lodash.clonedeep';
 import open from 'open';
 import { welcomeToYoukousoKaraokeMugen } from './services/welcome';
@@ -122,14 +122,16 @@ if (app || !argv.batch) {
 		createWindow();
 		on('KMReady', async () => {
 			win.loadURL(await welcomeToYoukousoKaraokeMugen());
-		})
-		try {
-			await main();
-		} catch(err) {
-			logger.error(`[Launcher] Error during launch : ${err}`);
-			console.log(err);
-			exit(1);
-		}
+		});
+		ipcMain.on('initPageReady', async () => {
+			try {
+				await main();
+			} catch(err) {
+				logger.error(`[Launcher] Error during launch : ${err}`);
+				console.log(err);
+				exit(1);
+			}
+		});
 	});
 
 	app.on('window-all-closed', () => {
@@ -161,7 +163,7 @@ if (app || !argv.batch) {
 						label: i18n.t('MENU_FILE_QUIT'),
 						accelerator: 'CmdOrCtrl+Q',
 						click() {
-							exit(0).then(() => app.quit())
+							exit(0).then(() => app.quit());
 						}
 					}
 				]
