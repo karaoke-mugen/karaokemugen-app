@@ -80,7 +80,6 @@ pkg_win:
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_win.3.2.tar.gz | tar xvz
     - electron-builder -w
     - mkdir out
-    - cp -Rf samples out/
     - mv packages/*.exe out/
     - cp -f config.sample.yml out/
     - cd out

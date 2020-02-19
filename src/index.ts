@@ -125,7 +125,7 @@ if (app && !argv.batch) {
 			let menu = Menu.getApplicationMenu();
 			menu.append(new MenuItem({ label: i18n.t('MENU_SHOW_SECURITY_CODE'), click() {
 				const state = getState();
-				dialog.showMessageBox({ type: "none", title : i18n.t('SECURITY_CODE_TITLE'), 
+				dialog.showMessageBox({ type: "none", title : i18n.t('SECURITY_CODE_TITLE'),
 					message: `${i18n.t('SECURITY_CODE_MESSAGE')}
 				${state.securityCode}` });
 			}}));
@@ -281,7 +281,7 @@ async function checkPaths(config: Config) {
 	await migrateOldFoldersToRepo();
 	const conf = getConfig();
 	// If no karaoke is found, copy the samples directory if it exists
-	if (!await asyncExists(resolve(dataPath, conf.System.Repositories[0].Path.Karas[0])) && await asyncExists(resolve(dataPath, 'samples/')) && !getRepo('Samples')) {
+	if (!await asyncExists(resolve(dataPath, conf.System.Repositories[0].Path.Karas[0])) && await asyncExists(resolve(resourcePath, 'samples/')) && !getRepo('Samples')) {
 		try {
 			await asyncCopy(
 				resolve(resourcePath, 'samples'),
