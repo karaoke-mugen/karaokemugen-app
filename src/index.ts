@@ -5,6 +5,7 @@ import {initConfig} from './utils/config';
 import {parseCommandLineArgs} from './args';
 import logger, { configureLogger } from './lib/utils/logger';
 import {exit, initEngine} from './services/engine';
+import {on} from './lib/utils/pubsub';
 import {logo} from './logo';
 import { setState, getState } from './utils/state';
 import { version } from './version';
@@ -117,13 +118,17 @@ if (app) {
 	// This is called when Electron finished initializing
 	app.on('ready', async () => {
 		createWindow();
-		await main()
-			.catch(err => {
-				logger.error(`[Launcher] Error during launch : ${err}`);
-				console.log(err);
-				exit(1);
-			});
-		win.loadURL(await welcomeToYoukousoKaraokeMugen());
+		on('KMReady', async () => {
+			win.loadURL(await welcomeToYoukousoKaraokeMugen());
+		})
+		try {
+			await main();
+		} catch(err) {
+			logger.error(`[Launcher] Error during launch : ${err}`);
+			console.log(err);
+			exit(1);
+		}
+
 	});
 
 	app.on('window-all-closed', () => {

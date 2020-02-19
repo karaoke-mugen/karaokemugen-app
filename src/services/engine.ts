@@ -8,6 +8,7 @@ import readlineSync from 'readline-sync';
 import logger from 'winston';
 import {getState, setState} from '../utils/state';
 import { killPG, dumpPG, restorePG} from '../utils/postgresql';
+import {emit} from '../lib/utils/pubsub';
 
 //KM Modules
 import {initUserSystem} from './user';
@@ -98,7 +99,6 @@ export async function initEngine() {
 	try {
 		initStep(i18n.t('INIT_LAST'), true);
 		await Promise.all(inits);
-		initStep(i18n.t('INIT_DONE'), true);
 		enableWSLogging();
 		//Easter egg
 		let ready = 'READY';
@@ -107,6 +107,8 @@ export async function initEngine() {
 		if (!state.isTest && !state.electron) welcomeToYoukousoKaraokeMugen();
 		setState({ ready: true });
 		// This is done later because it's not important.
+		initStep(i18n.t('INIT_DONE'), true);
+		emit('KMReady');
 		if (!state.isTest && !state.isDemo) updatePlaylistMedias();
 	} catch(err) {
 		logger.error(`[Engine] Karaoke Mugen IS NOT READY : ${JSON.stringify(err)}`);
