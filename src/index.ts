@@ -125,7 +125,7 @@ if (app || !argv.batch) {
 			let menu = Menu.getApplicationMenu();
 			menu.append(new MenuItem({ label: i18n.t('MENU_SHOW_SECURITY_CODE'), click() {
 				const state = getState();
-				dialog.showMessageBox({ type: "info", title : i18n.t('SECURITY_CODE_TITLE'), 
+				dialog.showMessageBox({ type: "none", title : i18n.t('SECURITY_CODE_TITLE'), 
 					message: `${i18n.t('SECURITY_CODE_MESSAGE')}
 				${state.securityCode}` });
 			}}));
