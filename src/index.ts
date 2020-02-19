@@ -189,7 +189,6 @@ function createWindow () {
 	  // dans un tableau si votre application supporte le multi-fenêtre. C'est le moment
 	  // où vous devez supprimer l'élément correspondant.
 	  win = null;
-	  exit(0);
 	});
 }
 
