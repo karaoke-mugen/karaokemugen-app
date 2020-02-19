@@ -202,9 +202,11 @@
     "appId": "KaraokeMugen",
     "win": {
       "target": "portable",
+	  "compression": "normal",
       "publisherName": "Karaoke Mugen Team"
     },
     "mac": {
+	  "compression": "normal",
       "category": "public.app-category.entertainment"
     },
     "productName": "KaraokeMugen",
