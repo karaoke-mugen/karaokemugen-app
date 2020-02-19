@@ -81,7 +81,7 @@ pkg_win:
     - build
   script:
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_win-3.2.tar.gz | tar xvz
-    - electron-builder -w
+    - ./node_modules/.bin/electron-builder -w --dir
     - mkdir out
     - mv packages/*.exe out/
     - cp -f config.sample.yml out/
