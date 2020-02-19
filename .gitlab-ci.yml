@@ -80,6 +80,7 @@ pkg_win:
   dependencies:
     - build
   script:
+    - apt-get update -qq && apt-get install -y -qq zip
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_win-3.2.tar.gz | tar xvz
     - ./node_modules/.bin/electron-builder -w
     - ls -la packages/
