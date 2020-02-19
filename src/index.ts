@@ -140,18 +140,32 @@ if (app) {
 		}
 	});
 
-	const menu = new Menu();
-	menu.append(new MenuItem({ label: 'Update', click() {
-		console.log('item 1 clicked');
-	}}));
-	menu.append(new MenuItem({ type: 'separator' }));
-	menu.append(new MenuItem({ label: 'Launch MPV', click() {
-		console.log('item 2 clicked');
-	} }));
-	Menu.setApplicationMenu(menu);
+	configureLocale()
+		.then(() => {
+			const menu = new Menu();
+			menu.append(new MenuItem({
+				label: process.platform === 'darwin' ? 'KaraokeMugen' : i18n.t('MENU_FILE'),
+				submenu: [
+					{
+						label: i18n.t('MENU_FILE_RELOAD'),
+						accelerator: 'CmdOrCtrl+R',
+						role: 'reload'
+					},
+					{
+						label: i18n.t('MENU_FILE_QUIT'),
+						accelerator: 'CmdOrCtrl+Q',
+						click() {
+							exit(0).then(() => app.quit())
+						}
+					}
+				]
+			}));
+			Menu.setApplicationMenu(menu);
+		});
 } else {
 	// This is in case we're running with yarn startNoElectron
-	main()
+	configureLocale()
+		.then(() => main())
 		.catch(err => {
 			logger.error(`[Launcher] Error during launch : ${err}`);
 			console.log(err);
@@ -187,7 +201,6 @@ function createWindow () {
 
 
 async function main() {
-	await configureLocale();
 	initStep(i18n.t('INIT_INIT'));
 	const argv = minimist(process.argv.slice(2));
 	setState({ os: process.platform, version: version, electron: app });

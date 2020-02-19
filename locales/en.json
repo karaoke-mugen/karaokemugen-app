@@ -24,5 +24,8 @@
 	"ERROR_START_PG": "Error starting up database server",
 	"ERROR_GENERATION": "Error generating database",
 	"ERROR_START_PLAYER": "Error starting up media player",
-	"ERROR_INIT_PATHS": "Error creating default directories"
+	"ERROR_INIT_PATHS": "Error creating default directories",
+	"MENU_FILE": "File",
+	"MENU_FILE_QUIT": "Quit",
+	"MENU_FILE_RELOAD": "Reload"
 }
