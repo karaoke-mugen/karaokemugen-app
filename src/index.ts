@@ -22,7 +22,7 @@ import minimist from 'minimist';
 import chalk from 'chalk';
 import {createInterface} from 'readline';
 import { getPortPromise } from 'portfinder';
-import { app, BrowserWindow, Menu, MenuItem } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import cloneDeep from 'lodash.clonedeep';
 import open from 'open';
 import { welcomeToYoukousoKaraokeMugen } from './services/welcome';
@@ -144,16 +144,6 @@ if(app) {
 			createWindow();
 		}
 	});
-
-	const menu = new Menu();
-	menu.append(new MenuItem({ label: 'Update', click() {
-		console.log('item 1 clicked');
-	}}));
-	menu.append(new MenuItem({ type: 'separator' }));
-	menu.append(new MenuItem({ label: 'Launch MPV', click() {
-		console.log('item 2 clicked');
-	} }));
-	Menu.setApplicationMenu(menu);
 } else {
 	main()
 		.catch(err => {
