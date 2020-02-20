@@ -13,11 +13,7 @@ const sql = require('./sql/playlist');
 
 export async function selectRemainingSongsInCurrentPlaylist(): Promise<number> {
 	const res = await db().query(sql.selectRemainingSongsInCurrentPlaylist);
-	// If our results contain a flag_playing = true, then return its remaining field, if not it means the playlist has no currently flag_playing set so we return the first entry's remaining
-	const playing = res.find((e: any) => e.flag_playing);
-	return playing
-		? playing.remaining
-		: res[0].remaining
+	return res[0].remaining;
 }
 
 export async function editPlaylist(pl: Playlist) {
