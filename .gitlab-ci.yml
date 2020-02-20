@@ -76,7 +76,7 @@ pkg_win:
     expire_in: 1 day
     name: km-app-pkgwin-${CI_COMMIT_REF_SLUG}
     paths:
-      - out
+      - release
   dependencies:
     - build
   script:
@@ -85,11 +85,12 @@ pkg_win:
     - ./node_modules/.bin/electron-builder -w
     - ls -la packages/
     - mkdir out
+    - mkdir release
     - mv packages/*.exe out/
     - cp -f config.sample.yml out/
     - cd out
     - touch portable
-    - zip -r KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip *
+    - zip -r ../release/KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip *
   only:
     - master
     - next
@@ -102,11 +103,12 @@ deploy_win:
   dependencies:
     - pkg_win
   script:
-    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put out/KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip"
+    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put release/KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip"
   only:
     - master
     - next
     - tags
+    - 533-investigate-use-of-electron
 
 latest_tag:
   stage: deploy
