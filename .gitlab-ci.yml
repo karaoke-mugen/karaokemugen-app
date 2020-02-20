@@ -6,7 +6,6 @@ variables:
 cache:
   key: km-app-${CI_COMMIT_REF_SLUG}
   paths:
-    - dist
     - node_modules/
     - systempanel/node_modules/
     - frontend/node_modules/
@@ -51,7 +50,7 @@ build:
   stage: build
   interruptible: true
   artifacts:
-    expire_in: 1 days
+    expire_in: 2 hours
     name: km-app-build-${CI_COMMIT_REF_SLUG}
     paths:
     - systempanel/build/
@@ -73,7 +72,7 @@ pkg_win:
   image: electronuserland/builder:wine
   interruptible: true
   artifacts:
-    expire_in: 1 day
+    expire_in: 2 hours
     name: km-app-pkgwin-${CI_COMMIT_REF_SLUG}
     paths:
       - release
@@ -95,7 +94,6 @@ pkg_win:
     - master
     - next
     - tags
-    - 533-investigate-use-of-electron
 
 deploy_win:
   stage: deploy
@@ -108,7 +106,6 @@ deploy_win:
     - master
     - next
     - tags
-    - 533-investigate-use-of-electron
 
 latest_tag:
   stage: deploy
