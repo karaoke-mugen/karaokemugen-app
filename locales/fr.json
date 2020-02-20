@@ -28,6 +28,7 @@
 	"MENU_FILE": "Fichier",
 	"MENU_FILE_QUIT": "Quitter",
 	"MENU_FILE_RELOAD": "Recharger",
+	"MENU_FILE_ABOUT": "A propos de Karaoke Mugen",
 	"MENU_SHOW_SECURITY_CODE": "Afficher le code de sécurité",
 	"SECURITY_CODE_TITLE": "Code de sécurité",
 	"SECURITY_CODE_MESSAGE": "Voici le code de sécurité actuel :"
