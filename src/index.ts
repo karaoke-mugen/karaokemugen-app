@@ -158,10 +158,23 @@ if (app && !argv.batch) {
 
 	configureLocale()
 		.then(() => {
+			app.setAboutPanelOptions({
+				applicationName: 'Karaoke Mugen',
+				applicationVersion: `${version.number} (${version.name})`,
+				copyright: `(c) 2017-${new Date().getFullYear()} Karaoke Mugen Team`,
+				version: version.number,
+				website: 'https://karaokes.moe'
+			});
 			const menu = new Menu();
 			menu.append(new MenuItem({
 				label: process.platform === 'darwin' ? 'KaraokeMugen' : i18n.t('MENU_FILE'),
 				submenu: [
+					{
+						label: i18n.t('MENU_FILE_ABOUT'),
+						click() {
+							app.showAboutPanel()
+						}
+					},
 					{
 						label: i18n.t('MENU_FILE_RELOAD'),
 						accelerator: 'CmdOrCtrl+R',
@@ -201,7 +214,6 @@ function createWindow () {
 
 	// and load the index.html of the app.
 	win.loadURL(`file://${resolve(resourcePath, 'initpage/index.html')}`);
-	win.maximize();
 	win.show();
 
 	win.webContents.on('new-window', (event, url) => {
