@@ -109,6 +109,7 @@ pkg_mac:
     - build
   script:
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_mac-3.2.tar.gz | tar xvz
+    - yarn setup
     - ./node_modules/.bin/electron-builder -m
     - ls -la packages/
     - mkdir release
