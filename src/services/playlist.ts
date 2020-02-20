@@ -71,7 +71,7 @@ import { Playlist, PLC, Pos, PlaylistOpts, PlaylistExport, PLCEditParams, Curren
 import { DBPLC } from '../types/database/playlist';
 import { bools } from '../lib/utils/constants';
 import { check } from '../lib/utils/validators';
-import { setBadge } from '..'
+import { setBadge, setBadgeText } from '..'
 
 let databaseBusy = false;
 
@@ -1247,9 +1247,22 @@ export async function testPublicPlaylist() {
 	}
 }
 
+/** Calculate the time the playlist will end */
+export async function getTimePlaylistEnds(playlist_id: number): Promise<string> {
+	const pl = await getPlaylistContentsMini(playlist_id);
+	const plc = await getPLCInfo(pl[pl.length - 1].playlistcontent_id, false, 'admin');
+	const timeToPlay = new Date();
+	timeToPlay.setSeconds(timeToPlay.getSeconds() + plc.time_before_play);
+	return `${timeToPlay.getHours() > 9 ? '' : '0'}${timeToPlay.getHours()}:${timeToPlay.getMinutes() > 9 ? '' : '0'}${timeToPlay.getMinutes()}`
+};
+
 /** Sets the app badge when running from electron */
 export async function setBadgeRemainingSongs(playlist_id: number) {
 	if (playlist_id === getState().currentPlaylistID) return;
-	const res = await selectRemainingSongsInCurrentPlaylist();
-	if (res) setBadge(res);
+	const [numberSongs, timeLeft] = await Promise.all([
+		selectRemainingSongsInCurrentPlaylist(),
+		getTimePlaylistEnds(playlist_id)
+	]);
+	if (numberSongs) setBadge(numberSongs);
+	if (timeLeft) setBadgeText(timeLeft);
 }

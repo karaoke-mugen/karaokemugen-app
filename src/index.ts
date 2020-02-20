@@ -359,5 +359,5 @@ async function verifyOpenPort(portConfig: number, firstRun: boolean) {
 }
 
 export function setBadge(number: number) {
-	if (app) app.setBadgeCount(number);
+	if (app) app.badgeCount = number;
 }
