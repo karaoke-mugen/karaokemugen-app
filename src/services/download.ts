@@ -26,7 +26,6 @@ import prettyBytes from 'pretty-bytes';
 import { refreshKaras } from '../lib/dao/kara';
 import merge from 'lodash.merge';
 import { DownloadBundle } from '../lib/types/downloads';
-import { setBadge } from '..';
 
 const queueOptions = {
 	id: 'uuid',
@@ -66,7 +65,6 @@ function initQueue(drainEvent = true) {
 	q = new Queue(queueDownload, queueOptions);
 	q.on('task_finish', () => {
 		if (q.length > 0) logger.info(`[Download] ${q.length - 1} items left in queue`);
-		setBadge(q.length - 1);
 		taskCounter++;
 		if (taskCounter >= 100) {
 			logger.debug('[Download] Triggering database refresh');
@@ -78,7 +76,6 @@ function initQueue(drainEvent = true) {
 	});
 	q.on('task_failed', (taskId: string, err: any) => {
 		logger.error(`[Download] Task ${taskId} failed : ${err}`);
-		setBadge(q.length - 1);
 		emitQueueStatus('updated');
 	});
 	q.on('empty', () => emitQueueStatus('updated'));
@@ -87,7 +84,6 @@ function initQueue(drainEvent = true) {
 		refreshAll().then(() => vacuum());
 		compareKarasChecksum();
 		taskCounter = 0;
-		setBadge(0);
 		emitQueueStatus('updated');
 		emitQueueStatus('stopped');
 	});
@@ -491,7 +487,6 @@ async function waitForUpdateQueueToFinish() {
 	return new Promise((resolve, reject) => {
 		// We'll redefine the drain event of the queue to resolve once the queue is drained.
 		q.on('drain', () => {
-			setBadge(0);
 			compareKarasChecksum();
 			refreshAll()
 				.then(() => {
@@ -786,12 +781,11 @@ function downloadMedias(files: File[], mediasPath: string, repo: string): Promis
 		});
 	}
 	const mediaDownloads = new Downloader({
-		bar: true,
-		badge: true
+		bar: true
 	});
 	return new Promise((resolve: any, reject: any) => {
 		mediaDownloads.download(list)
-			.then(fileErrors => {
+			.then((fileErrors) => {
 				fileErrors.length > 0
 					? reject(`Error downloading these medias : ${fileErrors.toString()}`)
 					: resolve();

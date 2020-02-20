@@ -13,7 +13,6 @@ import { emitWS } from '../lib/utils/ws';
 
 // Types
 import { DownloadItem, DownloadOpts } from '../types/downloader';
-import { setBadge } from '..';
 
 // for downloads we need keepalive or else connections can timeout and get stuck. Such is life.
 const HttpAgent = require('agentkeepalive');
@@ -57,13 +56,8 @@ export default class Downloader {
 		list.forEach(item => {
 			this.q.push(item);
 		});
-		setBadge(this.q.length);
-		this.q.on('task_finish', () => {
-			setBadge(this.q.length - 1);
-		});
 		return new Promise(resolve => {
 			this.q.on('drain', () => {
-				setBadge(0);
 				resolve(this.fileErrors);
 			});
 		});
