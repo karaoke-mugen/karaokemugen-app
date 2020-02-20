@@ -125,7 +125,7 @@ if (app && !argv.batch) {
 			let menu = Menu.getApplicationMenu();
 			menu.append(new MenuItem({ label: i18n.t('MENU_SHOW_SECURITY_CODE'), click() {
 				const state = getState();
-				dialog.showMessageBox({ type: "none", title : i18n.t('SECURITY_CODE_TITLE'),
+				dialog.showMessageBox({ type: 'none', title : i18n.t('SECURITY_CODE_TITLE'),
 					message: `${i18n.t('SECURITY_CODE_MESSAGE')}
 				${state.securityCode}` });
 			}}));
@@ -172,7 +172,7 @@ if (app && !argv.batch) {
 					{
 						label: i18n.t('MENU_FILE_ABOUT'),
 						click() {
-							app.showAboutPanel()
+							app.showAboutPanel();
 						}
 					},
 					{
@@ -356,10 +356,6 @@ async function verifyOpenPort(portConfig: number, firstRun: boolean) {
 	} catch(err) {
 		throw 'Failed to find a free port to use';
 	}
-}
-
-export function setBadge(number: number) {
-	if (app) app.badgeCount = number;
 }
 
 export function setProgressBar(number: number) {
