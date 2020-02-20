@@ -10,8 +10,8 @@ cache:
     - node_modules/
     - systempanel/node_modules/
     - frontend/node_modules/
-    - ~/.cache/electron
-    - ~/.cache/electron-builder
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
 
 stages:
   - test
