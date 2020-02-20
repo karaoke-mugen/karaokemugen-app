@@ -332,7 +332,9 @@ async function startmpv() {
 	player.on('timeposition', (position: number) => {
 		// Returns the position in seconds in the current song
 		playerState.timeposition = position;
-		setProgressBar(position / playerState.duration);
+		playerState.mediaType === 'song'
+			? setProgressBar(position / playerState.duration)
+			: setProgressBar(-1);
 		emitPlayerState();
 		// Send notification to frontend if timeposition is 15 seconds before end of song
 		if (position >= (playerState.duration - 15) && playerState.mediaType === 'song' && !nextSongNotifSent) {
