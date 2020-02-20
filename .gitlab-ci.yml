@@ -9,8 +9,6 @@ cache:
     - node_modules/
     - systempanel/node_modules/
     - frontend/node_modules/
-    - $HOME/.cache/electron
-    - $HOME/.cache/electron-builder
 
 stages:
   - test
@@ -44,7 +42,6 @@ test:
     - master
     - next
     - tags
-    - 533-investigate-use-of-electron
 
 build:
   stage: build
@@ -65,7 +62,6 @@ build:
     - master
     - next
     - tags
-    - 533-investigate-use-of-electron
 
 pkg_win:
   stage: package
@@ -110,7 +106,6 @@ pkg_mac:
   script:
     - export CSC_IDENTITY_AUTO_DISCOVERY=false
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_mac-3.2.tar.gz | tar xvz
-    - yarn setup
     - ./node_modules/.bin/electron-builder -m
     - ls -la packages/
     - mkdir release
@@ -121,7 +116,6 @@ pkg_mac:
     - master
     - next
     - tags
-    - 533-investigate-use-of-electron
 
 deploy_mac:
   stage: deploy
@@ -134,7 +128,6 @@ deploy_mac:
     - master
     - next
     - tags
-    - 533-investigate-use-of-electron
 
 deploy_win:
   stage: deploy
