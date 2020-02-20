@@ -44,6 +44,7 @@ test:
     - master
     - next
     - tags
+    - 533-investigate-use-of-electron
 
 build:
   stage: build
@@ -64,6 +65,7 @@ build:
     - master
     - next
     - tags
+    - 533-investigate-use-of-electron
 
 pkg_win:
   stage: package
@@ -92,6 +94,44 @@ pkg_win:
     - master
     - next
     - tags
+
+pkg_mac:
+  stage: package
+  tags: macos
+  interruptible: true
+  artifacts:
+    expire_in: 2 hours
+    name: km-app-pkgwin-${CI_COMMIT_REF_SLUG}
+    paths:
+      - release
+  dependencies:
+    - build
+  script:
+    - wget -qO- http://mugen.karaokes.moe/downloads/dist_mac-3.2.tar.gz | tar xvz
+    - ./node_modules/.bin/electron-builder -m
+    - ls -la packages/
+    - mkdir release
+    - mv packages/*.dmg release/
+    - cd release
+    - mv * KaraokeMugen-$CI_COMMIT_REF_NAME-macos.dmg
+  only:
+    - master
+    - next
+    - tags
+    - 533-investigate-use-of-electron
+
+deploy_mac:
+  stage: deploy
+  interruptible: true
+  dependencies:
+    - pkg_mac
+  script:
+    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put release/KaraokeMugen-$CI_COMMIT_REF_NAME-macos.dmg"
+  only:
+    - master
+    - next
+    - tags
+    - 533-investigate-use-of-electron
 
 deploy_win:
   stage: deploy
