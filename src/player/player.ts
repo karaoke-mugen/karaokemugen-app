@@ -330,11 +330,14 @@ async function startmpv() {
 		emitPlayerState();
 	});
 	player.on('timeposition', (position: number) => {
+		const conf = getConfig();
 		// Returns the position in seconds in the current song
 		playerState.timeposition = position;
-		playerState.mediaType === 'song'
-			? setProgressBar(position / playerState.duration)
-			: setProgressBar(-1);
+		if (conf.Player.ProgressBarDock) {
+			playerState.mediaType === 'song'
+				? setProgressBar(position / playerState.duration)
+				: setProgressBar(-1);
+		}
 		emitPlayerState();
 		// Send notification to frontend if timeposition is 15 seconds before end of song
 		if (position >= (playerState.duration - 15) && playerState.mediaType === 'song' && !nextSongNotifSent) {
@@ -350,7 +353,6 @@ async function startmpv() {
 		if (Math.floor(position) === Math.floor(playerState.duration / 2) &&
 		!displayingInfo &&
 		playerState.mediaType === 'song' && !getState().songPoll) displayInfo(8000);
-		const conf = getConfig();
 		// Stop poll if position reaches 10 seconds before end of song
 		if (Math.floor(position) >= Math.floor(playerState.duration - 10) &&
 		playerState.mediaType === 'song' &&
