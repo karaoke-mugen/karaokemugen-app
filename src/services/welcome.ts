@@ -14,11 +14,6 @@ export async function welcomeToYoukousoKaraokeMugen(): Promise<string> {
 	const state = getState();
 	if (conf.App.FirstRun) {
 		const adminPassword = await generateAdminPassword();
-		if (state.electron) {
-			//Find a way to display password here
-		} else {
-			console.log(`\nAdmin password is : ${adminPassword}\nPlease keep it in a safe place, it will not be displayed ever again.\nTo reset admin password, remove the FirstRun line in config.yml\n`);
-		};
 		if (!state.opt.noBrowser && !state.isDemo && !state.isTest) {
 			if (state.electron) {
 				return `http://localhost:${conf.Frontend.Port}/welcome?admpwd=${adminPassword}`;
