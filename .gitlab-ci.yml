@@ -108,6 +108,7 @@ pkg_mac:
   dependencies:
     - build
   script:
+    - export CSC_IDENTITY_AUTO_DISCOVERY=false
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_mac-3.2.tar.gz | tar xvz
     - yarn setup
     - ./node_modules/.bin/electron-builder -m
