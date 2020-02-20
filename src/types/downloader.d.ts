@@ -6,7 +6,8 @@ export interface DownloadItem {
 }
 
 export interface DownloadOpts {
-	bar: boolean
+	bar: boolean,
+	badge?: boolean,
 	auth?: {
 		user: string,
 		pass: string
