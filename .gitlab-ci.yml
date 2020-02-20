@@ -97,7 +97,8 @@ pkg_win:
 
 pkg_mac:
   stage: package
-  tags: macos
+  tags:
+    - macos
   interruptible: true
   artifacts:
     expire_in: 2 hours
