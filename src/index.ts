@@ -357,3 +357,7 @@ async function verifyOpenPort(portConfig: number, firstRun: boolean) {
 		throw 'Failed to find a free port to use';
 	}
 }
+
+export function setBadge(number: number) {
+	if (app) app.setBadgeCount(number);
+}

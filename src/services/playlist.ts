@@ -50,6 +50,7 @@ import {
 	updatePlaylistLastEditTime,
 	unsetCurrentPlaylist,
 	unsetPublicPlaylist,
+	selectRemainingSongsInCurrentPlaylist,
 } from '../dao/playlist';
 
 //KM Modules
@@ -70,6 +71,7 @@ import { Playlist, PLC, Pos, PlaylistOpts, PlaylistExport, PLCEditParams, Curren
 import { DBPLC } from '../types/database/playlist';
 import { bools } from '../lib/utils/constants';
 import { check } from '../lib/utils/validators';
+import { setBadge } from '..'
 
 let databaseBusy = false;
 
@@ -160,6 +162,7 @@ async function setPlaying(plc_id: number, playlist_id: number) {
 		plc_id: plc_id,
 	});
 	updatePlaylistDuration(playlist_id);
+	setBadgeRemainingSongs(playlist_id);
 }
 
 /** Get PLC IDs by a particular date added */
@@ -186,6 +189,7 @@ export async function trimPlaylist(playlist_id: number, duration: number) {
 		updatePlaylistKaraCount(playlist_id)
 	]);
 	updatePlaylistLastEditTime(playlist_id);
+	setBadgeRemainingSongs(playlist_id);
 }
 
 /** Set playlist as current */
@@ -203,6 +207,7 @@ export async function setCurrentPlaylist(playlist_id: number) {
 		setState({currentPlaylistID: playlist_id, introPlayed: false});
 		if (getState().private) emitWS('modePlaylistUpdated', playlist_id);
 		logger.info(`[Playlist] Playlist ${pl.name} is now current`);
+		setBadgeRemainingSongs(playlist_id);
 		return playlist_id;
 	} catch(err) {
 		throw {
@@ -281,6 +286,7 @@ export async function emptyPlaylist(playlist_id: number): Promise<number> {
 			updatePlaylistDuration(playlist_id)
 		]);
 		updatePlaylistLastEditTime(playlist_id);
+		setBadgeRemainingSongs(playlist_id);
 		return playlist_id;
 	} catch(err) {
 		throw {
@@ -328,6 +334,7 @@ export async function createPlaylist(name: string, opts: PlaylistOpts,username: 
 	});
 	if (+opts.current) setState({currentPlaylistID: playlist_id});
 	if (+opts.public) setState({publicPlaylistID: playlist_id});
+	setBadgeRemainingSongs(playlist_id);
 	return playlist_id;
 }
 
@@ -583,6 +590,7 @@ export async function addKaraToPlaylist(kids: string|string[], requester: string
 		} else {
 			await updatePlaylistDuration(playlist_id);
 		}
+		setBadgeRemainingSongs(playlist_id);
 		if (conf.Karaoke.Autoplay &&
 			+playlist_id === state.currentPlaylistID &&
 			state.status === 'stop' ) playPlayer(true);
@@ -692,6 +700,7 @@ export async function copyKaraToPlaylist(plc_id: number[], playlist_id: number, 
 		if (playlist_id === state.currentPlaylistID && !state.private) {
 			plcList.forEach(plc => notifyUserOfSongPlayTime(plc.playlistcontent_id, plc.username));
 		}
+		setBadgeRemainingSongs(playlist_id);
 		return playlist_id;
 	} catch(err) {
 		throw {
@@ -724,6 +733,7 @@ export async function deleteKaraFromPlaylist(plcs: number[], playlist_id:number,
 			updatePlaylistKaraCount(playlist_id),
 			reorderPlaylist(playlist_id)
 		]);
+		setBadgeRemainingSongs(playlist_id);
 		updatePlaylistLastEditTime(playlist_id);
 		profile('deleteKara');
 		return {
@@ -763,6 +773,7 @@ export async function editPLC(plc_id: number, params: PLCEditParams) {
 		await shiftPosInPlaylist(pl.playlist_id, params.pos, 1);
 		await setPos(plc_id, params.pos);
 		await reorderPlaylist(pl.playlist_id);
+		setBadgeRemainingSongs(pl.playlist_id);
 	}
 	updatePlaylistLastEditTime(pl.playlist_id);
 	profile('editPLC');
@@ -1234,4 +1245,11 @@ export async function testPublicPlaylist() {
 		});
 		logger.debug('[Playlist] Initial public playlist created');
 	}
+}
+
+/** Sets the app badge when running from electron */
+export async function setBadgeRemainingSongs(playlist_id: number) {
+	if (playlist_id === getState().currentPlaylistID) return;
+	const res = await selectRemainingSongsInCurrentPlaylist();
+	if (res) setBadge(res);
 }

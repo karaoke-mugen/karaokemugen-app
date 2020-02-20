@@ -506,3 +506,13 @@ DELETE FROM playlist_content
 WHERE fk_id_playlist = :playlist_id
 	AND pos > :pos;
 `;
+
+export const selectRemainingSongsInCurrent = `
+SELECT (p.karacount - COALESCE(pc.pos, 0)) AS remaining,
+    pc.flag_playing
+FROM
+	playlist p,
+	playlist_content pc
+WHERE pc.fk_id_playlist = p.pk_id_playlist
+  AND p.flag_current = TRUE;
+`;
