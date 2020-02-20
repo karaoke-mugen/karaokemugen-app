@@ -44,7 +44,6 @@ test:
     - master
     - next
     - tags
-    - 533-investigate-use-of-electron
 
 build:
   stage: build
@@ -65,7 +64,6 @@ build:
     - master
     - next
     - tags
-    - 533-investigate-use-of-electron
 
 pkg_win:
   stage: package
