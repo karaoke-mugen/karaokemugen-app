@@ -358,6 +358,14 @@ async function verifyOpenPort(portConfig: number, firstRun: boolean) {
 	}
 }
 
+export function setBadgeText(text: string) {
+	if (app) app.dock.setBadge(text);
+}
+
 export function setBadge(number: number) {
 	if (app) app.badgeCount = number;
+}
+
+export function setProgressBar(number: number) {
+	if (win) win.setProgressBar(number);
 }

@@ -22,6 +22,7 @@ import { MediaType } from '../types/medias';
 import { notificationNextSong } from '../services/playlist';
 import randomstring from 'randomstring';
 import { errorStep } from '../utils/electron_logger';
+import { setProgressBar } from '..';
 
 const sleep = promisify(setTimeout);
 
@@ -331,6 +332,7 @@ async function startmpv() {
 	player.on('timeposition', (position: number) => {
 		// Returns the position in seconds in the current song
 		playerState.timeposition = position;
+		setProgressBar(position / playerState.duration);
 		emitPlayerState();
 		// Send notification to frontend if timeposition is 15 seconds before end of song
 		if (position >= (playerState.duration - 15) && playerState.mediaType === 'song' && !nextSongNotifSent) {
@@ -520,6 +522,7 @@ export async function stop(): Promise<PlayerState> {
 	await loadBackground();
 	if (!getState().songPoll) displayInfo();
 	setState({player: playerState});
+	setProgressBar(-1);
 	return playerState;
 }
 
