@@ -205,6 +205,8 @@ if (app && !argv.batch) {
 function createWindow () {
 	// Create the browser window
 	win = new BrowserWindow({
+		width: 1280,
+		height: 720,
 		backgroundColor: '#36393f',
 		icon: resolve(resourcePath, 'assets/icon.png'),
 		webPreferences: {
