@@ -508,13 +508,11 @@ WHERE fk_id_playlist = :playlist_id
 `;
 
 export const selectRemainingSongsInCurrent = `
-SELECT pl.karacount - COALESCE((
-	SELECT pos
-	FROM playlist_content pc
-	WHERE flag_playlist = TRUE
-	  AND pc.fk_id_playlist = pl.pk_id_playlist
-	),
-	0
-) AS remaining
-FROM playlist pl where pl.flag_current = TRUE
+SELECT (p.karacount - COALESCE(pc.pos, 0)) AS remaining,
+    pc.flag_playing
+FROM
+	playlist p,
+	playlist_content pc
+WHERE pc.fk_id_playlist = p.pk_id_playlist
+  AND p.flag_current = TRUE;
 `;
