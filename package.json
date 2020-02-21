@@ -187,17 +187,27 @@
     "url": "http://localhost:1337/api"
   },
   "build": {
-    "appId": "KaraokeMugen",
+	"appId": "KaraokeMugen",
+	"nsis": {
+		"oneClick": false,
+		"allowToChangeInstallDirectory": true,
+		"license": "./LICENSE"
+	},
     "win": {
-      "target": "portable",
+      "target": "nsis",
       "compression": "normal",
-      "publisherName": "Karaoke Mugen Team"
+	  "publisherName": "Karaoke Mugen Team",
+	  "publish": {
+		  "provider": "generic",
+		  "url": "https://mugen.karaokes.moe/downloads/",
+		  "channel": "latest"
+	  }
     },
     "mac": {
       "compression": "normal",
       "category": "public.app-category.entertainment"
     },
-    "productName": "KaraokeMugen",
+    "productName": "Karaoke Mugen",
     "extraResources": [
       "migrations/**",
       "locales/*",
