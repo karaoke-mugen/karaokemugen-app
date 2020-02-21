@@ -87,8 +87,8 @@ pkg_win:
     - ls -la packages/
     - mkdir release
     - mv packages/*.exe release
+    - mv packages/*.yml release
     - cd release
-    - mv * KaraokeMugen-$CI_COMMIT_REF_NAME.exe
   only:
     - master
     - next
@@ -142,11 +142,12 @@ deploy_win:
   dependencies:
     - pkg_win
   script:
-    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put release/KaraokeMugen-$CI_COMMIT_REF_NAME-win64.zip"
+    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; mput release/*"
   only:
     - master
     - next
     - tags
+    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 latest_tag:
   stage: deploy
