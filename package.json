@@ -191,10 +191,10 @@
 	"nsis": {
 		"oneClick": false,
 		"allowToChangeInstallationDirectory": true,
-		"license": "./LICENSE"
+		"license": "LICENSE.md"
 	},
 	"appImage": {
-		"license": "./LICENSE",
+		"license": "LICENSE.md",
 		"category": "AudioVideo",
 		"publish": {
 			"provider": "generic",
@@ -203,7 +203,7 @@
 		}
 	},
     "win": {
-      "target": "nsis",
+      "target": ["nsis", "portable"],
       "compression": "normal",
 	  "publisherName": "Karaoke Mugen Team",
 	  "publish": {
