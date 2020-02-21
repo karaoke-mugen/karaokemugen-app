@@ -132,6 +132,7 @@ if (app && !argv.batch) {
 				${state.securityCode}` });
 			}}));
 			Menu.setApplicationMenu(menu);
+			autoUpdater.checkForUpdatesAndNotify();
 		});
 		ipcMain.on('initPageReady', async () => {
 			try {
