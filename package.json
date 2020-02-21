@@ -190,10 +190,10 @@
 	"appId": "KaraokeMugen",
 	"nsis": {
 		"oneClick": false,
-		"allowToChangeInstallDirectory": true,
+		"allowToChangeInstallationDirectory": true,
 		"license": "./LICENSE"
 	},
-	"AppImage": {
+	"appImage": {
 		"license": "./LICENSE",
 		"category": "AudioVideo",
 		"publish": {
