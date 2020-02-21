@@ -44,7 +44,6 @@ test:
     - master
     - next
     - tags
-    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 build:
   stage: build
@@ -65,7 +64,6 @@ build:
     - master
     - next
     - tags
-    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 pkg_linux:
   stage: package
@@ -78,19 +76,20 @@ pkg_linux:
       - release
   dependencies:
     - build
+  variables:
+    ELECTRON_CACHE: ~/.cache/electron
+    ELETCRON_BUILDER_CACHE: ~/.cache/electron-builder
   script:
-    - export ELECTRON_CACHE=$HOME/.cache/electron
-    - export ELETCRON_BUILDER_CACHE=$HOME/.cache/electron-builder
     - ./node_modules/.bin/electron-builder -l --publish always
     - ls -la packages/
     - mkdir release
-    - mv packages/* release
+    - mv packages/*.AppImage release/
+    - mv packages/*.yml release/
     - cd release
   only:
     - master
     - next
     - tags
-    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 pkg_win:
   stage: package
@@ -103,9 +102,10 @@ pkg_win:
       - release
   dependencies:
     - build
+  variables:
+    ELECTRON_CACHE: ~/.cache/electron
+    ELETCRON_BUILDER_CACHE: ~/.cache/electron-builder
   script:
-    - export ELECTRON_CACHE=$HOME/.cache/electron
-    - export ELETCRON_BUILDER_CACHE=$HOME/.cache/electron-builder
     - apt-get update -qq && apt-get install -y -qq zip
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_win-3.2.tar.gz | tar xvz
     - ./node_modules/.bin/electron-builder -w --publish always
@@ -113,15 +113,15 @@ pkg_win:
     - mkdir release
     - mv packages/*.exe release
     - mv packages/*.yml release
+    - mv packages/*.blockmap release/
     - touch portable
     - zip -rv packages/*.zip portable
-    - mv packages/*.zip release
+    - mv packages/*.zip release/
     - cd release
   only:
     - master
     - next
     - tags
-    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 pkg_mac:
   stage: package
@@ -137,9 +137,9 @@ pkg_mac:
     - build
   variables:
     CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    ELECTRON_CACHE: ~/.cache/electron
+    ELETCRON_BUILDER_CACHE: ~/.cache/electron-builder
   script:
-    - export ELECTRON_CACHE=$HOME/.cache/electron
-    - export ELETCRON_BUILDER_CACHE=$HOME/.cache/electron-builder
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_mac-3.2.tar.gz | tar xvz
     - ./node_modules/.bin/electron-builder -m
     - ls -la packages/
@@ -151,7 +151,6 @@ pkg_mac:
     - master
     - next
     - tags
-    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 deploy_mac:
   stage: deploy
@@ -165,7 +164,6 @@ deploy_mac:
     - master
     - next
     - tags
-    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 deploy_win:
   stage: deploy
@@ -179,7 +177,6 @@ deploy_win:
     - master
     - next
     - tags
-    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 deploy_linux:
   stage: deploy
@@ -193,4 +190,3 @@ deploy_linux:
     - master
     - next
     - tags
-    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
