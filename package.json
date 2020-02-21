@@ -198,8 +198,7 @@
 		"category": "AudioVideo",
 		"publish": {
 			"provider": "generic",
-			"url": "https://mugen.karaokes.moe/downloads/",
-			"channel": "latest-linux"
+			"url": "https://mugen.karaokes.moe/downloads/"
 		}
 	},
     "win": {
@@ -208,8 +207,7 @@
 	  "publisherName": "Karaoke Mugen Team",
 	  "publish": {
 		  "provider": "generic",
-		  "url": "https://mugen.karaokes.moe/downloads/",
-		  "channel": "latest-win"
+		  "url": "https://mugen.karaokes.moe/downloads/"
 	  }
     },
     "mac": {
