@@ -78,10 +78,9 @@ pkg_linux:
       - release
   dependencies:
     - build
-  variables:
-    ELECTRON_CACHE: $HOME/.cache/electron
-    ELETCRON_BUILDER_CACHE: $HOME/.cache/electron-builder
   script:
+    - export ELECTRON_CACHE=$HOME/.cache/electron
+    - export ELETCRON_BUILDER_CACHE=$HOME/.cache/electron-builder
     - ./node_modules/.bin/electron-builder -l --publish always
     - ls -la packages/
     - mkdir release
@@ -104,16 +103,19 @@ pkg_win:
       - release
   dependencies:
     - build
-  variables:
-    ELECTRON_CACHE: $HOME/.cache/electron
-    ELETCRON_BUILDER_CACHE: $HOME/.cache/electron-builder
   script:
+    - export ELECTRON_CACHE=$HOME/.cache/electron
+    - export ELETCRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+    - apt-get update -qq && apt-get install -y -qq zip
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_win-3.2.tar.gz | tar xvz
     - ./node_modules/.bin/electron-builder -w --publish always
     - ls -la packages/
     - mkdir release
     - mv packages/*.exe release
     - mv packages/*.yml release
+    - touch portable
+    - zip -rv packages/*.zip portable
+    - mv packages/*.zip release
     - cd release
   only:
     - master
@@ -134,10 +136,10 @@ pkg_mac:
   dependencies:
     - build
   variables:
-    ELECTRON_CACHE: $HOME/.cache/electron
-    ELETCRON_BUILDER_CACHE: $HOME/.cache/electron-builder
     CSC_IDENTITY_AUTO_DISCOVERY: "false"
   script:
+    - export ELECTRON_CACHE=$HOME/.cache/electron
+    - export ELETCRON_BUILDER_CACHE=$HOME/.cache/electron-builder
     - wget -qO- http://mugen.karaokes.moe/downloads/dist_mac-3.2.tar.gz | tar xvz
     - ./node_modules/.bin/electron-builder -m
     - ls -la packages/
@@ -149,6 +151,7 @@ pkg_mac:
     - master
     - next
     - tags
+    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 deploy_mac:
   stage: deploy
@@ -156,11 +159,13 @@ deploy_mac:
   dependencies:
     - pkg_mac
   script:
+    - ls -la release/*
     - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put release/KaraokeMugen-$CI_COMMIT_REF_NAME.dmg"
   only:
     - master
     - next
     - tags
+    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
 deploy_win:
   stage: deploy
@@ -168,6 +173,7 @@ deploy_win:
   dependencies:
     - pkg_win
   script:
+    - ls -la release/*
     - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; mput release/*"
   only:
     - master
@@ -175,11 +181,16 @@ deploy_win:
     - tags
     - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
-latest_tag:
+deploy_linux:
   stage: deploy
   interruptible: true
+  dependencies:
+    - pkg_linux
   script:
-    - echo $CI_COMMIT_REF_NAME >latest
-    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; put latest"
+    - ls -la release/*
+    - lftp -c "set cmd:fail-exit yes; set ftp:ssl-allow no; open -u $USERNAME,$PASSWORD $HOST; cd site/downloads; mput release/*"
   only:
+    - master
+    - next
     - tags
+    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
