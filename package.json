@@ -68,19 +68,6 @@
   },
   "license": "MIT",
   "private": true,
-  "pkg": {
-    "scripts": [
-      "node_modules/db-migrate/lib/commands/**",
-      "dist/**/*.js"
-    ],
-    "assets": [
-      "migrations/**",
-      "dist/locales/*",
-      "assets/**",
-      "frontend/build/**",
-      "systempanel/build/**"
-    ]
-  },
   "dependencies": {
     "agentkeepalive": "^4.1.0",
     "ass-compiler": "^0.0.11",
