@@ -203,7 +203,7 @@
 		}
 	},
     "win": {
-      "target": ["nsis", "portable"],
+      "target": ["nsis", "zip"],
       "compression": "normal",
 	  "publisherName": "Karaoke Mugen Team",
 	  "publish": {
