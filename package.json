@@ -193,6 +193,15 @@
 		"allowToChangeInstallDirectory": true,
 		"license": "./LICENSE"
 	},
+	"AppImage": {
+		"license": "./LICENSE",
+		"category": "AudioVideo",
+		"publish": {
+			"provider": "generic",
+			"url": "https://mugen.karaokes.moe/downloads/",
+			"channel": "latest-linux"
+		}
+	},
     "win": {
       "target": "nsis",
       "compression": "normal",
@@ -200,13 +209,19 @@
 	  "publish": {
 		  "provider": "generic",
 		  "url": "https://mugen.karaokes.moe/downloads/",
-		  "channel": "latest"
+		  "channel": "latest-win"
 	  }
     },
     "mac": {
       "compression": "normal",
       "category": "public.app-category.entertainment"
     },
+	"linux": {
+	  "target": "AppImage",
+	  "vendor": "Karaoke Mugen Team",
+	  "executableName": "karaokemugen",
+	  "category": "AudioVideo"
+	},
     "productName": "Karaoke Mugen",
     "extraResources": [
       "migrations/**",

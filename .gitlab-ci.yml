@@ -67,9 +67,35 @@ build:
     - tags
     - 7-creer-un-systeme-de-mise-a-jour-de-l-app
 
+pkg_linux:
+  stage: package
+  image: electronuserland/builder:latest
+  interruptible: true
+  artifacts:
+    expire_in: 2 hours
+    name: km-app-pkglinux-${CI_COMMIT_REF_SLUG}
+    paths:
+      - release
+  dependencies:
+    - build
+  variables:
+    ELECTRON_CACHE: $HOME/.cache/electron
+    ELETCRON_BUILDER_CACHE: $HOME/.cache/electron-builder
+  script:
+    - ./node_modules/.bin/electron-builder -l --publish always
+    - ls -la packages/
+    - mkdir release
+    - mv packages/* release
+    - cd release
+  only:
+    - master
+    - next
+    - tags
+    - 7-creer-un-systeme-de-mise-a-jour-de-l-app
+
 pkg_win:
   stage: package
-  image: electronuserland/builder:wine
+  image: electronuserland/builder:wine-mono
   interruptible: true
   artifacts:
     expire_in: 2 hours
