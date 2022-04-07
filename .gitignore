@@ -35,7 +35,6 @@ kmfrontend/coverage
 /frontend/
 /systempanel/
 .cache/
-build/
 
 # sessions export
 *.played.csv
@@ -51,6 +50,3 @@ postgrator.json
 .env
 .eslintcache
 
-# zip worker
-zipWorker/zipWorker.js
-zipWorker/zipWorker.js.map
