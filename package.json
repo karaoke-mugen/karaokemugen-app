@@ -196,7 +196,7 @@
     "typescript": "^4.8.4"
   },
   "build": {
-    "appId": "moe.karaokes.mugen.app",
+    "appId": "KaraokeMugen",
     "afterSign": "build/notarize.cjs",
     "fileAssociations": [
       {
@@ -293,23 +293,17 @@
       "target": [
         "deb",
         "tar.gz",
-        "appImage",
-        "flatpak"
+        "appImage"
       ],
       "vendor": "Karaoke Mugen Team",
       "executableName": "karaokemugen",
       "category": "AudioVideo",
       "synopsis": "Karaoke manager and player",
-      "icon": "build/icon512.png",
+      "icon": "icon512.png",
       "publish": {
         "provider": "generic",
         "url": "https://mugen.karaokes.moe/downloads/"
       }
-    },
-    "flatpak": {
-      "runtimeVersion": "21.08",
-      "baseVersion": "21.08",
-      "useWaylandFlags": true
     },
     "productName": "Karaoke Mugen",
     "copyright": "© 2017-2022 Karaoke Mugen Team",
