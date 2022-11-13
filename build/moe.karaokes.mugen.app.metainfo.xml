@@ -7,7 +7,7 @@
   <summary>Karaoke session manager and player</summary>
 
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>MIT 2.0</project_license>
+  <project_license>MIT</project_license>
   <developer_name>Karaoke Mugen Team</developer_name>
 
   <url type="homepage">https://mugen.karaokes.moe</url>
@@ -20,7 +20,7 @@
     </p>
   </description>
 
-  <launchable type="desktop-id">km.desktop</launchable>
+  <launchable type="desktop-id">moe.karaokes.mugen.app.desktop</launchable>
 
   <screenshots>
     <screenshot type="default">
