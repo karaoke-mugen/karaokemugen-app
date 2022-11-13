@@ -4,8 +4,6 @@ runtime-version: '21.08'
 sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
 base-version: '21.08'
-#sdk-extensions:
-#  - org.freedesktop.Sdk.Extension.node14
 command: km-wrapper
 separate-locales: false
 rename-desktop-file: karaokemugen.desktop
@@ -49,7 +47,9 @@ modules:
     sources:
       - type: file
         dest-filename: km.deb
-        path: ../packages/karaokemugen-app_7.0.29-next_amd64.deb
+        path: ../packages/karaokemugen-app_7.0.35-next_amd64.deb
+        #url: https://mugen.karaokes.moe/downloads/karaokemugen-app_7.0.34_amd64.deb
+        #sha256: 4f36295941ccc00e07c2ef2d4027013a64963fd607bf0aa0c26e695339e80e82
       - type: script
         dest-filename: km
         commands:
@@ -66,3 +66,7 @@ modules:
         path: km-wrapper
       - type: file
         path: moe.karaokes.mugen.app.metainfo.xml
+      - type: file
+        dest-filename: karaokemugen.png
+        path: moe.karaokes.mugen.app.png
+
