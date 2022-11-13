@@ -21,7 +21,7 @@ import { GitLogResult, GitStatusResult } from '../../../../src/types/git';
 import { Commit, ModifiedMedia } from '../../../../src/types/repo';
 import { commandBackend, getSocket } from '../../utils/socket';
 import { displayMessage } from '../../utils/tools';
-import { RepositoryMaintainerSettings } from '../../../../src/lib/types/repo';
+import { Repository } from '../../../../src/lib/types/repo';
 
 type CommitWithComment = Commit & { comment: string };
 
@@ -31,14 +31,14 @@ interface PendingPush {
 }
 
 interface Repo {
-	repo: RepositoryMaintainerSettings;
+	repo: Repository;
 	label: string;
 	conflicts: boolean;
 	stashes: GitLogResult;
 }
 
 async function getRepos(): Promise<Repo[]> {
-	const repos: RepositoryMaintainerSettings[] = await commandBackend('getRepos');
+	const repos: Repository[] = await commandBackend('getRepos');
 	return Promise.all(
 		repos
 			.filter(repo => repo.Online && repo.MaintainerMode && repo.Enabled && repo.Git?.URL)
@@ -62,7 +62,7 @@ async function getRepos(): Promise<Repo[]> {
 
 function StashList(props: {
 	stashList: GitLogResult;
-	repo: RepositoryMaintainerSettings;
+	repo: Repository;
 	loading: boolean;
 	setLoading: Dispatch<boolean>;
 	refreshRepo: () => void;
@@ -94,7 +94,7 @@ function StashList(props: {
 			<p>
 				<Trans
 					i18nKey="REPOSITORIES.GIT_STASH"
-					components={{ 1: <a href={props.repo.Git.URL} rel="noreferrer noopener" target="_blank" /> }}
+					components={{ 1: <a href={props.repo.Git.URL} rel="noreferrer noopener" /> }}
 				/>
 			</p>
 			<List

@@ -48,7 +48,7 @@
 	"PLAYLISTS": {
 		"LIBRARY": "Bibliothèque",
 		"FAVORITES": "Favoris",
-		"ANIME_LIST": "Liste d'animés"
+		"ANIME_LIST": "Mes animés"
 	},
 	"WEBAPPMODE_CLOSED_MESSAGE": "L'interface est fermée, merci de patienter.",
 	"INLINE_TAG": {
@@ -210,7 +210,7 @@
 		"REQUESTED_KARAOKES": "Karaokés populaires",
 		"NEW_KARAOKES": "Nouveaux karaokés",
 		"KARA_VERSIONS": "Cette chanson est disponible en {{length}} versions, choisissez celle que vous voulez et ajoutez-là à la playlist ou à vos favoris.",
-		"ANIME_LIST": "Liste d'animés"
+		"ANIME_LIST": "Mes animés"
 	},
 	"ADMIN_MESSAGE": {
 		"ESSENTIAL_MESSAGE": "Message indispensable",
@@ -618,7 +618,7 @@
 			"INTERFACE_LANGUAGE": "Langue de l'interface",
 			"MAIN_SONG_NAME_LANG": "Préférence d'affichage du nom des chansons",
 			"FALLBACK_SONG_NAME_LANG": "Préférence alternative d'affichage du nom des chansons",
-			"SONG_NAME_DISPLAY_EXAMPLE": "Example d'affichage",
+			"SONG_NAME_DISPLAY_EXAMPLE": "Exemple d'affichage",
 			"FLAG_PARENTSONLY": "Regrouper les chansons par versions",
 			"FLAG_PUBLIC": "Partager son profil",
 			"FLAG_DISPLAYFAVORITES": "Partager ses favoris",
@@ -719,10 +719,6 @@
 			"DELETE": "Effacer la liste des téléchargements",
 			"CONTINUE": "Continuer les téléchargements"
 		},
-		"DELETE_PLAYLIST_ERROR_CURRENT": "Impossible de supprimer une playlist courante. Définissez une autre playlist courante avant.",
-		"DELETE_PLAYLIST_ERROR_PUBLIC": "Impossible de supprimer une playlist publique. Définissez une autre playlist publique avant.",
-		"DELETE_PLAYLIST_ERROR_WHITELIST": "Impossible de supprimer une liste blanche. Définissez une autre liste blanche avant.",
-		"DELETE_PLAYLIST_ERROR_BLACKLIST": "Impossible de supprimer une liste noire. Définissez une autre liste noire avant.",
 		"DELETE_PLAYLIST_MODAL": {
 			"TITLE": "Supprimer {{playlist}} pour toujours ?",
 			"IMPOSSIBLE": "Vous ne pouvez pas supprimer la seule liste de lecture.",
@@ -840,11 +836,11 @@
 			"META": "Metadonnées"
 		},
 		"DESC": {
-			"PARENTS": "Si cette chanson est une version alternative d'une autre, selectionner son ou ses parent(s) pour préremplir ce formulaire.",
-			"PARENTS_PUBLIC": "Quand un utilisateur selectionne une chanson parente dans l'interface publique, il verra alors toutes les versions alternatives / enfants.",
+			"PARENTS": "Si cette chanson est une version alternative d'une autre, sélectionner son ou ses parent(s) pour préremplir ce formulaire.",
+			"PARENTS_PUBLIC": "Quand un utilisateur sélectionne une chanson parente dans l'interface publique, il verra alors toutes les versions alternatives / enfants.",
 			"TITLES": "Définissez tous les titres que cette chanson possède dans différentes langues. Habituellement, il n'y a qu'un titre.",
 			"TITLES_DEFAULT_LANGUAGE": "La langue du titre par défaut devrait être le titre d'origine. Pour les titres en alphabet non-latin (chinois, japonais, coréen, arabe…), ajoutez un titre \"Romanisation\" et mettez-le par défaut.",
-			"ALIASES": "Si la chanson est connue sosu un autre nom (abbréviation par exemple), indiquez-les ici pour aider le public à les trouver à travers la recherche. Pas besoin d'utiliser des mots déjà contenus dans le(s) titre(s)."
+			"ALIASES": "Si la chanson est connue sous un autre nom (abbréviation par exemple), indiquez-les ici pour aider le public à les trouver à travers la recherche. Pas besoin d'utiliser des mots déjà contenus dans le(s) titre(s)."
 		},
 		"MEDIA_FILE": "Fichier média",
 		"MEDIA_FILE_TOOLTIP": "Formats de fichier acceptés : {{formats}}",
@@ -1065,11 +1061,11 @@
 		"ADD_DESCRIPTION": "Ajouter une description",
 		"KARAOKES_WITH_TAGS": "Karaokés ayant ce tag",
 		"MAL_ID": "Identifiant/URL MyAnimeList",
-		"MAL_ID_TOOLTIP": "Si c'est un anime, indiquez son ID sur myanimelist.net",
+		"MAL_ID_TOOLTIP": "Si c'est un anime, indiquez son ID/url sur myanimelist.net",
 		"ANILIST_ID": "Identifiant/URL Anilist",
-		"ANILIST_ID_TOOLTIP": "Si c'est un anime, indiquez son ID sur anilist.co",
+		"ANILIST_ID_TOOLTIP": "Si c'est un anime, indiquez son ID/url sur anilist.co",
 		"KITSU_ID": "Identifiant/URL Kitsu",
-		"KITSU_ID_TOOLTIP": "Si c'est un anime, indiquez son ID sur kitsu.io",
+		"KITSU_ID_TOOLTIP": "Si c'est un anime, indiquez son url sur kitsu.io",
 		"NOT_MAL_URL_ERROR": "C'est une url myanimelist",
 		"NOT_ANILIST_URL_ERROR": "C'est une url anilist",
 		"NOT_KITSU_URL_ERROR": "C'est une url kitsu",
@@ -1499,7 +1495,11 @@
 		"REPOSITORY_UNREACHABLE": "Dépôt inaccessible. Avez-vous mal orthographié son nom ?",
 		"CANNOT_INSTALL_REPO_AT_WINDOWS_ROOT_DRIVE": "Le dépôt ne peut pas être installé à la racine d'un lecteur Windows.",
 		"REFRESH_ANIME_LIST_ERROR": "Erreur lors du rafraichissement de la liste d'anime",
-		"ANIME_LIST_VIEW_ERROR": "Erreur lors de la récupération de la liste d'anime"
+		"ANIME_LIST_VIEW_ERROR": "Erreur lors de la récupération de la liste d'anime",
+		"DELETE_PLAYLIST_ERROR_CURRENT": "Impossible de supprimer une playlist courante. Définissez une autre playlist courante avant.",
+		"DELETE_PLAYLIST_ERROR_PUBLIC": "Impossible de supprimer une playlist publique. Définissez une autre playlist publique avant.",
+		"DELETE_PLAYLIST_ERROR_WHITELIST": "Impossible de supprimer une liste blanche. Définissez une autre liste blanche avant.",
+		"DELETE_PLAYLIST_ERROR_BLACKLIST": "Impossible de supprimer une liste noire. Définissez une autre liste noire avant."
 	},
 	"SUCCESS_CODES": {
 		"DOWNLOADS_QUEUED": "Ajout de {{data}} téléchargements à la file d'attente",
@@ -1558,6 +1558,7 @@
 		},
 		"SYSTEM_PREFERENCES": {
 			"TITLE": "Préférences système",
+			"TITLEMAC": "Réglages système",
 			"DESCRIPTION": "Paramètres uniquement liés à l'application Karaoke Mugen"
 		},
 		"CONFIGURATION": {
@@ -1686,7 +1687,8 @@
 			"INFO": "Informations",
 			"DEBUG": "Débogage"
 		},
-		"SHOW_DETAILS": "Afficher détails"
+		"SHOW_DETAILS": "Afficher détails",
+		"SELECT_LOG": "Sélectionnez le journal dans le gestionnaire de fichiers"
 	},
 	"CHIBI": {
 		"FOCUS": "Revenir à Karaoke Mugen",

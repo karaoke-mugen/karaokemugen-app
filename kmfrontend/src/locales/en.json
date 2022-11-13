@@ -48,7 +48,7 @@
 	"PLAYLISTS": {
 		"LIBRARY": "Library",
 		"FAVORITES": "Favorites",
-		"ANIME_LIST": "Anime list"
+		"ANIME_LIST": "My animes"
 	},
 	"WEBAPPMODE_CLOSED_MESSAGE": "The interface is closed, please wait.",
 	"INLINE_TAG": {
@@ -203,7 +203,7 @@
 		"REQUESTED_KARAOKES": "Requested songs",
 		"NEW_KARAOKES": "New songs",
 		"KARA_VERSIONS": "This song is available in {{length}} versions, choose the one you want and add it to the playlist or your favorites.",
-		"ANIME_LIST": "Anime list"
+		"ANIME_LIST": "My animes"
 	},
 	"ADMIN_MESSAGE": {
 		"ESSENTIAL_MESSAGE": "Important message",
@@ -717,10 +717,6 @@
 			"DELETE": "Abort all pending downloads",
 			"CONTINUE": "Resume all downloads"
 		},
-		"DELETE_PLAYLIST_ERROR_CURRENT": "Unable to delete a current playlist. Make another playlist current first.",
-		"DELETE_PLAYLIST_ERROR_PUBLIC": "Unable to delete a public playlist. Make another playlist public first.",
-		"DELETE_PLAYLIST_ERROR_WHITELIST": "Unable to delete a whitelist. Make another playlist a whitelist first.",
-		"DELETE_PLAYLIST_ERROR_BLACKLIST": "Unable to delete a blacklist. Make another playlist a blacklist first.",
 		"DELETE_PLAYLIST_MODAL": {
 			"TITLE": "Delete {{playlist}} forever?",
 			"IMPOSSIBLE": "You cannot delete the only playlist.",
@@ -1063,11 +1059,11 @@
 		"ADD_DESCRIPTION": "Add a description",
 		"KARAOKES_WITH_TAGS": "Karaokes with this tag",
 		"MAL_ID": "MAL ID/URL",
-		"MAL_ID_TOOLTIP": "If this is an anime, please indicate its id on myanimelist.net",
+		"MAL_ID_TOOLTIP": "If this is an anime, please indicate its id/url on myanimelist.net",
 		"ANILIST_ID": "Anilist ID/URL",
-		"ANILIST_ID_TOOLTIP": "If this is an anime, please indicate its id on anilist.co",
+		"ANILIST_ID_TOOLTIP": "If this is an anime, please indicate its id/url on anilist.co",
 		"KITSU_ID": "Kitsu ID/URL",
-		"KITSU_ID_TOOLTIP": "If this is an anime, please indicate its id on kitsu.io",
+		"KITSU_ID_TOOLTIP": "If this is an anime, please indicate its url on kitsu.io",
 		"NOT_MAL_URL_ERROR": "This is a myanimelist url",
 		"NOT_ANILIST_URL_ERROR": "This is a anilist url",
 		"NOT_KITSU_URL_ERROR": "This is a kitsu url",
@@ -1497,7 +1493,11 @@
 		"REPOSITORY_UNREACHABLE": "Repository unreachable. Did you misspell its name?",
 		"CANNOT_INSTALL_REPO_AT_WINDOWS_ROOT_DRIVE": "Repository cannot be installed at the root of a Windows drive.",
 		"REFRESH_ANIME_LIST_ERROR": "Error refreshing anime list",
-		"ANIME_LIST_VIEW_ERROR": "Error getting anime list"
+		"ANIME_LIST_VIEW_ERROR": "Error getting anime list",
+		"DELETE_PLAYLIST_ERROR_CURRENT": "Unable to delete a current playlist. Make another playlist current first.",
+		"DELETE_PLAYLIST_ERROR_PUBLIC": "Unable to delete a public playlist. Make another playlist public first.",
+		"DELETE_PLAYLIST_ERROR_WHITELIST": "Unable to delete a whitelist. Make another playlist a whitelist first.",
+		"DELETE_PLAYLIST_ERROR_BLACKLIST": "Unable to delete a blacklist. Make another playlist a blacklist first."
 	},
 	"SUCCESS_CODES": {
 		"DOWNLOADS_QUEUED": "Added {{data}} downloads to the queue",
@@ -1556,6 +1556,7 @@
 		},
 		"SYSTEM_PREFERENCES": {
 			"TITLE": "System preferences",
+			"TITLEMAC": "System settings",
 			"DESCRIPTION": "Application-related settings only"
 		},
 		"CONFIGURATION": {
@@ -1684,7 +1685,8 @@
 			"INFO": "Informations",
 			"DEBUG": "Debug"
 		},
-		"SHOW_DETAILS": "Show details"
+		"SHOW_DETAILS": "Show details",
+		"SELECT_LOG": "Select log in file manager"
 	},
 	"CHIBI": {
 		"FOCUS": "Go back to Karaoke Mugen",

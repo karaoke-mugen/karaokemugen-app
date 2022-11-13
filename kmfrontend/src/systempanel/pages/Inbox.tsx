@@ -77,11 +77,7 @@ export default function Inbox() {
 					<div>
 						<label>{i18next.t('INBOX.CONTACT_INFOS_MODAL.USERNAME')}</label>
 						{userDetails.flag_public ? (
-							<a
-								href={`https://${instance}/user/${userDetails.login}`}
-								rel="noreferrer noopener"
-								target="_blank"
-							>
+							<a href={`https://${instance}/user/${userDetails.login}`} rel="noreferrer noopener">
 								{userDetails.login}
 							</a>
 						) : (
@@ -97,48 +93,45 @@ export default function Inbox() {
 					{userDetails?.url ? (
 						<div>
 							<label>{i18next.t('INBOX.CONTACT_INFOS_MODAL.URL')}</label>
-							<a href={userDetails.url} rel="noreferrer noopener" target="_blank">
+							<a href={userDetails.url} rel="noreferrer noopener">
 								{userDetails.url}
 							</a>
 						</div>
 					) : null}
-					{userDetails?.social_networks.discord ? (
+					{userDetails?.social_networks?.discord ? (
 						<div>
 							<label>{i18next.t('INBOX.CONTACT_INFOS_MODAL.SOCIAL_NETWORKS.DISCORD')}</label>
 							{userDetails.social_networks.discord}
 						</div>
 					) : null}
-					{userDetails?.social_networks.twitter ? (
+					{userDetails?.social_networks?.twitter ? (
 						<div>
 							<label>{i18next.t('INBOX.CONTACT_INFOS_MODAL.SOCIAL_NETWORKS.TWITTER')}</label>
 							<a
 								href={`https://twitter.com/${userDetails.social_networks.twitter}`}
 								rel="noreferrer noopener"
-								target="_blank"
 							>
 								{userDetails.social_networks.twitter}
 							</a>
 						</div>
 					) : null}
-					{userDetails?.social_networks.instagram ? (
+					{userDetails?.social_networks?.instagram ? (
 						<div>
 							<label>{i18next.t('INBOX.CONTACT_INFOS_MODAL.SOCIAL_NETWORKS.INSTAGRAM')}</label>
 							<a
 								href={`https://instagram.com/${userDetails.social_networks.instagram}`}
 								rel="noreferrer noopener"
-								target="_blank"
 							>
 								{userDetails.social_networks.instagram}
 							</a>
 						</div>
 					) : null}
-					{userDetails?.social_networks.twitch ? (
+					{userDetails?.social_networks?.twitch ? (
 						<div>
 							<label>{i18next.t('INBOX.CONTACT_INFOS_MODAL.SOCIAL_NETWORKS.TWITCH')}</label>
 							<a
 								href={`https://twitch.tv/${userDetails.social_networks.twitch}`}
 								rel="noreferrer noopener"
-								target="_blank"
 							>
 								{userDetails.social_networks.twitch}
 							</a>

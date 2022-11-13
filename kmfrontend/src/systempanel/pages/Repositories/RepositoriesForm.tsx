@@ -5,14 +5,10 @@ import { FormInstance } from 'antd/lib/form';
 import i18next from 'i18next';
 import { Component, createRef } from 'react';
 
-import { RepositoryMaintainerSettings } from '../../../../../src/lib/types/repo';
 import { TaskItem } from '../../../../../src/lib/types/taskItem';
 import { commandBackend, getSocket } from '../../../utils/socket';
 import FoldersElement from '../../components/FoldersElement';
-
-interface Repository extends RepositoryMaintainerSettings {
-	// Should be okay, even if technically we shouldn't be able to place Maintainer Settings when MaintainerMode is off
-}
+import { Repository } from '../../../../../src/lib/types/repo';
 
 interface RepositoriesFormProps {
 	repository: Repository;
@@ -29,6 +25,7 @@ interface RepositoriesFormState {
 	zipUpdateInProgress: boolean;
 	maintainerMode: boolean;
 	onlineMode: boolean;
+	update: boolean;
 }
 
 class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormState> {
@@ -47,6 +44,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 			zipUpdateInProgress: false,
 			maintainerMode: props.repository?.MaintainerMode,
 			onlineMode: props.repository?.Online,
+			update: props.repository?.Update,
 		};
 	}
 
@@ -222,7 +220,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 					valuePropName="checked"
 					name="Update"
 				>
-					<Checkbox />
+					<Checkbox onChange={e => this.setState({ update: e.target.checked })} />
 				</Form.Item>
 				<Form.Item
 					label={
@@ -303,7 +301,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.GIT.URL')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="GitURL"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input placeholder={i18next.t('REPOSITORIES.GIT.URL')} />
 						</Form.Item>
@@ -311,7 +309,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.GIT.USERNAME')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="GitUsername"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input placeholder={i18next.t('REPOSITORIES.GIT.USERNAME')} />
 						</Form.Item>
@@ -319,7 +317,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.GIT.PASSWORD')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="GitPassword"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input type="password" placeholder={i18next.t('REPOSITORIES.GIT.PASSWORD')} />
 						</Form.Item>
@@ -327,7 +325,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.GIT.AUTHOR')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="GitAuthor"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input placeholder={i18next.t('REPOSITORIES.GIT.AUTHOR')} />
 						</Form.Item>
@@ -335,7 +333,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.GIT.EMAIL')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="GitEmail"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input placeholder={i18next.t('REPOSITORIES.GIT.EMAIL')} />
 						</Form.Item>
@@ -343,7 +341,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.FTP.HOST')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="FTPHost"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input placeholder={i18next.t('REPOSITORIES.FTP.HOST')} />
 						</Form.Item>
@@ -351,7 +349,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.FTP.PORT')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="FTPPort"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input placeholder={i18next.t('REPOSITORIES.FTP.PORT')} />
 						</Form.Item>
@@ -359,7 +357,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.FTP.USERNAME')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="FTPUsername"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input placeholder={i18next.t('REPOSITORIES.FTP.USERNAME')} />
 						</Form.Item>
@@ -367,7 +365,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.FTP.PASSWORD')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="FTPPassword"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input type="password" placeholder={i18next.t('REPOSITORIES.FTP.PASSWORD')} />
 						</Form.Item>
@@ -375,7 +373,7 @@ class RepositoryForm extends Component<RepositoriesFormProps, RepositoriesFormSt
 							label={i18next.t('REPOSITORIES.FTP.BASEDIR')}
 							labelCol={{ flex: '0 1 300px' }}
 							name="FTPBaseDir"
-							rules={[{ required: true }]}
+							rules={[{ required: this.state.update }]}
 						>
 							<Input placeholder={i18next.t('REPOSITORIES.FTP.BASEDIR')} />
 						</Form.Item>
