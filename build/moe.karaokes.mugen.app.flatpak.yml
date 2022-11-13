@@ -38,12 +38,8 @@ modules:
       - yarn --offline buildkmfrontend
       - . flatpak-node/electron-builder-arch-args.sh; npx electron-builder --dir -c.compression=store -c.mac.identity=null $ELECTRON_BUILDER_ARCH_ARGS
       - cp -r packages/linux*unpacked /app/km
-      - mkdir /app/km/app/
+      - install -d /app/km/app/
       - cp -r bin/ /app/km/app/
-      - cp libjpeg.so.8 /app/km/app/bin/
-      - install -Dm755 patch /app/km/app/bin/
-      - rm /app/km/app/bin/mpv
-      - install -Dm755 mpv /app/km/app/bin/
       - install -Dm755 stub_sandbox /app/km/chrome-sandbox
       - install -Dm755 km -t /app/bin/
       - install -Dm755 km-wrapper /app/bin/km-wrapper
@@ -80,13 +76,5 @@ modules:
         url: https://downloads.sentry-cdn.com/sentry-cli/2.8.1/sentry-cli-Linux-x86_64
         sha256: 517e07749123f3b30c388a6e9347c6e7f99ed86808110e916c27d6a5638032ad
       - type: archive
-        url: https://mugen.karaokes.moe/downloads/dist_linux-6.x.tar.gz
-        sha256: eebb644316b3c472fb75966ce963272677f95fea2698fd5961451fa8888d87e6
-      - type: file
-        url: https://mugen.karaokes.moe/downloads/patch
-        sha256: 7f0763905baec6995794b6c234ae27c503f5d93105584be763a55d1fe24e8ae5
-      - type: file
-        url: https://mugen.karaokes.moe/downloads/mpv
-        sha256: 8e7a16ceb173f5980942b72655426daeb3be32bd8cbb5762cdaad21140dda6d7
-      - type: file
-        path: libjpeg.so.8
+        url: https://mugen.karaokes.moe/downloads/dist_linux-7.x.tar.gz
+        sha256: b62b57b588aa70b3457e8655cf4f0f037c6ee757c34e991a64e1e87119bcd449
