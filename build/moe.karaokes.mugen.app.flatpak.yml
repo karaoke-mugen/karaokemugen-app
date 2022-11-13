@@ -4,10 +4,10 @@ runtime-version: '21.08'
 sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
 base-version: '21.08'
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node14
 command: km-wrapper
 separate-locales: false
-rename-desktop-file: karaokemugen.desktop
-rename-icon: karaokemugen
 finish-args:
   - --filesystem=host
   - --share=ipc
@@ -24,38 +24,44 @@ finish-args:
 modules:
   - name: karaokemugen
     buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/node14/bin
+      env:
+        XDG_CACHE_HOME: /run/build/karaokemugen/flatpak-node/cache
+        npm_config_nodedir: /usr/lib/sdk/node14
     build-commands:
-      - install -dm755 ${FLATPAK_DEST}/km
-      - |
-        bsdtar -Oxf km.deb 'data.tar*' |
-        bsdtar -xf - \
-        -C ${FLATPAK_DEST}/km \
-        --strip-components=3 \
-        "./opt/Karaoke Mugen"
-      - |
-        bsdtar -Oxf km.deb 'data.tar*' |
-        bsdtar -xf - \
-        -C ${FLATPAK_DEST} \
-        --strip-components=2 \
-        --exclude=./usr/share/doc \
-        ./usr/share
-      - desktop-file-edit --set-key=Exec --set-value=km "${FLATPAK_DEST}/share/applications/karaokemugen.desktop"
-      - install -Dm755 stub_sandbox ${FLATPAK_DEST}/km/chrome-sandbox
-      - install -Dm755 km -t ${FLATPAK_DEST}/bin/
-      - install -Dm644 -t /app/share/metainfo ${FLATPAK_ID}.metainfo.xml
+      - install -D sentry-cli-Linux-x86_64 /app/bin/sentry-cli
+      - HOME=$PWD yarn config --offline set yarn-offline-mirror $FLATPAK_BUILDER_BUILDDIR/flatpak-node/yarn-mirror
+      - SENTRYCLI_USE_LOCAL=1 yarn --offline
+      - yarn --offline build
+      - yarn --offline installkmfrontend
+      - yarn --offline buildkmfrontend
+      - . flatpak-node/electron-builder-arch-args.sh; npx electron-builder --dir -c.compression=store -c.mac.identity=null $ELECTRON_BUILDER_ARCH_ARGS
+      - cp -r packages/linux*unpacked /app/km
+      - mkdir /app/km/app/
+      - cp -r bin/ /app/km/app/
+      - cp libjpeg.so.8 /app/km/app/bin/
+      - install -Dm755 patch /app/km/app/bin/
+      - rm /app/km/app/bin/mpv
+      - install -Dm755 mpv /app/km/app/bin/
+      - install -Dm755 stub_sandbox /app/km/chrome-sandbox
+      - install -Dm755 km -t /app/bin/
       - install -Dm755 km-wrapper /app/bin/km-wrapper
+      - install -d /app/share/applications
+      - install -Dm644 moe.karaokes.mugen.app.desktop "/app/share/applications/${FLATPAK_ID}.desktop"
+      - install -Dm644 moe.karaokes.mugen.app.png "/app/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png"
+      - install -Dm644 moe.karaokes.mugen.app.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
     sources:
-      - type: file
-        dest-filename: km.deb
-        path: ../packages/karaokemugen-app_7.0.35-next_amd64.deb
-        #url: https://mugen.karaokes.moe/downloads/karaokemugen-app_7.0.34_amd64.deb
-        #sha256: 4f36295941ccc00e07c2ef2d4027013a64963fd607bf0aa0c26e695339e80e82
+      - type: git
+        url: https://gitlab.com/karaokemugen/karaokemugen-app
+        commit: 78b9d60dc67c3be492ef9fcb3861ff1603d92751
+      - generated-sources.json
       - type: script
         dest-filename: km
         commands:
           # share chromium singleton between multiple session, needed for flatpak<1.11.1
           - export TMPDIR=$XDG_RUNTIME_DIR/app/$FLATPAK_ID
-          - exec zypak-wrapper /app/km/karaokemugen "$@"
+          - zypak-wrapper /app/km/karaokemugen "$@"
       - type: script
         dest-filename: stub_sandbox
         commands:
@@ -67,6 +73,20 @@ modules:
       - type: file
         path: moe.karaokes.mugen.app.metainfo.xml
       - type: file
-        dest-filename: karaokemugen.png
         path: moe.karaokes.mugen.app.png
-
+      - type: file
+        path: moe.karaokes.mugen.app.desktop
+      - type: file
+        url: https://downloads.sentry-cdn.com/sentry-cli/2.8.1/sentry-cli-Linux-x86_64
+        sha256: 517e07749123f3b30c388a6e9347c6e7f99ed86808110e916c27d6a5638032ad
+      - type: archive
+        url: https://mugen.karaokes.moe/downloads/dist_linux-6.x.tar.gz
+        sha256: eebb644316b3c472fb75966ce963272677f95fea2698fd5961451fa8888d87e6
+      - type: file
+        url: https://mugen.karaokes.moe/downloads/patch
+        sha256: 7f0763905baec6995794b6c234ae27c503f5d93105584be763a55d1fe24e8ae5
+      - type: file
+        url: https://mugen.karaokes.moe/downloads/mpv
+        sha256: 8e7a16ceb173f5980942b72655426daeb3be32bd8cbb5762cdaad21140dda6d7
+      - type: file
+        path: libjpeg.so.8
