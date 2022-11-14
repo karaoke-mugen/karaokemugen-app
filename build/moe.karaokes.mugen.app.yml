@@ -5,7 +5,7 @@ sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
 base-version: '21.08'
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.node14
+  - org.freedesktop.Sdk.Extension.node16
 command: km-wrapper
 separate-locales: false
 finish-args:
@@ -25,10 +25,10 @@ modules:
   - name: karaokemugen
     buildsystem: simple
     build-options:
-      append-path: /usr/lib/sdk/node14/bin
+      append-path: /usr/lib/sdk/node16/bin
       env:
         XDG_CACHE_HOME: /run/build/karaokemugen/flatpak-node/cache
-        npm_config_nodedir: /usr/lib/sdk/node14
+        npm_config_nodedir: /usr/lib/sdk/node16
     build-commands:
       - install -D sentry-cli-Linux-x86_64 /app/bin/sentry-cli
       - HOME=$PWD yarn config --offline set yarn-offline-mirror $FLATPAK_BUILDER_BUILDDIR/flatpak-node/yarn-mirror
@@ -36,7 +36,7 @@ modules:
       - yarn --offline build
       - yarn --offline installkmfrontend
       - yarn --offline buildkmfrontend
-      - . flatpak-node/electron-builder-arch-args.sh; npx electron-builder --dir -c.compression=store -c.mac.identity=null $ELECTRON_BUILDER_ARCH_ARGS
+      - . flatpak-node/electron-builder-arch-args.sh; yarn run electron-builder --dir -c.compression=store -c.mac.identity=null $ELECTRON_BUILDER_ARCH_ARGS
       - cp -r packages/linux*unpacked /app/km
       - install -d /app/km/app/
       - cp -r bin/ /app/km/app/
