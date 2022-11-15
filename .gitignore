@@ -57,3 +57,4 @@ build/export
 *.flatpak
 build/build
 build/km
+repo/
