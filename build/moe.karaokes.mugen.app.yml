@@ -51,7 +51,7 @@ modules:
     sources:
       - type: git
         url: https://gitlab.com/karaokemugen/karaokemugen-app
-        commit: 8cad60f65f80c02d8451034ee4b608e9688a05d4
+        commit: 18743cb4b0e46b88c46b86112a36fd2ba35a9743
       - generated-sources.json
       - type: script
         dest-filename: km
