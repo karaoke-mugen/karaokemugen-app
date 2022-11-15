@@ -6,6 +6,7 @@
 	"SEARCH": "Rechercher",
 	"SUBMIT": "Sauvegarder",
 	"CANCEL": "Annuler",
+	"WARNING": "Attention !",
 	"NOT_FOUND_PAGE": {
 		"404": "Perdu dans Karaoke Mugen ?",
 		"404_2": "Pas de panique, on va vous aider.",
@@ -524,7 +525,9 @@
 		"Les préparatifs sont en cours !"
 	],
 	"JINGLE_TIME": "Instant jingle !",
-	"JINGLE_TAGLINES": ["On revient !"],
+	"JINGLE_TAGLINES": [
+		"On revient !"
+	],
 	"INTRO_TIME": "Introduction",
 	"INTRO_TAGLINES": [
 		"C'est parti !",
@@ -534,15 +537,32 @@
 		"*se racle la gorge*"
 	],
 	"OUTRO_TIME": "Fin",
-	"OUTRO_TAGLINES": ["C'est fini :(", "Merci à tous !"],
+	"OUTRO_TAGLINES": [
+		"C'est fini :(",
+		"Merci à tous !"
+	],
 	"ENCORES_TIME": "Encore ! Encore !",
-	"ENCORES_TAGLINES": ["Bon, c'est bien parce que c'est vous…", "P'tite dèr ?", "Dernière chanson, on donne tout !"],
+	"ENCORES_TAGLINES": [
+		"Bon, c'est bien parce que c'est vous…",
+		"P'tite dèr ?",
+		"Dernière chanson, on donne tout !"
+	],
 	"SPONSOR_TIME": "LA PUB !",
-	"SPONSOR_TAGLINES": ["Kono bangumi wa…", "Et merci pour l'argent."],
+	"SPONSOR_TAGLINES": [
+		"Kono bangumi wa…",
+		"Et merci pour l'argent."
+	],
 	"PAUSE_TIME": "Pause",
-	"PAUSE_TAGLINES": ["On respire !", "Buvez un coup !", "On revient tout de suite !"],
+	"PAUSE_TAGLINES": [
+		"On respire !",
+		"Buvez un coup !",
+		"On revient tout de suite !"
+	],
 	"POLL_TIME": "Vote",
-	"POLL_TAGLINES": ["Votez ! Votez !", "Le choix vous revient."],
+	"POLL_TAGLINES": [
+		"Votez ! Votez !",
+		"Le choix vous revient."
+	],
 	"QUOTA_AVAILABLE": "Vous pouvez de nouveau ajouter des chansons !",
 	"SERIE_NAME_MODE": "Affichage des noms des œuvres",
 	"SERIE_NAME_MODE_TOOLTIP": "Change la façon dont les noms de œuvres sont affichées dans la liste des chansons. Peut être ignoré par les préférences d'un utilisateur",
@@ -802,6 +822,7 @@
 				"DOWNLOAD": "Erreur lors du téléchargement",
 				"SHORTENER": "Erreur d'activation de l'URL raccourcie",
 				"PLAYER_PLAY": "Erreur de lecture de karaoké",
+				"PLAYER_NO_ONLINE_MEDIA": "Impossible de lire le média en ligne. Vérifiez votre connexion internet.",
 				"PLAYER_RANDOM_SONG_AFTER_PLAYLIST": "Erreur de sélection de chanson aléatoire en fin de liste de lecture",
 				"PLAYER_PLMEDIA": "Erreur de lecture de média de liste de lecture",
 				"PLAYER_CLASSIC_PAUSE_SCREEN": "Erreur de préparation de l'écran de pause",
@@ -1039,6 +1060,7 @@
 		"I18N_DELETE": "Supprimer le nom",
 		"I18N_SELECT": "Ajouter une langue",
 		"ROMANIZATION_WARNING": "Ce titre/tag contient une langue en alphabet non latin. Vous devez ajouter la langue “Alphabet Latin (Romanisation)” en plus.",
+		"MERGE_TAGS": "Fusionner des tags",
 		"MERGE_WITH": "Fusionner avec",
 		"MERGE_WITH_TOOLTIP": "Fusionner le tag courant avec un autre",
 		"MERGE_WITH_SELECT": "Sélectionner un tag",
@@ -1046,6 +1068,7 @@
 		"MERGE_ABOUT": "A propos du processus de fusion",
 		"MERGE_ABOUT_MESSAGE": "Le tag final aura le nom et le nom court courants. Les types, alias, traductions seront fusionnés et le tag final contiendra toutes les informations du tag courant et de celui visé.",
 		"TAG_DELETED_CONFIRM": "Confirmer la suppression du tag",
+		"DELETE_TAG": "Supprimer le tag",
 		"DELETE_TAG_CONFIRM": "Suppression du tag",
 		"DELETE_TAG_MESSAGE": "Cela va supprimer le fichier tags.json ainsi que la référence du tag dans les fichiers .kara.json de votre base de données !",
 		"LANG_ERROR": "Un tag doit avoir au moins un nom par langue.",
@@ -1205,7 +1228,6 @@
 		"MOVING_MEDIA": "Destination des médias",
 		"MOVING_MEDIA_BUTTON": "Déplacer les médias…",
 		"MOVING_MEDIA_PANEL": "Déplacement des médias du dépôt",
-		"WARNING": "Attention !",
 		"MOVING_MEDIA_ABOUT_MESSAGE": "Tous les fichiers médias du dépôt seront déplacés vers le nouveau dossier. Si vous avez plusieurs dossiers de médias, tous les fichiers de tous les dossiers seront copiés dans le même dossier destination. S'il y a des doublons, ils seront écrasés sauvagement.",
 		"COMPARE_LYRICS": "Mise à jour des paroles entre deux dépôts",
 		"CHOOSE_REPOSITORY": "Choix du dépôt",
