@@ -36,6 +36,7 @@ modules:
       - yarn --offline build
       - yarn --offline installkmfrontend
       - yarn --offline buildkmfrontend
+      - git rev-parse HEAD | head -c 8 > assets/sha.txt
       - . flatpak-node/electron-builder-arch-args.sh; yarn run electron-builder --dir -c.compression=store -c.mac.identity=null $ELECTRON_BUILDER_ARCH_ARGS
       - cp -r packages/linux*unpacked /app/km
       - install -d /app/km/app/
