@@ -4,7 +4,10 @@
   <id>moe.karaokes.mugen.app</id>
 
   <name>Karaoke Mugen</name>
+  <name xml:lang="fr">Karaoke Mugen</name>
   <summary>Karaoke session manager and player</summary>
+  <summary xml:lang="fr">Gestionnaire de sessions et lecteur de karaokés</summary>
+  <update_contact>mugen@karaokes.moe</update_contact>
 
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
@@ -16,8 +19,19 @@
 
   <description>
     <p>
-      Hello, I'm a description.
+      Karaoke Mugen makes hosting karaoke events easy, with a video player (mpv) and web interfaces to manage playlists, but also for your guests/public to request songs to sing!
     </p>
+	<p>
+	  It's also perfect for streamers wanting to allow their viewers to interact with them during a karaoke session.
+	</p>
+  </description>
+  <description xml:lang="fr">
+    <p>
+	  Karaoke Mugen rend la gestion d'un évènement de karaoké facile, avec un lecteur vidéo (mpv) et des interfaces web pour gérer les playlists, mais aussi pour vos invités/votre public pour qu'ils demandent des chansons à chanter!
+    </p>
+	<p>
+	  C'est aussi un outil parfait pour les streamers voulant permettre à leurs spectateurs d'intéragir avec eux durant une session de karaoké.
+	</p>
   </description>
 
   <launchable type="desktop-id">moe.karaokes.mugen.app.desktop</launchable>
@@ -32,3 +46,4 @@
     <release version="v7.0.35" date="2022-10-13"/>
   </releases>
 </component>
+<!-- Copyright 2022 Karaoke Mugen Team -->
