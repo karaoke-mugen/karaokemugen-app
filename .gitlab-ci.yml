@@ -147,6 +147,7 @@ test:
     - if: '$CI_COMMIT_TAG'
     - if: $CI_COMMIT_BRANCH == "master"
     - if: $CI_COMMIT_BRANCH == "next"
+    - if: $CI_COMMIT BRANCH == "flatpak-relou-backup"
     - when: never
 build-react:
   stage: build
@@ -402,11 +403,6 @@ deploy_flatpak_sources:
     - pip install .
     - cd ../..
     - flatpak-node-generator yarn -r yarn.lock -R kmfrontend/yarn.lock -R yarn.lock
-  rules:
-    - if: $SCHEDULED_RELEASES == "true"
-      when: never
-    - if: $CI_COMMIT_BRANCH == "flatpak-relou-backup"
-    - when: never
 deploy_flatpak:
   stage: deploy
   image: node:18
@@ -418,7 +414,6 @@ deploy_flatpak:
   dependencies:
     - deploy_flatpak_sources
   needs:
-    - pkg_linux
     - deploy_flatpak_sources
   script:
     - git clone https://github.com/karaokemugen/flathub.git
@@ -427,11 +422,6 @@ deploy_flatpak:
     - cp generated-sources.json flathub/
     - cd flathub
     - git status
-  rules:
-    - if: $SCHEDULED_RELEASES == "true"
-      when: never
-    - if: $CI_COMMIT_BRANCH == "flatpak-relou-backup"
-    - when: never
 deploy_win:
   stage: deploy
   image: axelterizaki/karaokemugen-ci:transferts
