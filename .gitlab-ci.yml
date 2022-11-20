@@ -398,6 +398,8 @@ deploy_flatpak:
   interruptible: true
   variables:
     DIST_NAME: dist_linux-7.x.tar.gz
+  cache:
+    policy: pull
   dependencies:
     - deploy_flatpak_sources
   needs:
