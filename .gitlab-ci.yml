@@ -399,6 +399,10 @@ deploy_flatpak:
   variables:
     DIST_NAME: dist_linux-7.x.tar.gz
   cache:
+    key: km-app-${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - kmfrontend/node_modules/
     policy: pull
   dependencies:
     - deploy_flatpak_sources
