@@ -5,8 +5,6 @@ const fs = require('fs/promises');
 
 const { mainModule } = require('process');
 
-process.env.CI_COMMIT_SHA = 'a26a630c4a8ec82613622fb2a83a12bfbd2d0ace';
-process.env.CI_COMMIT_REF_NAME = 'next';
 const dist = process.argv[2];
 const distSHA = process.argv[3];
 const sentrycliVersion = process.argv[4];
@@ -50,6 +48,8 @@ async function main() {
 	}
 
 	// Write files
+	console.log(JSON.stringify(flatpak, null, 2));
+	console.log(JSON.stringify(metainfo, null, 2));
 	await fs.writeFile(yamlFile, yaml.dump(flatpak), 'utf-8');
 	await fs.writeFile(xmlFile, xml.js2xml(metainfo, { spaces: '\t' }), 'utf-8');
 }
