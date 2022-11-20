@@ -133,7 +133,9 @@ test:
     - node util/extUnaccent.js
     - export DISPLAY=':99.0'
     - Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-    - yarn testCI --verbose  
+    - yarn testCI --verbose 
+  rules:
+    - when: never
 build-react:
   stage: build
   interruptible: true
@@ -372,7 +374,7 @@ deploy_linux:
     - if: '$CI_COMMIT_TAG'
 deploy_flatpak_sources:
   stage: deploy
-  image: python:3-alpine
+  image: python:3-bullseye
   tags:
     - $RUNNER_LINUX
   interruptible: true
@@ -383,7 +385,7 @@ deploy_flatpak_sources:
     paths:
       - generated-sources.json
   script:
-    - git clone https://github.com/flatpak/flatpak-builder-tools.git
+    - curl https://github.com/flatpak/flatpak-builder-tools/archive/refs/heads/master.zip
     - cd flatpak-builder-tools/node
     - pip install .
     - cd ../..
