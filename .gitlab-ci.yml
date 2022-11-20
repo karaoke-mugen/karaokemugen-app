@@ -138,16 +138,7 @@ test:
     - node util/extUnaccent.js
     - export DISPLAY=':99.0'
     - Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-    - yarn testCI --verbose
-  rules:
-    - if: $SCHEDULED_RELEASES == "true"
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /^🚀 new release/'
-    - if: '$CI_COMMIT_MESSAGE =~ /^:rocket: new release/'
-    - if: '$CI_COMMIT_TAG'
-    - if: $CI_COMMIT_BRANCH == "master"
-    - if: $CI_COMMIT_BRANCH == "next"
-    - when: never
+    - yarn testCI --verbose  
 build-react:
   stage: build
   interruptible: true
