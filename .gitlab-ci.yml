@@ -385,7 +385,7 @@ deploy_flatpak_sources:
     paths:
       - generated-sources.json
   script:
-    - git https://github.com/flatpak/flatpak-builder-tools.git
+    - git clone https://github.com/flatpak/flatpak-builder-tools.git
     - cd flatpak-builder-tools/node
     - pip install .
     - cd ../..
