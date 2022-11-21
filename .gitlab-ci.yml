@@ -397,8 +397,7 @@ deploy_flatpak:
     - $RUNNER_LINUX
   interruptible: true
   variables:
-    DIST_NAME: dist_linux-7.x.tar.gz
-    GIT_SSH_COMMAND: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+    DIST_NAME: dist_linux-7.x.tar.gz    
   cache:
     key: km-app-${CI_COMMIT_REF_SLUG}
     paths:
@@ -410,11 +409,8 @@ deploy_flatpak:
   needs:
     - deploy_flatpak_sources
   script:
-    - mkdir -p ~/.ssh
-    - echo $FLATHUB_GITHUB_PRIVATE_KEY >~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - cat ~/.ssh/id_rsa
-    - git clone --branch=moe.karaokes.mugen.app git@github.com:karaokemugen/flathub.git
+    - git clone --branch=moe.karaokes.mugen.app https://axelterizaki:$	
+FLATHUB_GITHUB_TOKEN@github.com/karaokemugen/flathub.git
     - bash util/updateFlatpak.sh
     - cp generated-sources.json flathub/
     - cd flathub
