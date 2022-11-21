@@ -409,8 +409,7 @@ deploy_flatpak:
   needs:
     - deploy_flatpak_sources
   script:
-    - git clone --branch=moe.karaokes.mugen.app https://axelterizaki:$	
-FLATHUB_GITHUB_TOKEN@github.com/karaokemugen/flathub.git
+    - git clone --branch=moe.karaokes.mugen.app https://axelterizaki:$FLATHUB_GITHUB_TOKEN@github.com/karaokemugen/flathub.git
     - bash util/updateFlatpak.sh
     - cp generated-sources.json flathub/
     - cd flathub
