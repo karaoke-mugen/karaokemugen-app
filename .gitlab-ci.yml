@@ -133,7 +133,7 @@ test:
     - node util/extUnaccent.js
     - export DISPLAY=':99.0'
     - Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-    - yarn testCI --verbose 
+    - yarn testCI --verbose
   rules:
     - when: never
 build-react:
@@ -409,11 +409,17 @@ deploy_flatpak:
   needs:
     - deploy_flatpak_sources
   script:
-    - git clone --branch=moe.karaokes.mugen.app https://github.com/karaokemugen/flathub.git
+    - echo $FLATHUB_GITHUB_PRIVATE_KEY >~/.ssh/id_rsa
+    - git clone --branch=moe.karaokes.mugen.app git@github.com:karaokemugen/flathub.git
     - bash util/updateFlatpak.sh
     - cp generated-sources.json flathub/
     - cd flathub
     - git status
+    - git add .
+    - git config user.name "Karaoke Mugen Release Bot"
+    - git config user.email "mugen@karaokes.moe"
+    - git commit -m "New version $CI_COMMIT_REF_NAME"
+    - git push
 deploy_win:
   stage: deploy
   image: axelterizaki/karaokemugen-ci:transferts
