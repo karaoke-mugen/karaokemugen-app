@@ -409,6 +409,7 @@ deploy_flatpak:
   needs:
     - deploy_flatpak_sources
   script:
+    - mkdir -p ~/.ssh
     - echo $FLATHUB_GITHUB_PRIVATE_KEY >~/.ssh/id_rsa
     - git clone --branch=moe.karaokes.mugen.app git@github.com:karaokemugen/flathub.git
     - bash util/updateFlatpak.sh
