@@ -398,6 +398,7 @@ deploy_flatpak:
   interruptible: true
   variables:
     DIST_NAME: dist_linux-7.x.tar.gz
+    GIT_SSH_COMMAND: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
   cache:
     key: km-app-${CI_COMMIT_REF_SLUG}
     paths:
